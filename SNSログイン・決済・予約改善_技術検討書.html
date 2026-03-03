@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNSログイン・決済・予約改善 技術検討書</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #fff; color: #333; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 24px; background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%); color: white; margin: -32px -24px 40px; border-radius: 0 0 24px 24px; }
+  .cover h1 { font-size: 32px; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .sub { font-size: 16px; color: #90caf9; margin-bottom: 32px; }
+  .cover-meta { display: flex; justify-content: center; gap: 40px; font-size: 13px; color: #aaa; }
+  .cover-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* TOC */
+  .toc { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px 32px; margin-bottom: 40px; }
+  .toc h2 { font-size: 16px; margin-bottom: 12px; color: #0f3460; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 4px 0; font-size: 14px; }
+  .toc li a { color: #1a73e8; text-decoration: none; }
+  .toc li a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section { margin-bottom: 48px; page-break-inside: avoid; }
+  h2.section-title { font-size: 22px; color: #0f3460; border-left: 5px solid #0f3460; padding-left: 16px; margin-bottom: 20px; }
+  h3 { font-size: 16px; color: #16213e; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+  h4 { font-size: 14px; color: #333; margin: 16px 0 8px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 20px; }
+  th { background: #0f3460; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+  tr:hover { background: #f5f8ff; }
+  tr.highlight { background: #fff3e0; }
+  tr.new-row { background: #e8f5e9; }
+  th.center, td.center { text-align: center; }
+
+  /* Code */
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0 20px; line-height: 1.6; font-family: 'Consolas', 'Monaco', monospace; }
+  code { background: #f0f0f0; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'Consolas', 'Monaco', monospace; }
+  pre code { background: none; padding: 0; }
+  .keyword { color: #cba6f7; }
+  .string { color: #a6e3a1; }
+  .comment { color: #6c7086; }
+  .type { color: #89b4fa; }
+  .number { color: #fab387; }
+
+  /* Alerts */
+  .alert { padding: 14px 18px; border-radius: 8px; margin: 12px 0 20px; font-size: 13px; }
+  .alert-info { background: #e3f2fd; border-left: 4px solid #1a73e8; color: #0d47a1; }
+  .alert-warn { background: #fff3e0; border-left: 4px solid #ff9800; color: #e65100; }
+  .alert-danger { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
+  .alert-success { background: #e8f5e9; border-left: 4px solid #4caf50; color: #1b5e20; }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 12px 0 20px; }
+  .card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; }
+  .card h4 { margin-top: 0; border: none; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 4px; }
+  .tag-new { background: #e8f5e9; color: #2e7d32; }
+  .tag-change { background: #fff3e0; color: #e65100; }
+  .tag-delete { background: #fce4ec; color: #c62828; }
+  .tag-keep { background: #e3f2fd; color: #1565c0; }
+  .tag-required { background: #fce4ec; color: #c62828; }
+  .tag-optional { background: #f5f5f5; color: #888; }
+  .tag-pk { background: #fff9c4; color: #f57f17; font-family: monospace; }
+  .tag-fk { background: #e3f2fd; color: #1565c0; font-family: monospace; }
+  .tag-phase { background: #ede7f6; color: #4527a0; }
+
+  /* Diagram */
+  .diagram { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 12px 0 20px; text-align: center; }
+  .er-box { display: inline-block; background: white; border: 2px solid #0f3460; border-radius: 8px; margin: 8px; text-align: left; min-width: 240px; vertical-align: top; }
+  .er-box .title { background: #0f3460; color: white; padding: 6px 12px; font-weight: bold; font-size: 13px; }
+  .er-box.new { border-color: #4caf50; }
+  .er-box.new .title { background: #4caf50; }
+  .er-box.change { border-color: #ff9800; }
+  .er-box.change .title { background: #ff9800; }
+  .er-box ul { list-style: none; padding: 8px 12px; font-size: 12px; font-family: monospace; }
+  .er-box ul li { padding: 2px 0; }
+  .er-relation { display: inline-block; color: #888; font-size: 24px; vertical-align: middle; margin: 0 -4px; }
+
+  /* Flow diagram */
+  .flow-box { display: inline-flex; flex-direction: column; align-items: center; margin: 8px; }
+  .flow-step { background: white; border: 2px solid #0f3460; border-radius: 10px; padding: 10px 18px; font-size: 12px; font-weight: 600; text-align: center; min-width: 140px; }
+  .flow-step.highlight { border-color: #4caf50; background: #e8f5e9; }
+  .flow-step.removed { border-color: #e53935; background: #fce4ec; text-decoration: line-through; opacity: 0.6; }
+  .flow-step.new { border-color: #4caf50; background: #e8f5e9; }
+  .flow-step.sns { border-color: #1a73e8; background: #e3f2fd; }
+  .flow-arrow { font-size: 20px; color: #888; margin: 4px 0; }
+  .flow-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 12px 0; }
+
+  /* Screen mock */
+  .screen-mock { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 0; overflow: hidden; margin: 12px 0 20px; }
+  .screen-mock .titlebar { background: #e0e0e0; padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .screen-mock .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .screen-mock .content { padding: 16px; }
+
+  .page-break { page-break-after: always; }
+  .print-only { display: none; }
+  @media print {
+    .print-only { display: block; }
+    .cover { padding: 60px 24px; }
+    .section { page-break-inside: avoid; }
+  }
+
+  /* 連番 */
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #0f3460; color: white; border-radius: 50%; font-size: 13px; font-weight: bold; margin-right: 8px; flex-shrink: 0; }
+
+  /* Comparison table */
+  .compare-table td.before { background: #fce4ec; }
+  .compare-table td.after { background: #e8f5e9; }
+  .compare-table td.arrow { text-align: center; font-size: 20px; background: #f5f5f5; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ==================== 表紙 ==================== -->
+<div class="cover">
+  <div style="font-size:14px;letter-spacing:4px;margin-bottom:16px;color:#64b5f6;">TECHNICAL PROPOSAL</div>
+  <h1>SNSログイン・決済・予約改善<br>技術検討書</h1>
+  <p class="sub">Google/LINEログイン・PayPay決済・WEB見学予約・予約フロー簡易化</p>
+  <div class="cover-meta">
+    <span>&#128197; 2026年2月20日</span>
+    <span>&#128196; Ver 1.0</span>
+    <span>&#127979; StudyGO</span>
+  </div>
+</div>
+
+<!-- ==================== 目次 ==================== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#sec1">背景・目的</a></li>
+    <li><a href="#sec2">現状分析（現行システム）</a></li>
+    <li><a href="#sec3">Googleログイン</a></li>
+    <li><a href="#sec4">LINEログイン</a></li>
+    <li><a href="#sec5">PayPay決済</a></li>
+    <li><a href="#sec6">WEB見学予約ページ</a></li>
+    <li><a href="#sec7">見学予約の簡易化</a></li>
+    <li><a href="#sec8">DB設計（スキーマ変更）</a></li>
+    <li><a href="#sec9">API仕様</a></li>
+    <li><a href="#sec10">画面仕様</a></li>
+    <li><a href="#sec11">実装手順・影響ファイル一覧</a></li>
+    <li><a href="#sec12">テスト計画</a></li>
+    <li><a href="#sec13">マイグレーション・リリース計画</a></li>
+    <li><a href="#sec14">リスクと注意事項</a></li>
+  </ol>
+</div>
+
+<!-- ==================== 1. 背景・目的 ==================== -->
+<div class="section" id="sec1">
+  <h2 class="section-title">1. 背景・目的</h2>
+
+  <h3>1.1 現状の課題</h3>
+  <table>
+    <tr><th style="width:200px;">課題項目</th><th>現状</th><th>問題点</th></tr>
+    <tr><td>ユーザー登録ステップ数</td><td>6ステップ・13項目の入力が必要</td><td>離脱率が高い。特にカード入力で離脱する傾向</td></tr>
+    <tr><td>認証方式</td><td>メール+パスワードのみ</td><td>SNSログインに慣れたユーザーの獲得が困難</td></tr>
+    <tr><td>決済方法</td><td>クレジットカードのみ（Stripe）</td><td>カード非保有者・PayPayユーザーの取り込み不可</td></tr>
+    <tr><td>見学予約の導線</td><td>アプリインストール必須</td><td>Webからの流入（広告・SNS経由）を取り込めない</td></tr>
+    <tr><td>見学予約フロー</td><td>4画面遷移（カレンダー→利用期間→アンケート→確認）</td><td>利用期間・アンケートが見学段階では不要で煩雑</td></tr>
+  </table>
+
+  <h3>1.2 改修の目的</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#127919; 目的1：登録障壁の低減</h4>
+      <p>SNSログインにより1タップで認証を完了させ、段階的に情報収集することで、初回の入力項目を最小限（氏名+電話番号）に削減する。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的2：決済手段の多様化</h4>
+      <p>PayPay決済を追加し、クレジットカードを持たないユーザーやQRコード決済を好むユーザーにも対応する。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的3：Web経由の集客強化</h4>
+      <p>アプリ不要のWeb見学予約ページを提供し、広告・SNSからの直接予約を可能にする。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的4：見学予約のCVR向上</h4>
+      <p>予約フローを4画面から2画面に短縮し、不要なアンケート項目を任意化することで完了率を改善する。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的5：既存ユーザーへの影響ゼロ</h4>
+      <p>既存のメール+パスワード認証・Stripe決済は完全に維持し、あくまで選択肢の追加として実装する。</p>
+    </div>
+  </div>
+
+  <h3>1.3 改修対象サマリ</h3>
+  <table>
+    <tr><th>No</th><th>改修項目</th><th>概要</th><th>優先度</th></tr>
+    <tr><td>1</td><td>Googleログイン</td><td>OAuth 2.0によるGoogle認証の追加</td><td><span class="tag tag-required">高</span></td></tr>
+    <tr><td>2</td><td>LINEログイン</td><td>LINE Login v2.1による認証の追加</td><td><span class="tag tag-required">高</span></td></tr>
+    <tr><td>3</td><td>PayPay決済</td><td>PayPay Web Payment APIによる決済追加</td><td><span class="tag tag-required">高</span></td></tr>
+    <tr><td>4</td><td>WEB見学予約</td><td>未登録ユーザー向けのスタンドアロンWebページ</td><td><span class="tag tag-change">中</span></td></tr>
+    <tr><td>5</td><td>見学予約フロー簡易化</td><td>利用期間画面の削除、アンケートの任意化</td><td><span class="tag tag-change">中</span></td></tr>
+  </table>
+</div>
+
+<!-- ==================== 2. 現状分析 ==================== -->
+<div class="section" id="sec2">
+  <h2 class="section-title">2. 現状分析（現行システム）</h2>
+
+  <h3>2.1 現行の認証フロー</h3>
+  <div class="diagram">
+    <div class="flow-box">
+      <div class="flow-step">ログイン画面<br><small>メール+パスワード</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">メール認証（OTP）</div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">個人情報入力<br><small>氏名・住所・生年月日等 13項目</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">カード情報入力<br><small>Stripe PaymentMethod</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">利用規約同意</div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">登録完了</div>
+    </div>
+  </div>
+  <div class="alert alert-warn">
+    <strong>問題: 6ステップ・13項目を全て埋めないと見学予約すらできない</strong>
+    見学希望の段階ではカード情報や詳細な住所は不要にもかかわらず、全項目の入力が必要。ステップ4（カード入力）での離脱が多い。
+  </div>
+
+  <h3>2.2 現行の見学予約フロー</h3>
+  <div class="diagram">
+    <div class="flow-row">
+      <div class="flow-step">店舗詳細画面<br><small>「見学予約」ボタン</small></div>
+      <div class="flow-arrow" style="transform:rotate(-90deg);">&#8595;</div>
+      <div class="flow-step">カレンダー選択<br><small>CalendarScreen</small></div>
+      <div class="flow-arrow" style="transform:rotate(-90deg);">&#8595;</div>
+      <div class="flow-step removed">利用期間選択<br><small>EstimatedPeriodScreen</small></div>
+      <div class="flow-arrow" style="transform:rotate(-90deg);">&#8595;</div>
+      <div class="flow-step removed">アンケート<br><small>surveyStart / surveyDuration</small></div>
+      <div class="flow-arrow" style="transform:rotate(-90deg);">&#8595;</div>
+      <div class="flow-step">確認・送信</div>
+    </div>
+  </div>
+
+  <h3>2.3 現行のAppUserテーブル構成</h3>
+  <div class="diagram">
+    <div class="er-box">
+      <div class="title">AppUser（現行）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int @id @default(autoincrement())</li>
+        <li>code: String? @unique</li>
+        <li>email: String @unique</li>
+        <li>password: String @db.VarChar(255)</li>
+        <li>status: AppUserStatus @default(registered)</li>
+        <li>isRegistered: Int @default(0)</li>
+        <li>isActive: Int @default(0)</li>
+        <li>token: String? @unique</li>
+        <li>otp: String? @db.VarChar(6)</li>
+        <li>lastName: String?</li>
+        <li>firstName: String?</li>
+        <li>lastNameKana: String?</li>
+        <li>firstNameKana: String?</li>
+        <li>birthday: DateTime?</li>
+        <li>gender: Int?</li>
+        <li>zipCode: String?</li>
+        <li>prefecture: Int?</li>
+        <li>address1: String?</li>
+        <li>address2: String?</li>
+        <li>phone: String?</li>
+        <li>stripeCustomerId: String?</li>
+        <li>...</li>
+      </ul>
+    </div>
+    <span class="er-relation">1 ── * </span>
+    <div class="er-box">
+      <div class="title">ShopPreviewReservation（現行）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> shopId: Int &rarr; Shop</li>
+        <li><span class="tag-fk">FK</span> appUserId: Int &rarr; AppUser</li>
+        <li>visitAt: DateTime</li>
+        <li>surveyStart: String</li>
+        <li>surveyDuration: String</li>
+        <li>status: Int</li>
+        <li>handlingStatus: Int</li>
+        <li>confirmed: Int</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.4 現行の決済フロー</h3>
+  <div class="alert alert-info">
+    <strong>現行: Stripe一択</strong>
+    初回決済: <code>PaymentIntent</code>（入会金+初月日割り+翌月+初期費用）<br>
+    月次決済: <code>Subscription</code>（毎月15日に翌月分課金）<br>
+    決済手段: クレジットカードのみ（Visa / Mastercard / JCB / AMEX）
+  </div>
+</div>
+
+<!-- ==================== 3. Googleログイン ==================== -->
+<div class="section" id="sec3">
+  <h2 class="section-title">3. Googleログイン</h2>
+
+  <h3>3.1 概要</h3>
+  <p>Google OAuth 2.0を利用し、アプリ側で<code>google_sign_in</code>パッケージ、サーバー側で<code>google-auth-library</code>を使用してIDトークンを検証する。</p>
+
+  <h3>3.2 認証フロー</h3>
+  <div class="diagram">
+    <div class="flow-box">
+      <div class="flow-step sns">&#128100; ユーザー<br><small>「Googleでログイン」タップ</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step sns">Flutterアプリ<br><small>google_sign_in SDK</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step" style="border-color:#EA4335;background:#fce4ec;">Google OAuth 2.0<br><small>認証画面（OS標準）</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step sns">IDトークン取得<br><small>idToken + email + name</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">APIサーバー<br><small>POST /auth/google</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step highlight">IDトークン検証<br><small>google-auth-library<br>OAuth2Client.verifyIdToken()</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step new">ユーザー作成 or ログイン<br><small>googleId で既存ユーザー検索<br>→ 無ければ email で検索<br>→ 無ければ新規作成</small></div>
+    </div>
+  </div>
+
+  <h3>3.3 使用SDK・ライブラリ</h3>
+  <table>
+    <tr><th>環境</th><th>パッケージ</th><th>バージョン</th><th>用途</th></tr>
+    <tr><td>Flutter（アプリ）</td><td><code>google_sign_in</code></td><td>^6.2.x</td><td>Google Sign-In SDK。OS標準の認証UIを表示</td></tr>
+    <tr><td>NestJS（API）</td><td><code>google-auth-library</code></td><td>^9.x</td><td>IDトークンの検証（<code>verifyIdToken</code>）</td></tr>
+  </table>
+
+  <h3>3.4 サーバー側処理</h3>
+  <pre><code><span class="comment">// auth/google.controller.ts</span>
+
+<span class="keyword">@Post</span>(<span class="string">'/auth/google'</span>)
+<span class="keyword">async</span> googleLogin(<span class="keyword">@Body</span>() body: { idToken: <span class="type">string</span> }) {
+  <span class="comment">// 1. Google IDトークンを検証</span>
+  <span class="keyword">const</span> ticket = <span class="keyword">await</span> oAuth2Client.verifyIdToken({
+    idToken: body.idToken,
+    audience: GOOGLE_CLIENT_ID,
+  });
+  <span class="keyword">const</span> payload = ticket.getPayload();
+  <span class="comment">// payload.sub = Google固有ID, payload.email, payload.name</span>
+
+  <span class="comment">// 2. 既存ユーザー検索（googleId → email → 新規作成）</span>
+  <span class="keyword">let</span> user = <span class="keyword">await</span> AppUserRepository.findByGoogleId(payload.sub);
+  <span class="keyword">if</span> (!user) {
+    user = <span class="keyword">await</span> AppUserRepository.findByEmail(payload.email);
+    <span class="keyword">if</span> (user) {
+      <span class="comment">// 既存メールユーザーにgoogleIdを紐付け</span>
+      <span class="keyword">await</span> AppUserRepository.update(user.id, { googleId: payload.sub });
+    } <span class="keyword">else</span> {
+      <span class="comment">// 3. 新規作成（最低限の情報のみ）</span>
+      user = <span class="keyword">await</span> AppUserRepository.create({
+        email: payload.email,
+        googleId: payload.sub,
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+        authProvider: <span class="string">'google'</span>,
+        password: randomHash(), <span class="comment">// ダミー（SNSユーザーは使用しない）</span>
+        status: <span class="string">'registered'</span>,
+      });
+    }
+  }
+
+  <span class="comment">// 4. JWTトークン発行</span>
+  <span class="keyword">return</span> { token: generateJwt(user), isNewUser: !user.isRegistered };
+}</code></pre>
+
+  <h3>3.5 段階的情報収集の設計</h3>
+  <div class="alert alert-info">
+    <strong>SNSログインの特徴: 最低限の情報で開始、必要に応じて追加取得</strong>
+    Google/LINEログイン時は email と名前しか取得できない。住所・電話番号・生年月日等は段階的に収集する。
+  </div>
+
+  <table>
+    <tr><th>タイミング</th><th>収集する情報</th><th>必須/任意</th><th>理由</th></tr>
+    <tr class="new-row"><td><strong>Stage 1</strong><br>SNSログイン直後</td><td>メールアドレス、氏名（SNSから自動取得）</td><td><span class="tag tag-required">自動</span></td><td>認証時にSNSプロバイダーから取得</td></tr>
+    <tr class="new-row"><td><strong>Stage 2</strong><br>初回ログイン後プロンプト</td><td>電話番号</td><td><span class="tag tag-required">必須</span></td><td>見学予約の連絡先として必要</td></tr>
+    <tr><td><strong>Stage 3</strong><br>契約申込時</td><td>住所、生年月日、カード情報</td><td><span class="tag tag-required">必須</span></td><td>契約・決済に必要な情報</td></tr>
+    <tr><td><strong>Stage 4</strong><br>マイページで任意入力</td><td>職業、学習内容</td><td><span class="tag tag-optional">任意</span></td><td>サービス改善のための参考情報</td></tr>
+  </table>
+
+  <h3>3.6 Google Cloud Console 設定</h3>
+  <table>
+    <tr><th>設定項目</th><th>値</th></tr>
+    <tr><td>プロジェクト</td><td>StudyGO（既存Firebase連携プロジェクト）</td></tr>
+    <tr><td>OAuth同意画面</td><td>外部 → 本番公開申請</td></tr>
+    <tr><td>承認済みドメイン</td><td>studygo.jp, api.studygo.jp</td></tr>
+    <tr><td>OAuth 2.0 クライアントID（iOS）</td><td>iOS Bundle IDを指定</td></tr>
+    <tr><td>OAuth 2.0 クライアントID（Android）</td><td>SHA-1フィンガープリントを指定</td></tr>
+    <tr><td>スコープ</td><td>openid, email, profile</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 4. LINEログイン ==================== -->
+<div class="section" id="sec4">
+  <h2 class="section-title">4. LINEログイン</h2>
+
+  <h3>4.1 概要</h3>
+  <p>LINE Login v2.1 を利用し、<code>flutter_web_auth_2</code> パッケージでOAuth認証フローを実装する。LINE固有のユーザーIDとプロフィール情報を取得し、メールアドレスは権限申請が必要。</p>
+
+  <h3>4.2 認証フロー</h3>
+  <div class="diagram">
+    <div class="flow-box">
+      <div class="flow-step sns">&#128100; ユーザー<br><small>「LINEでログイン」タップ</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step sns">Flutterアプリ<br><small>flutter_web_auth_2</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step" style="border-color:#06C755;background:#e8f5e9;">LINE認証画面<br><small>WebView / LINEアプリ</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step sns">認可コード取得<br><small>callback URLからcode取得</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">APIサーバー<br><small>POST /auth/line</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step highlight">アクセストークン交換<br><small>POST https://api.line.me/<br>oauth2/v2.1/token</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step highlight">プロフィール取得<br><small>GET https://api.line.me/<br>v2/profile</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step new">ユーザー作成 or ログイン<br><small>lineId で既存ユーザー検索<br>→ 無ければ新規作成</small></div>
+    </div>
+  </div>
+
+  <h3>4.3 使用SDK・ライブラリ</h3>
+  <table>
+    <tr><th>環境</th><th>パッケージ</th><th>バージョン</th><th>用途</th></tr>
+    <tr><td>Flutter（アプリ）</td><td><code>flutter_web_auth_2</code></td><td>^4.x</td><td>OAuth認証フローのWebView表示・callback処理</td></tr>
+    <tr><td>NestJS（API）</td><td><code>axios</code>（既存）</td><td>-</td><td>LINE API へのHTTPリクエスト</td></tr>
+  </table>
+
+  <h3>4.4 サーバー側処理</h3>
+  <pre><code><span class="comment">// auth/line.controller.ts</span>
+
+<span class="keyword">@Post</span>(<span class="string">'/auth/line'</span>)
+<span class="keyword">async</span> lineLogin(<span class="keyword">@Body</span>() body: { code: <span class="type">string</span> }) {
+  <span class="comment">// 1. 認可コード → アクセストークン交換</span>
+  <span class="keyword">const</span> tokenRes = <span class="keyword">await</span> axios.post(
+    <span class="string">'https://api.line.me/oauth2/v2.1/token'</span>,
+    {
+      grant_type: <span class="string">'authorization_code'</span>,
+      code: body.code,
+      redirect_uri: LINE_CALLBACK_URL,
+      client_id: LINE_CHANNEL_ID,
+      client_secret: LINE_CHANNEL_SECRET,
+    }
+  );
+
+  <span class="comment">// 2. IDトークンからメール取得（取得可能な場合）</span>
+  <span class="keyword">const</span> idToken = tokenRes.data.id_token;
+  <span class="keyword">const</span> decoded = jwt.decode(idToken);
+  <span class="keyword">const</span> email = decoded?.email; <span class="comment">// 未設定 or 権限なしの場合はundefined</span>
+
+  <span class="comment">// 3. プロフィール取得</span>
+  <span class="keyword">const</span> profileRes = <span class="keyword">await</span> axios.get(
+    <span class="string">'https://api.line.me/v2/profile'</span>,
+    { headers: { Authorization: <span class="string">`Bearer ${tokenRes.data.access_token}`</span> } }
+  );
+
+  <span class="comment">// 4. ユーザー検索 or 作成</span>
+  <span class="keyword">let</span> user = <span class="keyword">await</span> AppUserRepository.findByLineId(profileRes.data.userId);
+  <span class="keyword">if</span> (!user) {
+    user = <span class="keyword">await</span> AppUserRepository.create({
+      lineId: profileRes.data.userId,
+      email: email || <span class="string">`line_${profileRes.data.userId}@placeholder.studygo.jp`</span>,
+      firstName: profileRes.data.displayName,
+      authProvider: <span class="string">'line'</span>,
+      password: randomHash(),
+      status: <span class="string">'registered'</span>,
+    });
+  }
+
+  <span class="keyword">return</span> { token: generateJwt(user), isNewUser: !user.isRegistered };
+}</code></pre>
+
+  <h3>4.5 LINE Login メール取得の制限</h3>
+  <div class="alert alert-warn">
+    <strong>注意: LINEではメールアドレスの取得に制限がある</strong>
+    <ul style="margin-top:8px;padding-left:16px;">
+      <li>LINEにメールアドレスを登録していないユーザーからはメールを取得できない</li>
+      <li>メール取得には LINE Developers コンソールで「メールアドレス取得権限」の申請が必要</li>
+      <li>メール未取得時はプレースホルダーメール（<code>line_{userId}@placeholder.studygo.jp</code>）を設定し、後からStage 2で実メールを収集する設計</li>
+    </ul>
+  </div>
+
+  <h3>4.6 LINE Developers 設定</h3>
+  <table>
+    <tr><th>設定項目</th><th>値</th></tr>
+    <tr><td>チャネルタイプ</td><td>LINEログイン</td></tr>
+    <tr><td>アプリタイプ</td><td>ウェブアプリ、ネイティブアプリ</td></tr>
+    <tr><td>コールバックURL</td><td>https://api.studygo.jp/auth/line/callback<br>studygo://auth/line/callback（アプリ用）</td></tr>
+    <tr><td>権限</td><td>openid, profile, email（要申請）</td></tr>
+    <tr><td>ボットリンク機能</td><td>有効（LINE公式アカウント連携）</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 5. PayPay決済 ==================== -->
+<div class="section" id="sec5">
+  <h2 class="section-title">5. PayPay決済</h2>
+
+  <h3>5.1 概要</h3>
+  <p>PayPay Web Payment APIを利用し、入会時の初回決済にPayPay支払いオプションを追加する。ユーザーはPayPayアプリに遷移して決済を完了し、コールバックでアプリに戻る。</p>
+
+  <h3>5.2 決済フロー</h3>
+  <div class="diagram">
+    <div class="flow-box">
+      <div class="flow-step">支払い方法選択<br><small>クレジットカード / PayPay</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step" style="border-color:#FF0033;background:#fce4ec;">PayPay選択時</div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">APIサーバー<br><small>POST /payment/paypay/create</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step highlight">PayPay API<br><small>Create a Code (QR)</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step" style="border-color:#FF0033;background:#ffe0e0;">PayPayアプリ<br><small>ユーザーが支払い承認</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step">Webhook受信<br><small>POST /webhook/paypay</small></div>
+      <div class="flow-arrow">&#8595;</div>
+      <div class="flow-step new">決済完了処理<br><small>契約作成 + ステータス更新</small></div>
+    </div>
+  </div>
+
+  <h3>5.3 PayPay Web Payment API</h3>
+  <table>
+    <tr><th>API</th><th>メソッド</th><th>用途</th></tr>
+    <tr><td>Create a Code</td><td><code>POST /v2/codes</code></td><td>QRコード決済用のコード生成</td></tr>
+    <tr><td>Get Payment Details</td><td><code>GET /v2/codes/payments/{merchantPaymentId}</code></td><td>決済ステータス確認</td></tr>
+    <tr><td>Cancel a Payment</td><td><code>DELETE /v2/codes/payments/{merchantPaymentId}</code></td><td>決済キャンセル</td></tr>
+    <tr><td>Refund a Payment</td><td><code>POST /v2/refunds</code></td><td>返金処理</td></tr>
+  </table>
+
+  <h3>5.4 サーバー側処理</h3>
+  <pre><code><span class="comment">// payment/paypay.service.ts</span>
+
+<span class="keyword">async</span> createPayPayPayment(userId: <span class="type">number</span>, amount: <span class="type">number</span>, orderId: <span class="type">string</span>) {
+  <span class="keyword">const</span> payload = {
+    merchantPaymentId: orderId,
+    amount: { amount, currency: <span class="string">'JPY'</span> },
+    codeType: <span class="string">'ORDER_QR'</span>,
+    orderDescription: <span class="string">'StudyGO 入会料金'</span>,
+    redirectUrl: <span class="string">'https://studygo.jp/payment/complete'</span>,
+    redirectType: <span class="string">'WEB_LINK'</span>,
+    userAgent: <span class="string">'StudyGO App'</span>,
+  };
+
+  <span class="keyword">const</span> response = <span class="keyword">await</span> paypayClient.qrCodeCreate(payload);
+
+  <span class="keyword">return</span> {
+    paymentUrl: response.BODY.url, <span class="comment">// PayPayアプリへのリダイレクトURL</span>
+    merchantPaymentId: orderId,
+    expiry: response.BODY.expiryDate,
+  };
+}
+
+<span class="comment">// Webhook受信</span>
+<span class="keyword">async</span> handleWebhook(payload: <span class="type">PayPayWebhook</span>) {
+  <span class="keyword">if</span> (payload.notification_type === <span class="string">'Transaction'</span>) {
+    <span class="keyword">const</span> payment = <span class="keyword">await</span> getPaymentDetails(payload.merchantPaymentId);
+    <span class="keyword">if</span> (payment.status === <span class="string">'COMPLETED'</span>) {
+      <span class="comment">// 契約作成・ステータス更新</span>
+      <span class="keyword">await</span> ShopContractService.completeContract(payload.merchantPaymentId);
+    }
+  }
+}</code></pre>
+
+  <h3>5.5 定期課金の制限事項</h3>
+  <div class="alert alert-danger">
+    <strong>重要: PayPayは自動定期課金に対応していない</strong>
+    <ul style="margin-top:8px;padding-left:16px;">
+      <li>PayPay Web Payment APIでは <strong>都度決済</strong> のみ対応。Stripeのような<code>Subscription</code>（自動定期課金）は不可</li>
+      <li>月次課金は <strong>毎月PayPayアプリで手動承認</strong> が必要になる（UXが悪い）</li>
+      <li>対応策: PayPayは <strong>初回決済（入会金+初月+翌月）</strong> でのみ使用し、3ヶ月目以降はクレジットカード登録を促す設計とする</li>
+      <li>代替案: PayPay継続課金APIの利用申請を行う（審査あり、承認率は不明）</li>
+    </ul>
+  </div>
+
+  <h3>5.6 PayPay × Stripe の併用方針</h3>
+  <table>
+    <tr><th>決済タイミング</th><th>PayPay</th><th>Stripe（クレジットカード）</th></tr>
+    <tr><td>初回決済（入会金+2ヶ月分）</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td></tr>
+    <tr><td>月次サブスクリプション（3ヶ月目〜）</td><td style="color:#e53935;">&#10007; 自動課金不可</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td></tr>
+    <tr><td>ドロップイン</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td></tr>
+    <tr><td>期間パス購入</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td><td style="color:#4caf50;font-weight:bold;">&#10003; 利用可能</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 6. WEB見学予約ページ ==================== -->
+<div class="section" id="sec6">
+  <h2 class="section-title">6. WEB見学予約ページ</h2>
+
+  <h3>6.1 概要</h3>
+  <p>アプリをインストールしていないユーザーが、WebブラウザからStudyGOの見学予約を完了できるスタンドアロンのWebページを提供する。広告やSNSからの流入を直接予約に繋げることが目的。</p>
+
+  <h3>6.2 2パス設計</h3>
+  <div class="diagram">
+    <div style="display:flex;gap:48px;justify-content:center;flex-wrap:wrap;">
+      <div class="flow-box">
+        <div style="font-size:14px;font-weight:700;color:#0f3460;margin-bottom:8px;">パスA: 未登録ユーザー</div>
+        <div class="flow-step new">WEB予約トップ<br><small>「初めての方」</small></div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step new">簡易情報入力<br><small>氏名・メール・電話番号</small></div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step new">カレンダーで日時選択</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step new">予約完了<br><small>確認メール送信</small></div>
+      </div>
+      <div class="flow-box">
+        <div style="font-size:14px;font-weight:700;color:#0f3460;margin-bottom:8px;">パスB: 既存ユーザー</div>
+        <div class="flow-step">WEB予約トップ<br><small>「アカウントをお持ちの方」</small></div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step">メール+パスワードログイン<br><small>or SNSログイン</small></div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step">カレンダーで日時選択</div>
+        <div class="flow-arrow">&#8595;</div>
+        <div class="flow-step">予約完了<br><small>アプリ通知 + メール</small></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>6.3 技術構成</h3>
+  <table>
+    <tr><th>要素</th><th>技術選定</th><th>理由</th></tr>
+    <tr><td>フレームワーク</td><td>Next.js (Static Export) or Nuxt.js</td><td>SEO対応・静的ホスティング可能・React/Vue既存知見</td></tr>
+    <tr><td>ホスティング</td><td>Vercel or AWS S3 + CloudFront</td><td>既存インフラとの整合性、低コスト</td></tr>
+    <tr><td>ドメイン</td><td>reserve.studygo.jp</td><td>サブドメインで独立運用</td></tr>
+    <tr><td>API</td><td>既存NestJS API（新規エンドポイント追加）</td><td>DB共有・認証ロジック再利用</td></tr>
+    <tr><td>スパム対策</td><td>reCAPTCHA v3</td><td>未登録ユーザーのフォーム送信にBot対策</td></tr>
+  </table>
+
+  <h3>6.4 未登録ユーザーの予約データ</h3>
+  <div class="alert alert-info">
+    <strong>未登録ユーザーの予約は <code>WebPreviewReservation</code> テーブルに保存</strong>
+    既存の <code>ShopPreviewReservation</code> は <code>appUserId</code> が必須（FK）のため、未登録ユーザーの予約は別テーブルに保存する。
+    後日ユーザー登録した場合に、メールアドレスで紐付け可能な設計とする。
+  </div>
+
+  <h3>6.5 URL設計</h3>
+  <table>
+    <tr><th>URL</th><th>用途</th></tr>
+    <tr><td><code>reserve.studygo.jp/</code></td><td>トップページ（店舗選択 or 直接遷移用）</td></tr>
+    <tr><td><code>reserve.studygo.jp/{shopCode}</code></td><td>店舗別の予約ページ（広告のランディングURL）</td></tr>
+    <tr><td><code>reserve.studygo.jp/{shopCode}/calendar</code></td><td>カレンダー日時選択</td></tr>
+    <tr><td><code>reserve.studygo.jp/{shopCode}/complete</code></td><td>予約完了ページ</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 7. 見学予約の簡易化 ==================== -->
+<div class="section" id="sec7">
+  <h2 class="section-title">7. 見学予約の簡易化</h2>
+
+  <h3>7.1 現行フローと改善フローの比較</h3>
+  <table class="compare-table">
+    <tr><th style="width:60px;">Step</th><th>現行（4画面）</th><th style="width:40px;"></th><th>改善後（2画面）</th></tr>
+    <tr><td>1</td><td class="before">カレンダー画面<br><small>CalendarScreen</small></td><td class="arrow">&rarr;</td><td class="after">カレンダー + 確認統合画面<br><small>SimpleCalendarScreen</small></td></tr>
+    <tr><td>2</td><td class="before">利用予定期間選択<br><small>EstimatedPeriodScreen</small></td><td class="arrow">&rarr;</td><td class="after" style="color:#e53935;"><strong>削除</strong><br><small>見学段階で不要</small></td></tr>
+    <tr><td>3</td><td class="before">アンケート<br><small>surveyStart / surveyDuration</small></td><td class="arrow">&rarr;</td><td class="after">任意項目として確認画面に統合<br><small>折りたたみ式</small></td></tr>
+    <tr><td>4</td><td class="before">確認画面<br><small>ConfirmScreen</small></td><td class="arrow">&rarr;</td><td class="after">予約完了画面<br><small>CompletionScreen</small></td></tr>
+  </table>
+
+  <h3>7.2 削除対象: EstimatedPeriodScreen</h3>
+  <div class="alert alert-warn">
+    <strong>EstimatedPeriodScreenを削除する理由</strong>
+    <ul style="margin-top:8px;padding-left:16px;">
+      <li>見学の段階で利用予定期間を聞くのはユーザーにとって負担（まだ決めていない）</li>
+      <li>運用側でもこのデータは見学管理にほとんど活用されていない</li>
+      <li>契約段階で改めてプラン選択をするため、二重で聞いている状態</li>
+    </ul>
+  </div>
+
+  <h3>7.3 アンケート項目の任意化</h3>
+  <table>
+    <tr><th>項目</th><th>現行</th><th>改善後</th><th>DB変更</th></tr>
+    <tr><td><code>surveyStart</code>（利用開始予定）</td><td><span class="tag tag-required">必須</span></td><td><span class="tag tag-optional">任意</span></td><td>NOT NULL → NULL許可に変更</td></tr>
+    <tr><td><code>surveyDuration</code>（利用予定期間）</td><td><span class="tag tag-required">必須</span></td><td><span class="tag tag-optional">任意</span></td><td>NOT NULL → NULL許可に変更</td></tr>
+  </table>
+
+  <h3>7.4 影響範囲</h3>
+  <table>
+    <tr><th>ファイル</th><th>変更内容</th></tr>
+    <tr><td><code>lib/src/screens/preview/</code></td><td>EstimatedPeriodScreen 削除、CalendarScreen にインライン確認UI追加</td></tr>
+    <tr><td><code>lib/src/screens/preview/calendar_screen.dart</code></td><td>日時選択後に確認ボタンを表示する統合UI</td></tr>
+    <tr><td><code>src/services/entities/shopPreviewReservation/</code></td><td>surveyStart, surveyDuration を optional に変更</td></tr>
+    <tr><td><code>prisma/schema.prisma</code></td><td>ShopPreviewReservation の surveyStart, surveyDuration を nullable に</td></tr>
+    <tr><td>管理画面</td><td>予約一覧のアンケート列を「未回答」表示対応</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 8. DB設計 ==================== -->
+<div class="section" id="sec8">
+  <h2 class="section-title">8. DB設計（スキーマ変更）</h2>
+
+  <h3>8.1 AppUser テーブル変更</h3>
+  <div class="diagram">
+    <div class="er-box change">
+      <div class="title">AppUser（変更）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li>email: String @unique</li>
+        <li>password: String</li>
+        <li style="color:#888;">... (既存フィールド省略)</li>
+        <li style="border-top:1px dashed #ff9800;padding-top:4px;margin-top:4px;"><span class="tag tag-new">NEW</span> googleId: String? @unique</li>
+        <li><span class="tag tag-new">NEW</span> lineId: String? @unique</li>
+        <li><span class="tag tag-new">NEW</span> authProvider: AuthProvider @default(email)</li>
+        <li><span class="tag tag-new">NEW</span> profileCompletionRate: Int @default(0)</li>
+        <li><span class="tag tag-new">NEW</span> paypayUserId: String?</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>8.2 新規テーブル: WebPreviewReservation</h3>
+  <div class="diagram">
+    <div class="er-box new">
+      <div class="title">WebPreviewReservation（新規）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int @id @default(autoincrement())</li>
+        <li>isActive: Int @default(1)</li>
+        <li><span class="tag-fk">FK</span> shopId: Int &rarr; Shop</li>
+        <li>lastName: String @db.VarChar(20)</li>
+        <li>firstName: String @db.VarChar(20)</li>
+        <li>email: String</li>
+        <li>phone: String @db.VarChar(20)</li>
+        <li>visitAt: DateTime</li>
+        <li>status: Int @default(0)</li>
+        <li>handlingStatus: Int @default(0)</li>
+        <li>note: String? @db.MediumText</li>
+        <li>recaptchaScore: Float?</li>
+        <li>linkedAppUserId: Int? &rarr; AppUser</li>
+        <li>createdAt: DateTime @default(now())</li>
+        <li>updatedAt: DateTime @updatedAt</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>8.3 新規Enum: AuthProvider</h3>
+  <pre><code><span class="keyword">enum</span> <span class="type">AuthProvider</span> {
+  email
+  google
+  line
+}</code></pre>
+
+  <h3>8.4 ShopPreviewReservation 変更</h3>
+  <div class="diagram">
+    <div class="er-box change">
+      <div class="title">ShopPreviewReservation（変更）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> shopId: Int</li>
+        <li><span class="tag-fk">FK</span> appUserId: Int</li>
+        <li>visitAt: DateTime</li>
+        <li><span class="tag tag-change">CHANGE</span> surveyStart: String? <small>(NOT NULL → nullable)</small></li>
+        <li><span class="tag tag-change">CHANGE</span> surveyDuration: String? <small>(NOT NULL → nullable)</small></li>
+        <li>status: Int</li>
+        <li>handlingStatus: Int</li>
+        <li>confirmed: Int</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>8.5 マイグレーションSQL</h3>
+  <pre><code><span class="comment">-- AppUser に SNS認証用カラムを追加</span>
+<span class="keyword">ALTER TABLE</span> AppUser
+  <span class="keyword">ADD COLUMN</span> googleId <span class="type">VARCHAR(255)</span> <span class="keyword">NULL</span> <span class="keyword">UNIQUE</span> <span class="keyword">AFTER</span> stripeToken,
+  <span class="keyword">ADD COLUMN</span> lineId <span class="type">VARCHAR(255)</span> <span class="keyword">NULL</span> <span class="keyword">UNIQUE</span> <span class="keyword">AFTER</span> googleId,
+  <span class="keyword">ADD COLUMN</span> authProvider <span class="type">ENUM('email','google','line')</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="string">'email'</span> <span class="keyword">AFTER</span> lineId,
+  <span class="keyword">ADD COLUMN</span> profileCompletionRate <span class="type">TINYINT</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="number">0</span> <span class="keyword">AFTER</span> authProvider,
+  <span class="keyword">ADD COLUMN</span> paypayUserId <span class="type">VARCHAR(255)</span> <span class="keyword">NULL</span> <span class="keyword">AFTER</span> profileCompletionRate;
+
+<span class="comment">-- ShopPreviewReservation のアンケート項目をNULL許可</span>
+<span class="keyword">ALTER TABLE</span> ShopPreviewReservation
+  <span class="keyword">MODIFY COLUMN</span> surveyStart <span class="type">VARCHAR(191)</span> <span class="keyword">NULL</span>,
+  <span class="keyword">MODIFY COLUMN</span> surveyDuration <span class="type">VARCHAR(191)</span> <span class="keyword">NULL</span>;
+
+<span class="comment">-- WebPreviewReservation テーブル新規作成</span>
+<span class="keyword">CREATE TABLE</span> WebPreviewReservation (
+  id <span class="type">INT</span> <span class="keyword">AUTO_INCREMENT PRIMARY KEY</span>,
+  isActive <span class="type">TINYINT</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="number">1</span>,
+  shopId <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+  lastName <span class="type">VARCHAR(20)</span> <span class="keyword">NOT NULL</span>,
+  firstName <span class="type">VARCHAR(20)</span> <span class="keyword">NOT NULL</span>,
+  email <span class="type">VARCHAR(191)</span> <span class="keyword">NOT NULL</span>,
+  phone <span class="type">VARCHAR(20)</span> <span class="keyword">NOT NULL</span>,
+  visitAt <span class="type">DATETIME(0)</span> <span class="keyword">NOT NULL</span>,
+  status <span class="type">INT</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="number">0</span>,
+  handlingStatus <span class="type">INT</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="number">0</span>,
+  note <span class="type">MEDIUMTEXT</span> <span class="keyword">NULL</span>,
+  recaptchaScore <span class="type">FLOAT</span> <span class="keyword">NULL</span>,
+  linkedAppUserId <span class="type">INT</span> <span class="keyword">NULL</span>,
+  createdAt <span class="type">TIMESTAMP(0)</span> <span class="keyword">NOT NULL DEFAULT</span> CURRENT_TIMESTAMP,
+  updatedAt <span class="type">DATETIME(3)</span> <span class="keyword">NOT NULL</span>,
+  <span class="keyword">FOREIGN KEY</span> (shopId) <span class="keyword">REFERENCES</span> Shop(id),
+  <span class="keyword">FOREIGN KEY</span> (linkedAppUserId) <span class="keyword">REFERENCES</span> AppUser(id),
+  <span class="keyword">INDEX</span> idx_web_preview_email (email),
+  <span class="keyword">INDEX</span> idx_web_preview_shop_date (shopId, visitAt)
+);</code></pre>
+</div>
+
+<!-- ==================== 9. API仕様 ==================== -->
+<div class="section" id="sec9">
+  <h2 class="section-title">9. API仕様</h2>
+
+  <h3>9.1 新規エンドポイント</h3>
+  <table>
+    <tr><th>No</th><th>メソッド</th><th>エンドポイント</th><th>概要</th><th>認証</th></tr>
+    <tr class="new-row"><td>A-01</td><td><code>POST</code></td><td><code>/auth/google</code></td><td>Google IDトークンでログイン/新規登録</td><td>不要</td></tr>
+    <tr class="new-row"><td>A-02</td><td><code>POST</code></td><td><code>/auth/line</code></td><td>LINE認可コードでログイン/新規登録</td><td>不要</td></tr>
+    <tr class="new-row"><td>A-03</td><td><code>POST</code></td><td><code>/payment/paypay/create</code></td><td>PayPay決済コード生成</td><td>JWT必須</td></tr>
+    <tr class="new-row"><td>A-04</td><td><code>POST</code></td><td><code>/webhook/paypay</code></td><td>PayPay決済完了Webhook</td><td>PayPay署名検証</td></tr>
+    <tr class="new-row"><td>A-05</td><td><code>GET</code></td><td><code>/payment/paypay/status/{id}</code></td><td>PayPay決済ステータス確認</td><td>JWT必須</td></tr>
+    <tr class="new-row"><td>A-06</td><td><code>POST</code></td><td><code>/web/preview-reservation</code></td><td>Web経由の見学予約作成（未登録ユーザー）</td><td>reCAPTCHA</td></tr>
+    <tr class="new-row"><td>A-07</td><td><code>GET</code></td><td><code>/web/shops/{code}/available-slots</code></td><td>Web予約用の空き枠取得</td><td>不要</td></tr>
+  </table>
+
+  <h3>9.2 既存エンドポイント修正</h3>
+  <table>
+    <tr><th>No</th><th>エンドポイント</th><th>変更内容</th></tr>
+    <tr class="highlight"><td>M-01</td><td><code>POST /shop-preview-reservations</code></td><td>surveyStart, surveyDuration を optional に変更</td></tr>
+    <tr class="highlight"><td>M-02</td><td><code>PUT /app-users/profile</code></td><td>段階的情報収集用のバリデーション緩和 + profileCompletionRate 自動計算</td></tr>
+    <tr class="highlight"><td>M-03</td><td><code>GET /app-users/me</code></td><td>authProvider, profileCompletionRate をレスポンスに追加</td></tr>
+  </table>
+
+  <h3>9.3 API詳細: POST /auth/google</h3>
+  <h4>Request</h4>
+  <pre><code>{
+  <span class="string">"idToken"</span>: <span class="string">"eyJhbGciOiJSUzI1NiIsInR5..."</span>
+}</code></pre>
+  <h4>Response (200)</h4>
+  <pre><code>{
+  <span class="string">"token"</span>: <span class="string">"jwt-token-here"</span>,
+  <span class="string">"isNewUser"</span>: <span class="keyword">true</span>,
+  <span class="string">"profileCompletionRate"</span>: <span class="number">30</span>,
+  <span class="string">"user"</span>: {
+    <span class="string">"id"</span>: <span class="number">123</span>,
+    <span class="string">"email"</span>: <span class="string">"user@gmail.com"</span>,
+    <span class="string">"firstName"</span>: <span class="string">"太郎"</span>,
+    <span class="string">"lastName"</span>: <span class="string">"山田"</span>,
+    <span class="string">"authProvider"</span>: <span class="string">"google"</span>
+  }
+}</code></pre>
+
+  <h3>9.4 API詳細: POST /auth/line</h3>
+  <h4>Request</h4>
+  <pre><code>{
+  <span class="string">"code"</span>: <span class="string">"authorization-code-from-line"</span>,
+  <span class="string">"redirectUri"</span>: <span class="string">"studygo://auth/line/callback"</span>
+}</code></pre>
+  <h4>Response (200)</h4>
+  <pre><code>{
+  <span class="string">"token"</span>: <span class="string">"jwt-token-here"</span>,
+  <span class="string">"isNewUser"</span>: <span class="keyword">true</span>,
+  <span class="string">"profileCompletionRate"</span>: <span class="number">20</span>,
+  <span class="string">"user"</span>: {
+    <span class="string">"id"</span>: <span class="number">124</span>,
+    <span class="string">"email"</span>: <span class="string">"line_U1234@placeholder.studygo.jp"</span>,
+    <span class="string">"firstName"</span>: <span class="string">"田中太郎"</span>,
+    <span class="string">"authProvider"</span>: <span class="string">"line"</span>
+  }
+}</code></pre>
+
+  <h3>9.5 API詳細: POST /web/preview-reservation</h3>
+  <h4>Request</h4>
+  <pre><code>{
+  <span class="string">"shopId"</span>: <span class="number">1</span>,
+  <span class="string">"lastName"</span>: <span class="string">"山田"</span>,
+  <span class="string">"firstName"</span>: <span class="string">"太郎"</span>,
+  <span class="string">"email"</span>: <span class="string">"yamada@example.com"</span>,
+  <span class="string">"phone"</span>: <span class="string">"09012345678"</span>,
+  <span class="string">"visitAt"</span>: <span class="string">"2026-03-01T10:00:00Z"</span>,
+  <span class="string">"note"</span>: <span class="string">"駐車場の有無を知りたいです"</span>,
+  <span class="string">"recaptchaToken"</span>: <span class="string">"recaptcha-v3-token"</span>
+}</code></pre>
+  <h4>Response (201)</h4>
+  <pre><code>{
+  <span class="string">"id"</span>: <span class="number">1</span>,
+  <span class="string">"shopName"</span>: <span class="string">"スタディGO新宿西口店"</span>,
+  <span class="string">"visitAt"</span>: <span class="string">"2026-03-01T10:00:00Z"</span>,
+  <span class="string">"confirmationEmailSent"</span>: <span class="keyword">true</span>
+}</code></pre>
+</div>
+
+<!-- ==================== 10. 画面仕様 ==================== -->
+<div class="section" id="sec10">
+  <h2 class="section-title">10. 画面仕様</h2>
+
+  <h3>10.1 画面モック参照</h3>
+  <div class="alert alert-info">
+    <strong>詳細な画面モックは別ファイルを参照</strong>
+    全22画面の画面モックは <code>SNSログイン・決済・予約改善_アプリ画面モック.html</code> に収録しています。
+  </div>
+
+  <h3>10.2 画面一覧</h3>
+  <table>
+    <tr><th>#</th><th>カテゴリ</th><th>画面名</th><th>フレーム</th><th>モック#</th></tr>
+    <tr><td>1</td><td>ログイン</td><td>ログイン画面（Google/LINEボタン付き）</td><td>スマホ</td><td>Mock #1</td></tr>
+    <tr><td>2</td><td>ログイン</td><td>新規登録画面（Google/LINEボタン付き）</td><td>スマホ</td><td>Mock #2</td></tr>
+    <tr><td>3</td><td>ログイン</td><td>Google認証中</td><td>スマホ</td><td>Mock #3</td></tr>
+    <tr><td>4</td><td>ログイン</td><td>LINE認証中</td><td>スマホ</td><td>Mock #4</td></tr>
+    <tr><td>5</td><td>ログイン</td><td>SNSログイン完了（初回）</td><td>スマホ</td><td>Mock #5</td></tr>
+    <tr><td>6</td><td>段階的情報収集</td><td>最低限の情報入力（氏名+電話番号）</td><td>スマホ</td><td>Mock #6</td></tr>
+    <tr><td>7</td><td>段階的情報収集</td><td>追加情報入力（契約時）</td><td>スマホ</td><td>Mock #7</td></tr>
+    <tr><td>8</td><td>段階的情報収集</td><td>情報入力完了</td><td>スマホ</td><td>Mock #8</td></tr>
+    <tr><td>9</td><td>段階的情報収集</td><td>プロフィール未完了バナー</td><td>スマホ</td><td>Mock #9</td></tr>
+    <tr><td>10</td><td>PayPay決済</td><td>お支払い方法選択</td><td>スマホ</td><td>Mock #10</td></tr>
+    <tr><td>11</td><td>PayPay決済</td><td>PayPay決済確認</td><td>スマホ</td><td>Mock #11</td></tr>
+    <tr><td>12</td><td>PayPay決済</td><td>PayPay決済完了</td><td>スマホ</td><td>Mock #12</td></tr>
+    <tr><td>13</td><td>WEB予約</td><td>WEB見学予約トップ</td><td>ブラウザ</td><td>Mock #13</td></tr>
+    <tr><td>14</td><td>WEB予約</td><td>未登録ユーザー予約フォーム</td><td>ブラウザ</td><td>Mock #14</td></tr>
+    <tr><td>15</td><td>WEB予約</td><td>既存ユーザーログイン</td><td>ブラウザ</td><td>Mock #15</td></tr>
+    <tr><td>16</td><td>WEB予約</td><td>WEB予約カレンダー</td><td>ブラウザ</td><td>Mock #16</td></tr>
+    <tr><td>17</td><td>WEB予約</td><td>WEB予約完了</td><td>ブラウザ</td><td>Mock #17</td></tr>
+    <tr><td>18</td><td>見学予約簡易化</td><td>見学予約カレンダー（簡易版）</td><td>スマホ</td><td>Mock #18</td></tr>
+    <tr><td>19</td><td>見学予約簡易化</td><td>見学予約確認（簡易版）</td><td>スマホ</td><td>Mock #19</td></tr>
+    <tr><td>20</td><td>見学予約簡易化</td><td>見学予約完了</td><td>スマホ</td><td>Mock #20</td></tr>
+    <tr><td>21</td><td>フロー比較</td><td>登録フロー比較図</td><td>インフォグラフィック</td><td>Mock #21</td></tr>
+    <tr><td>22</td><td>フロー比較</td><td>予約フロー比較図</td><td>インフォグラフィック</td><td>Mock #22</td></tr>
+  </table>
+
+  <h3>10.3 画面遷移図</h3>
+  <div class="diagram">
+    <div style="text-align:left;max-width:800px;margin:0 auto;font-size:13px;font-family:monospace;">
+<pre style="background:transparent;color:#333;border:none;font-size:12px;">
+[ログイン画面] ──┬── メール+PW ────→ [既存ログインフロー]
+                ├── Googleボタン ──→ [Google認証中] → [認証完了]
+                └── LINEボタン ───→ [LINE認証中] → [認証完了]
+                                                      │
+                                    ┌─── 新規ユーザー ─┘
+                                    ▼
+                              [Stage2: 電話番号入力]
+                                    │
+                                    ▼
+                              [ホーム画面]
+                                    │
+          ┌────────────┬────────────┤
+          ▼            ▼            ▼
+    [見学予約]    [契約申込]    [マイページ]
+     (簡易版)      │              │
+                   ▼              ▼
+             [Stage3: 追加情報]  [プロフィール
+              + 決済方法選択]     未完了バナー]
+                   │
+          ┌────────┤
+          ▼        ▼
+     [PayPay]  [カード入力]
+</pre>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 11. 実装手順 ==================== -->
+<div class="section" id="sec11">
+  <h2 class="section-title">11. 実装手順・影響ファイル一覧</h2>
+
+  <h3>11.1 Phase別実装計画</h3>
+  <table>
+    <tr><th>Phase</th><th>内容</th><th>期間目安</th><th>依存</th></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 1</span></td><td><strong>DB変更 + マイグレーション</strong><br>AppUserへのカラム追加、WebPreviewReservation作成、surveyの nullable化</td><td>2日</td><td>-</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 2</span></td><td><strong>Googleログイン</strong><br>API側 auth/google エンドポイント + アプリ側 google_sign_in 実装</td><td>3日</td><td>Phase 1</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 3</span></td><td><strong>LINEログイン</strong><br>API側 auth/line エンドポイント + アプリ側 flutter_web_auth_2 実装</td><td>3日</td><td>Phase 1</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 4</span></td><td><strong>段階的情報収集UI</strong><br>プロフィール完了率計算、未完了バナー、Stage2/3画面</td><td>2日</td><td>Phase 2,3</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 5</span></td><td><strong>PayPay決済</strong><br>PayPay API連携、決済フロー、Webhook処理</td><td>4日</td><td>Phase 1</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 6</span></td><td><strong>見学予約簡易化</strong><br>EstimatedPeriodScreen削除、CalendarScreen統合</td><td>2日</td><td>Phase 1</td></tr>
+    <tr class="new-row"><td><span class="tag tag-phase">Phase 7</span></td><td><strong>WEB見学予約ページ</strong><br>Next.jsページ構築、API追加、reCAPTCHA導入</td><td>5日</td><td>Phase 1,6</td></tr>
+  </table>
+
+  <h3>11.2 影響ファイル一覧</h3>
+
+  <h4>API側（NestJS）</h4>
+  <table>
+    <tr><th>Phase</th><th>ファイル</th><th>変更種別</th></tr>
+    <tr><td><span class="tag tag-phase">P1</span></td><td><code>prisma/schema.prisma</code></td><td><span class="tag tag-change">修正</span></td></tr>
+    <tr><td><span class="tag tag-phase">P1</span></td><td><code>prisma/migrations/xxx_add_sns_auth/</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P2</span></td><td><code>src/controllers/auth/google-auth.controller.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P2</span></td><td><code>src/services/auth/google-auth.service.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P3</span></td><td><code>src/controllers/auth/line-auth.controller.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P3</span></td><td><code>src/services/auth/line-auth.service.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P4</span></td><td><code>src/services/entities/appUser/AppUserProfileService.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P5</span></td><td><code>src/controllers/payment/paypay.controller.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P5</span></td><td><code>src/services/payment/paypay.service.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P5</span></td><td><code>src/controllers/webhook/paypay-webhook.controller.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P6</span></td><td><code>src/services/entities/shopPreviewReservation/</code></td><td><span class="tag tag-change">修正</span></td></tr>
+    <tr><td><span class="tag tag-phase">P7</span></td><td><code>src/controllers/web/web-preview.controller.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P7</span></td><td><code>src/services/web/web-preview.service.ts</code></td><td><span class="tag tag-new">新規</span></td></tr>
+  </table>
+
+  <h4>アプリ側（Flutter）</h4>
+  <table>
+    <tr><th>Phase</th><th>ファイル</th><th>変更種別</th></tr>
+    <tr><td><span class="tag tag-phase">P2</span></td><td><code>lib/src/screens/auth/login/login_screen.dart</code></td><td><span class="tag tag-change">修正</span>（SNSボタン追加）</td></tr>
+    <tr><td><span class="tag tag-phase">P2</span></td><td><code>lib/src/services/auth/google_auth_service.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P3</span></td><td><code>lib/src/services/auth/line_auth_service.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P2,3</span></td><td><code>lib/src/screens/auth/register/register_screen.dart</code></td><td><span class="tag tag-change">修正</span>（SNSボタン追加）</td></tr>
+    <tr><td><span class="tag tag-phase">P4</span></td><td><code>lib/src/screens/auth/profile_completion_screen.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P4</span></td><td><code>lib/src/widgets/profile_incomplete_banner.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P5</span></td><td><code>lib/src/screens/payment/payment_method_screen.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P5</span></td><td><code>lib/src/services/payment/paypay_service.dart</code></td><td><span class="tag tag-new">新規</span></td></tr>
+    <tr><td><span class="tag tag-phase">P6</span></td><td><code>lib/src/screens/preview/calendar_screen.dart</code></td><td><span class="tag tag-change">修正</span>（統合UI）</td></tr>
+    <tr><td><span class="tag tag-phase">P6</span></td><td><code>lib/src/screens/preview/estimated_period_screen.dart</code></td><td><span class="tag tag-delete">削除</span></td></tr>
+  </table>
+</div>
+
+<!-- ==================== 12. テスト計画 ==================== -->
+<div class="section" id="sec12">
+  <h2 class="section-title">12. テスト計画</h2>
+
+  <h3>12.1 Googleログイン テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストケース</th><th>期待結果</th><th>種別</th></tr>
+    <tr><td>G-01</td><td>有効なIDトークンでログイン（新規）</td><td>ユーザー作成、JWT返却、isNewUser=true</td><td>API</td></tr>
+    <tr><td>G-02</td><td>有効なIDトークンでログイン（既存Google）</td><td>既存ユーザーでJWT返却、isNewUser=false</td><td>API</td></tr>
+    <tr><td>G-03</td><td>同一メールのメールユーザーが存在する場合</td><td>既存ユーザーにgoogleIdを紐付け</td><td>API</td></tr>
+    <tr><td>G-04</td><td>無効/期限切れのIDトークン</td><td>401エラー返却</td><td>API</td></tr>
+    <tr><td>G-05</td><td>アプリでGoogleログインボタンタップ</td><td>OS標準のGoogle認証画面が表示される</td><td>E2E</td></tr>
+    <tr><td>G-06</td><td>Google認証完了後のアプリ復帰</td><td>ホーム画面に遷移、新規時はStage2が表示</td><td>E2E</td></tr>
+  </table>
+
+  <h3>12.2 LINEログイン テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストケース</th><th>期待結果</th><th>種別</th></tr>
+    <tr><td>L-01</td><td>有効な認可コードでログイン（新規）</td><td>ユーザー作成、JWT返却</td><td>API</td></tr>
+    <tr><td>L-02</td><td>メール未設定のLINEユーザー</td><td>プレースホルダーメールで作成、Stage2でメール収集</td><td>API</td></tr>
+    <tr><td>L-03</td><td>無効な認可コード</td><td>401エラー返却</td><td>API</td></tr>
+    <tr><td>L-04</td><td>LINEアプリ未インストール時</td><td>WebView で LINE ログイン画面が表示</td><td>E2E</td></tr>
+  </table>
+
+  <h3>12.3 PayPay決済 テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストケース</th><th>期待結果</th><th>種別</th></tr>
+    <tr><td>P-01</td><td>PayPay決済コード生成</td><td>paymentUrl が返却される</td><td>API</td></tr>
+    <tr><td>P-02</td><td>PayPay決済完了Webhook</td><td>契約が作成され、ステータスが更新される</td><td>API</td></tr>
+    <tr><td>P-03</td><td>PayPay決済タイムアウト</td><td>ステータスが EXPIRED に、リトライ導線を表示</td><td>API</td></tr>
+    <tr><td>P-04</td><td>PayPayアプリ未インストール時</td><td>PayPay Webページにフォールバック</td><td>E2E</td></tr>
+    <tr><td>P-05</td><td>PayPayとStripeの決済方法切替</td><td>支払い方法選択画面で正しく切り替わる</td><td>E2E</td></tr>
+  </table>
+
+  <h3>12.4 WEB見学予約 テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストケース</th><th>期待結果</th><th>種別</th></tr>
+    <tr><td>W-01</td><td>未登録ユーザーのフォーム送信</td><td>WebPreviewReservation作成、確認メール送信</td><td>API</td></tr>
+    <tr><td>W-02</td><td>reCAPTCHA スコア 0.3 以下</td><td>予約が拒否される（Bot判定）</td><td>API</td></tr>
+    <tr><td>W-03</td><td>既存ユーザーがWebからログインして予約</td><td>ShopPreviewReservation（既存テーブル）に保存</td><td>API</td></tr>
+    <tr><td>W-04</td><td>空き枠のないスロット選択</td><td>エラーメッセージ「この時間枠は満席です」</td><td>E2E</td></tr>
+  </table>
+
+  <h3>12.5 見学予約簡易化 テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストケース</th><th>期待結果</th><th>種別</th></tr>
+    <tr><td>S-01</td><td>surveyStart, surveyDuration なしで予約</td><td>正常に予約が作成される（NULL保存）</td><td>API</td></tr>
+    <tr><td>S-02</td><td>カレンダー画面から直接予約確認</td><td>EstimatedPeriodScreen を経由しない</td><td>E2E</td></tr>
+    <tr><td>S-03</td><td>アンケートの任意入力</td><td>折りたたみを展開して入力可能</td><td>E2E</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 13. マイグレーション・リリース計画 ==================== -->
+<div class="section" id="sec13">
+  <h2 class="section-title">13. マイグレーション・リリース計画</h2>
+
+  <h3>13.1 DB変更の安全性</h3>
+  <table>
+    <tr><th>変更</th><th>影響</th><th>ロールバック</th></tr>
+    <tr><td>AppUser カラム追加（googleId, lineId, authProvider等）</td><td><span class="tag tag-new">低リスク</span><br>NULL許可のカラム追加のため既存データに影響なし</td><td>ALTER TABLE ... DROP COLUMN</td></tr>
+    <tr><td>ShopPreviewReservation の nullable 化</td><td><span class="tag tag-change">低リスク</span><br>NOT NULL → NULL 許可は既存レコードに影響なし</td><td>既存データがNULLでなければ NOT NULL に戻せる</td></tr>
+    <tr><td>WebPreviewReservation テーブル新規作成</td><td><span class="tag tag-new">リスクなし</span><br>完全に新規テーブル</td><td>DROP TABLE</td></tr>
+  </table>
+
+  <h3>13.2 デプロイ順序</h3>
+  <table>
+    <tr><th>順序</th><th>対象</th><th>内容</th><th>備考</th></tr>
+    <tr><td><span class="step-num">1</span></td><td>DB</td><td>マイグレーション実行</td><td>メンテナンス不要（全てADD/MODIFY）</td></tr>
+    <tr><td><span class="step-num">2</span></td><td>API</td><td>新規エンドポイント + 既存修正をデプロイ</td><td>新エンドポイントは呼び出し元がないため安全</td></tr>
+    <tr><td><span class="step-num">3</span></td><td>WEB</td><td>WEB見学予約ページをデプロイ</td><td>reserve.studygo.jp にデプロイ</td></tr>
+    <tr><td><span class="step-num">4</span></td><td>アプリ</td><td>SNSログイン + PayPay + 簡易予約のアプリ更新</td><td>ストア審査あり（1〜3日）</td></tr>
+  </table>
+
+  <h3>13.3 段階的リリース</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4><span class="tag tag-phase">Release 1</span> SNSログイン + 見学予約簡易化</h4>
+      <p>Phase 1,2,3,4,6 を先行リリース。最もユーザー影響が大きく、PayPayやWEB予約とは独立して動作する。</p>
+    </div>
+    <div class="card">
+      <h4><span class="tag tag-phase">Release 2</span> PayPay決済</h4>
+      <p>Phase 5 をリリース。PayPay APIの審査完了後に有効化。サンドボックスでの十分なテスト後にリリース。</p>
+    </div>
+    <div class="card">
+      <h4><span class="tag tag-phase">Release 3</span> WEB見学予約</h4>
+      <p>Phase 7 をリリース。独立したWebページのため、アプリ更新なしにデプロイ可能。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 14. リスクと注意事項 ==================== -->
+<div class="section" id="sec14">
+  <h2 class="section-title">14. リスクと注意事項</h2>
+
+  <h3>14.1 アカウント競合</h3>
+  <div class="alert alert-danger">
+    <strong>リスク: 同一ユーザーが複数の認証方法でアカウントを作成する可能性</strong>
+    <ul style="margin-top:8px;padding-left:16px;">
+      <li><strong>ケース1</strong>: メールで登録済みのユーザーが、同じメールのGoogleアカウントでログイン → メールアドレスで自動紐付け</li>
+      <li><strong>ケース2</strong>: Googleで登録後、LINEでもログイン（メールが異なる）→ 別アカウントとして作成される</li>
+      <li><strong>対策</strong>: マイページに「アカウント連携」機能を設け、後からGoogle/LINE/メールを統合できるようにする（Phase 4で実装）</li>
+    </ul>
+  </div>
+
+  <h3>14.2 PayPay定期課金の制限</h3>
+  <div class="alert alert-warn">
+    <strong>注意: PayPayは月次自動課金に非対応</strong>
+    <ul style="margin-top:8px;padding-left:16px;">
+      <li>初回決済はPayPayで可能だが、3ヶ月目以降のサブスクリプションはクレジットカードが必要</li>
+      <li>PayPay利用者には、契約2ヶ月目にカード登録を促すプッシュ通知・アプリ内バナーを表示</li>
+      <li>カード未登録で3ヶ月目を迎えた場合は、アプリ利用時にカード登録モーダルを強制表示</li>
+    </ul>
+  </div>
+
+  <h3>14.3 スパム対策（WEB見学予約）</h3>
+  <table>
+    <tr><th>対策</th><th>詳細</th></tr>
+    <tr><td>reCAPTCHA v3</td><td>フォーム送信時にスコア判定。0.5未満は予約を拒否</td></tr>
+    <tr><td>レート制限</td><td>同一IP/メールアドレスから1時間に3件まで</td></tr>
+    <tr><td>メール確認</td><td>予約確認メールのリンククリックで予約を確定（オプション）</td></tr>
+    <tr><td>管理画面通知</td><td>大量予約を検知した場合に管理者へアラート</td></tr>
+  </table>
+
+  <h3>14.4 セキュリティ考慮事項</h3>
+  <table>
+    <tr><th>項目</th><th>対策</th></tr>
+    <tr><td>IDトークン偽造</td><td>Google: <code>verifyIdToken</code>で署名検証。LINE: API経由でトークン交換するため改ざん不可</td></tr>
+    <tr><td>CSRF</td><td>OAuth state パラメータを使用。ランダム文字列を生成しセッションに保存</td></tr>
+    <tr><td>PayPay Webhook偽装</td><td>PayPayが提供するHMAC署名ヘッダーを検証</td></tr>
+    <tr><td>WEB予約のBot攻撃</td><td>reCAPTCHA v3 + レート制限 + メール認証の3層防御</td></tr>
+    <tr><td>個人情報保護</td><td>WebPreviewReservationのメール・電話番号は暗号化保存を検討</td></tr>
+  </table>
+
+  <h3>14.5 その他の注意事項</h3>
+  <table>
+    <tr><th>項目</th><th>内容</th></tr>
+    <tr><td>App Store / Google Play 審査</td><td>SNSログイン追加時は審査でリジェクトされる可能性あり。Apple Sign-Inの追加が必要になる場合がある（Appleポリシー）</td></tr>
+    <tr><td>LINE Developersの審査</td><td>メールアドレス取得権限の申請に1〜2週間かかる場合がある</td></tr>
+    <tr><td>PayPayの加盟店審査</td><td>Web Payment API利用には加盟店審査が必要。テスト用サンドボックスは即日利用可能</td></tr>
+    <tr><td>既存ユーザーへの影響</td><td>既存のメール+PW認証は一切変更なし。authProviderのデフォルト値は'email'のため、マイグレーション時に既存ユーザーは自動的にemail認証として扱われる</td></tr>
+    <tr><td>Apple Sign-In</td><td>iOS版でSNSログインを提供する場合、Appleのポリシーにより Apple Sign-In の提供も必須。Phase 2と並行して検討・実装すること</td></tr>
+  </table>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>

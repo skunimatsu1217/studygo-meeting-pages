@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 期間パス 企画書</title>
+<style>
+:root {
+  --green: #4CAF50;
+  --green-dark: #388E3C;
+  --green-accent: #1e8e3e;
+  --green-light: #E8F5E9;
+  --green-lighter: #f1f8f2;
+  --red: #D93025;
+  --red-light: #FCE8E6;
+  --orange: #E65100;
+  --orange-light: #FFF3E0;
+  --blue: #1a73e8;
+  --blue-light: #E8F0FE;
+  --gray: #9E9E9E;
+  --gray-light: #F5F5F5;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #dadce0;
+  --text: #202124;
+  --text-secondary: #5f6368;
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 14px;
+}
+
+/* ========== HEADER ========== */
+.header {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 40%, #1B5E20 100%);
+  color: white;
+  padding: 56px 24px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+.header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  position: relative;
+}
+.header .subtitle {
+  font-size: 15px;
+  opacity: 0.9;
+  font-weight: 400;
+  position: relative;
+}
+.header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(4px);
+  padding: 6px 20px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 16px;
+  border: 1px solid rgba(255,255,255,0.3);
+  position: relative;
+}
+
+/* ========== NAVIGATION ========== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  scrollbar-width: thin;
+}
+.nav-inner::-webkit-scrollbar { height: 3px; }
+.nav-inner::-webkit-scrollbar-thumb { background: var(--green); border-radius: 3px; }
+.nav-item {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.nav-item:hover {
+  color: var(--green-dark);
+  background: var(--green-light);
+}
+.nav-item.active {
+  color: var(--green-dark);
+  border-bottom-color: var(--green);
+  background: var(--green-light);
+}
+
+/* ========== HIGHLIGHT TOGGLE ========== */
+.highlight-toggle-bar {
+  background: #FFFDE7;
+  border-bottom: 1px solid #FFF176;
+  padding: 8px 24px;
+  text-align: center;
+}
+.highlight-toggle-bar button {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.highlight-toggle-bar button:hover {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+}
+.highlight-toggle-bar button.active-toggle {
+  background: var(--orange);
+}
+.highlight-toggle-bar span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-left: 12px;
+}
+
+/* Highlight mode classes */
+body.highlight-mode .hl-new {
+  border: 2px dashed var(--red) !important;
+  background: rgba(217,48,37,0.04) !important;
+}
+body.highlight-mode .hl-change {
+  border: 2px solid var(--blue) !important;
+  background: rgba(26,115,232,0.04) !important;
+}
+body.highlight-mode .hl-reuse {
+  border: 2px solid var(--green) !important;
+  background: rgba(76,175,80,0.04) !important;
+}
+body.highlight-mode .hl-unnecessary {
+  border: 2px solid var(--gray) !important;
+  background: rgba(158,158,158,0.06) !important;
+  opacity: 0.7;
+}
+
+/* ========== CONTAINER & SECTIONS ========== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+.section {
+  padding: 40px 0 0;
+  scroll-margin-top: 60px;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+.section-title .num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--green);
+  color: white;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.section-desc {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 13px;
+}
+.section-divider {
+  border: none;
+  border-top: 2px solid var(--green-light);
+  margin: 0 0 16px;
+}
+
+/* ========== CARDS ========== */
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--green-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 16px 0 10px;
+  color: var(--green-dark);
+}
+.card-accent-green { border-left: 4px solid var(--green); }
+.card-accent-blue { border-left: 4px solid var(--blue); }
+.card-accent-red { border-left: 4px solid var(--red); }
+.card-accent-orange { border-left: 4px solid var(--orange); }
+
+/* ========== EXECUTIVE SUMMARY CARDS ========== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.summary-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.summary-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+.summary-card.what::before { background: var(--green); }
+.summary-card.why::before { background: var(--blue); }
+.summary-card.how::before { background: #FF9800; }
+.summary-card.impact::before { background: var(--red); }
+.summary-card .label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.summary-card.what .label { color: var(--green); }
+.summary-card.why .label { color: var(--blue); }
+.summary-card.how .label { color: #FF9800; }
+.summary-card.impact .label { color: var(--red); }
+.summary-card .content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* ========== SPEC ROWS ========== */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.spec-table tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+.spec-table tr:last-child {
+  border-bottom: none;
+}
+.spec-table td {
+  padding: 10px 12px;
+  vertical-align: top;
+  font-size: 13px;
+}
+.spec-table td:first-child {
+  font-weight: 700;
+  color: var(--text-secondary);
+  width: 160px;
+  white-space: nowrap;
+}
+.spec-table td:last-child {
+  color: var(--text);
+}
+
+/* ========== COMPARISON TABLE ========== */
+.comparison-wrapper {
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  min-width: 700px;
+}
+.comparison-table thead th {
+  background: var(--green);
+  color: white;
+  padding: 12px 14px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+}
+.comparison-table thead th:first-child {
+  border-radius: 8px 0 0 0;
+}
+.comparison-table thead th:last-child {
+  border-radius: 0 8px 0 0;
+}
+.comparison-table tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+}
+.comparison-table tbody tr:hover {
+  background: var(--green-lighter);
+}
+.comparison-table tbody td {
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+.comparison-table tbody td:first-child {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ========== BADGES ========== */
+.badge-new {
+  display: inline-block;
+  background: var(--red-light);
+  color: var(--red);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px dashed var(--red);
+}
+.badge-change {
+  display: inline-block;
+  background: var(--blue-light);
+  color: var(--blue);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--blue);
+}
+.badge-reuse {
+  display: inline-block;
+  background: var(--green-light);
+  color: var(--green-accent);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid var(--green);
+}
+.badge-unnecessary {
+  display: inline-block;
+  background: var(--gray-light);
+  color: var(--gray);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #BDBDBD;
+  text-decoration: line-through;
+}
+
+/* ========== SCREEN DESIGN ========== */
+.screen-flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+.screen-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.screen-card .screen-header {
+  background: var(--green-light);
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--green-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.screen-card .screen-header .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--green);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+.screen-card .screen-body {
+  padding: 16px;
+}
+.screen-card .screen-body ul {
+  list-style: none;
+  padding: 0;
+}
+.screen-card .screen-body li {
+  padding: 4px 0;
+  font-size: 13px;
+  position: relative;
+  padding-left: 18px;
+}
+.screen-card .screen-body li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+/* ========== CODE BLOCKS ========== */
+.code-block {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 12px 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  box-shadow: var(--shadow-md);
+}
+.code-block .comment {
+  color: #6A9955;
+}
+.code-block .keyword {
+  color: #569CD6;
+}
+.code-block .type {
+  color: #4EC9B0;
+}
+.code-block .string {
+  color: #CE9178;
+}
+.code-block .field {
+  color: #9CDCFE;
+}
+.code-block .new-field {
+  color: #DCDCAA;
+  background: rgba(255,193,7,0.15);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.code-block .unnecessary {
+  color: #6A6A6A;
+  text-decoration: line-through;
+}
+
+/* ========== SCOPE TABLE ========== */
+.scope-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.scope-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.scope-card .scope-header {
+  padding: 14px 20px;
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.scope-card.new .scope-header { background: var(--red); }
+.scope-card.change .scope-header { background: var(--blue); }
+.scope-card.reuse .scope-header { background: var(--green); }
+.scope-card.unnecessary .scope-header { background: var(--gray); }
+.scope-card .scope-body {
+  padding: 16px 20px;
+}
+.scope-card .scope-body li {
+  padding: 4px 0;
+  font-size: 13px;
+  list-style: none;
+  position: relative;
+  padding-left: 16px;
+}
+.scope-card .scope-body li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.scope-card.new .scope-body li::before { background: var(--red); }
+.scope-card.change .scope-body li::before { background: var(--blue); }
+.scope-card.reuse .scope-body li::before { background: var(--green); }
+.scope-card.unnecessary .scope-body li::before { background: var(--gray); }
+.scope-count {
+  background: rgba(255,255,255,0.3);
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+/* ========== EDGE CASE TABLE ========== */
+.edge-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.edge-table thead th {
+  background: var(--green-light);
+  color: var(--green-dark);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 700;
+}
+.edge-table tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.edge-table tbody tr:hover {
+  background: #fafafa;
+}
+
+/* ========== UNDECIDED ITEMS ========== */
+.undecided-card {
+  background: var(--orange-light);
+  border: 1px solid #FFB74D;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.undecided-card .code {
+  font-weight: 800;
+  color: var(--orange);
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.undecided-card .desc {
+  font-size: 13px;
+  color: var(--text);
+}
+.undecided-card .note {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  font-style: italic;
+}
+
+/* ========== SUB-SECTION ========== */
+.sub-section {
+  margin: 24px 0;
+}
+.sub-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 12px;
+  padding-left: 12px;
+  border-left: 4px solid var(--green);
+}
+
+/* ========== GRIDS ========== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* ========== NOTIFICATION TABLE ========== */
+.notif-timeline {
+  position: relative;
+  padding-left: 32px;
+  margin: 16px 0;
+}
+.notif-timeline::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--green-light);
+}
+.notif-item {
+  position: relative;
+  margin-bottom: 16px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.notif-item::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px var(--green);
+}
+.notif-item .timing {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--green-dark);
+  margin-bottom: 4px;
+}
+.notif-item .detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ========== ADMIN SPEC ========== */
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+.admin-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.admin-card h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-dark);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--green-light);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-card ul {
+  list-style: none;
+  padding: 0;
+}
+.admin-card li {
+  padding: 5px 0;
+  font-size: 13px;
+  padding-left: 16px;
+  position: relative;
+}
+.admin-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--green);
+}
+
+/* ========== FOOTER ========== */
+.footer {
+  background: var(--green-dark);
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+  padding: 24px;
+  font-size: 12px;
+}
+.footer strong {
+  color: white;
+}
+
+/* ========== UTILITY ========== */
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.text-sm { font-size: 12px; }
+.text-muted { color: var(--text-secondary); }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.tag-inline {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.tag-new { background: var(--red-light); color: var(--red); border: 1px dashed var(--red); }
+.tag-change { background: var(--blue-light); color: var(--blue); }
+.tag-reuse { background: var(--green-light); color: var(--green-accent); }
+
+/* ========== PRINT STYLES ========== */
+@media print {
+  .nav, .highlight-toggle-bar { display: none !important; }
+  body { background: white; font-size: 11px; }
+  .header { background: #388E3C !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 30px 20px 24px; }
+  .card, .summary-card, .screen-card, .scope-card, .admin-card {
+    box-shadow: none !important;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+  .container { padding: 0 16px 20px; }
+  .section { padding-top: 24px; }
+  .comparison-table thead th {
+    background: #388E3C !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .code-block {
+    background: #f5f5f5 !important;
+    color: #333 !important;
+    border: 1px solid #ccc;
+  }
+  .code-block .comment { color: #6A9955; }
+  .code-block .keyword { color: #0000FF; }
+  .code-block .type { color: #267F99; }
+  .code-block .string { color: #A31515; }
+  .code-block .field { color: #001080; }
+  .code-block .new-field { color: #795E26; background: #FFF9C4; }
+  .footer { background: #388E3C !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: var(--text) !important; text-decoration: none !important; }
+  .scope-card .scope-header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .badge-new, .badge-change, .badge-reuse, .badge-unnecessary {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .header h1 { font-size: 24px; }
+  .section-title { font-size: 18px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .screen-flow { grid-template-columns: 1fr; }
+  .scope-grid { grid-template-columns: 1fr; }
+  .admin-grid { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .spec-table td:first-child { width: 120px; }
+  .container { padding: 0 12px 40px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<div class="header">
+  <h1>スタディGO 期間パス 企画書</h1>
+  <p class="subtitle">新機能提案 - 固定期間利用プランの導入</p>
+  <div class="badge">2026年2月 企画書 v1.0 ｜ 全項目確定済み</div>
+</div>
+
+<!-- ==================== NAVIGATION ==================== -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a href="#summary" class="nav-item" data-section="summary">エグゼクティブサマリー</a>
+    <a href="#overview" class="nav-item" data-section="overview">機能概要</a>
+    <a href="#comparison" class="nav-item" data-section="comparison">月額プランとの比較</a>
+    <a href="#app-spec" class="nav-item" data-section="app-spec">アプリ仕様</a>
+    <a href="#admin-spec" class="nav-item" data-section="admin-spec">管理画面仕様</a>
+    <a href="#tech-spec" class="nav-item" data-section="tech-spec">技術仕様</a>
+    <a href="#scope" class="nav-item" data-section="scope">実装スコープ</a>
+    <a href="#edge-cases" class="nav-item" data-section="edge-cases">エッジケース</a>
+    <a href="#undecided" class="nav-item" data-section="undecided">未決定事項</a>
+  </div>
+</nav>
+
+<!-- ==================== HIGHLIGHT TOGGLE ==================== -->
+<div class="highlight-toggle-bar">
+  <button id="highlightToggle" onclick="toggleHighlight()">変更点ハイライト ON</button>
+  <span>月額プランとの差異をカラーで表示: <span class="badge-new" style="font-size:10px;">新規</span> <span class="badge-change" style="font-size:10px;">変更</span> <span class="badge-reuse" style="font-size:10px;">流用</span> <span class="badge-unnecessary" style="font-size:10px;">不要</span></span>
+</div>
+
+<div class="container">
+
+<!-- ==================== 1. EXECUTIVE SUMMARY ==================== -->
+<section class="section" id="summary">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">1</span> エグゼクティブサマリー</h2>
+  <p class="section-desc">期間パス機能の全体像を4つの観点から整理します。</p>
+
+  <div class="summary-grid">
+    <div class="summary-card what">
+      <div class="label">WHAT - 何を作るか</div>
+      <div class="content">
+        <strong>固定期間の買い切りプラン</strong><br>
+        店舗が任意の日数を設定可能（7日、14日、30日など自由に設定）。期間内は使い放題で、営業時間内なら回数・時間制限なし。
+      </div>
+    </div>
+    <div class="summary-card why">
+      <div class="label">WHY - なぜ必要か</div>
+      <div class="content">
+        <strong>月額契約のハードルが高いユーザー向けの中間オプション</strong><br>
+        ドロップインと月額の間を埋める選択肢を提供。お試し利用や短期集中利用のニーズに対応。
+      </div>
+    </div>
+    <div class="summary-card how">
+      <div class="label">HOW - どう実現するか</div>
+      <div class="content">
+        <strong>一括前払い（Stripe PaymentIntent）</strong><br>
+        自動更新なし、期間満了で自動終了。Subscriptionを使わないシンプルな決済フロー。
+      </div>
+    </div>
+    <div class="summary-card impact">
+      <div class="label">IMPACT - 期待効果</div>
+      <div class="content">
+        <strong>新規ユーザー獲得の促進</strong><br>
+        ドロップインから月額への橋渡し。短期集中利用層の取り込み。契約ハードルの段階的な低減。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. FEATURE OVERVIEW ==================== -->
+<section class="section" id="overview">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">2</span> 機能概要</h2>
+  <p class="section-desc">期間パスの全仕様を「基本仕様」「料金・決済」「契約ルール」「通知ルール」の4カテゴリに分けて定義します。</p>
+
+  <!-- 基本仕様 -->
+  <div class="card card-accent-green hl-new">
+    <h3>基本仕様</h3>
+    <table class="spec-table">
+      <tr><td>プランタイプ</td><td>planType = 4 (PERIOD_PASS) <span class="tag-inline tag-new">新規</span></td></tr>
+      <tr><td>期間設定</td><td>店舗が任意の日数を設定可能（7日、14日、30日など自由に設定）</td></tr>
+      <tr><td>期間計算</td><td>暦日ベース（カレンダー日数）</td></tr>
+      <tr><td>利用制限</td><td>期間内使い放題（営業時間内なら回数・時間制限なし）</td></tr>
+      <tr><td>時間制限</td><td>現時点では無し。将来的に時間制限プランも検討</td></tr>
+      <tr><td>課金方式</td><td>一括前払い・買い切り（Stripe PaymentIntent） <span class="tag-inline tag-new">新規</span></td></tr>
+      <tr><td>自動更新</td><td>なし（期間満了で自動終了）</td></tr>
+      <tr><td>対象店舗</td><td>購入した店舗のみ</td></tr>
+    </table>
+  </div>
+
+  <!-- 料金・決済 -->
+  <div class="card card-accent-blue hl-change">
+    <h3>料金・決済</h3>
+    <table class="spec-table">
+      <tr><td>料金設定</td><td>店舗が税込価格を設定（既存priceフィールドを流用） <span class="tag-inline tag-reuse">流用</span></td></tr>
+      <tr><td>価格表示</td><td>税込を大きく表示（全画面統一）</td></tr>
+      <tr><td>日割り表示</td><td>税込価格 &divide; 日数</td></tr>
+      <tr><td>「○%お得」表示</td><td>表示しない</td></tr>
+      <tr><td>3Dセキュア</td><td>あり（既存実装を流用） <span class="tag-inline tag-reuse">流用</span></td></tr>
+      <tr><td>手数料率</td><td>期間パス専用手数料率を新設（デフォルトは月額と同じ） <span class="tag-inline tag-new">新規</span></td></tr>
+      <tr><td>精算タイミング</td><td>月次精算（月額と同じ）</td></tr>
+      <tr><td>売上計上</td><td>購入日に全額計上</td></tr>
+      <tr><td>領収書</td><td>発行する（既存機能に統合） <span class="tag-inline tag-reuse">流用</span></td></tr>
+      <tr><td>年齢割引</td><td>適用する <span class="tag-inline tag-reuse">流用</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 契約ルール -->
+  <div class="card card-accent-green hl-change">
+    <h3>契約ルール</h3>
+    <table class="spec-table">
+      <tr><td>開始日選択</td><td>本日から7日以内（定休日も選択可、今日がデフォルト）</td></tr>
+      <tr><td>終了時刻</td><td>終了日の営業時間終了まで利用可能</td></tr>
+      <tr><td>月額との同時契約</td><td>完全に自由（同一店舗でも両方可）</td></tr>
+      <tr><td>同一店舗重複</td><td>期間パス同士の重複は不可</td></tr>
+      <tr><td>複数店舗同時保有</td><td>許可する</td></tr>
+      <tr><td>契約上限</td><td>MAXIMUM_CONTRACT（2店舗制限）に含めない <span class="tag-inline tag-change">変更</span></td></tr>
+      <tr><td>連続購入制限</td><td>制限なし</td></tr>
+      <tr><td>延長時の別期間選択</td><td>可能</td></tr>
+      <tr><td>延長時クーポン</td><td>使える</td></tr>
+      <tr><td>中途解約・返金</td><td>なし（買い切り）</td></tr>
+      <tr><td>休会</td><td>なし</td></tr>
+      <tr><td>契約申請/承認制</td><td>不要（将来対応）</td></tr>
+      <tr><td>Akerun権限</td><td>月額と同じ解錠権限（期間連動で付与・削除） <span class="tag-inline tag-change">変更</span></td></tr>
+    </table>
+  </div>
+
+  <!-- 通知ルール -->
+  <div class="card card-accent-orange hl-new">
+    <h3>通知ルール</h3>
+    <table class="spec-table">
+      <tr><td>通知タイミング</td><td>残り3日前 / 残り1日前 / 期限切れ当日 / 購入完了時</td></tr>
+      <tr><td>通知手段</td><td>プッシュ通知 + HTMLメール</td></tr>
+      <tr><td>送信時刻</td><td>朝9:00</td></tr>
+      <tr><td>オプトアウト</td><td>不可（常に通知）</td></tr>
+      <tr><td>「延長する」遷移先</td><td>延長専用画面（簡略フロー）</td></tr>
+    </table>
+
+    <h4>通知タイムライン</h4>
+    <div class="notif-timeline">
+      <div class="notif-item">
+        <div class="timing">購入完了時</div>
+        <div class="detail">プッシュ通知 + HTMLメール &#8212; 購入確認、利用開始日、利用方法の案内</div>
+      </div>
+      <div class="notif-item">
+        <div class="timing">残り3日前（朝9:00）</div>
+        <div class="detail">プッシュ通知 + HTMLメール &#8212; 期限間近の案内、延長ボタン表示</div>
+      </div>
+      <div class="notif-item">
+        <div class="timing">残り1日前（朝9:00）</div>
+        <div class="detail">プッシュ通知 + HTMLメール &#8212; 明日で期限切れ、延長促進</div>
+      </div>
+      <div class="notif-item">
+        <div class="timing">期限切れ当日（朝9:00）</div>
+        <div class="detail">プッシュ通知 + HTMLメール &#8212; 期限切れ通知、再購入/月額への案内</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 3. COMPARISON TABLE ==================== -->
+<section class="section" id="comparison">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">3</span> 月額プランとの比較</h2>
+  <p class="section-desc">月額プランとの差異を一覧化し、開発方針（新規/変更/流用/不要）を明確にします。</p>
+
+  <div class="comparison-wrapper">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th style="width:18%;">項目</th>
+          <th style="width:28%;">月額プラン</th>
+          <th style="width:28%;">期間パス</th>
+          <th style="width:12%;">差異</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hl-new">
+          <td>planType</td>
+          <td>1 (MONTHLY)</td>
+          <td>4 (PERIOD_PASS)</td>
+          <td><span class="badge-new">新規</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>決済方式</td>
+          <td>Stripe Subscription（毎月自動更新）</td>
+          <td>Stripe PaymentIntent（一括）</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>期間</td>
+          <td>月単位（15日更新サイクル）</td>
+          <td>店舗が任意の日数を設定</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-reuse">
+          <td>料金フィールド</td>
+          <td>price（税込）</td>
+          <td>price（税込）※同じフィールドを流用</td>
+          <td><span class="badge-reuse">流用</span></td>
+        </tr>
+        <tr class="hl-unnecessary">
+          <td>入会金</td>
+          <td>withInitialFee</td>
+          <td>不要</td>
+          <td><span class="badge-unnecessary">不要</span></td>
+        </tr>
+        <tr class="hl-unnecessary">
+          <td>パック割引</td>
+          <td>packageDuration/Rate</td>
+          <td>不要</td>
+          <td><span class="badge-unnecessary">不要</span></td>
+        </tr>
+        <tr class="hl-reuse">
+          <td>年齢割引</td>
+          <td>ageDiscountAge/Rate</td>
+          <td>適用</td>
+          <td><span class="badge-reuse">流用</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>自動更新</td>
+          <td>あり（15日）</td>
+          <td>なし</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-unnecessary">
+          <td>解約/休会</td>
+          <td>あり（3画面フロー）</td>
+          <td>なし（買い切り）</td>
+          <td><span class="badge-unnecessary">不要</span></td>
+        </tr>
+        <tr class="hl-unnecessary">
+          <td>承認制</td>
+          <td>requiresApprovalForContract</td>
+          <td>不要（将来対応）</td>
+          <td><span class="badge-unnecessary">不要</span></td>
+        </tr>
+        <tr class="hl-unnecessary">
+          <td>Stripe Webhook</td>
+          <td>invoice/subscription系</td>
+          <td>不要</td>
+          <td><span class="badge-unnecessary">不要</span></td>
+        </tr>
+        <tr class="hl-new">
+          <td>バッチ処理</td>
+          <td>renewMonthlyContracts（15日）</td>
+          <td>期限管理バッチ（毎日0:00）</td>
+          <td><span class="badge-new">新規</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>契約上限</td>
+          <td>MAXIMUM_CONTRACT(2)に含む</td>
+          <td>含めない</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>チェックイン</td>
+          <td>月額優先</td>
+          <td>期間パス優先</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>オプション</td>
+          <td>入会金+パック+年齢割引</td>
+          <td>年齢割引のみ</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+        <tr class="hl-reuse">
+          <td>クーポン</td>
+          <td>対応</td>
+          <td>対応（流用）</td>
+          <td><span class="badge-reuse">流用</span></td>
+        </tr>
+        <tr class="hl-change">
+          <td>Akerun</td>
+          <td>契約中常時</td>
+          <td>期間連動で付与・削除</td>
+          <td><span class="badge-change">変更</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="badge-new">新規</span> 新しく開発が必要</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="badge-change">変更</span> 既存ロジックの変更が必要</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="badge-reuse">流用</span> 既存をそのまま利用可能</div>
+    <div style="display:flex; align-items:center; gap:6px; font-size:12px;"><span class="badge-unnecessary">不要</span> 期間パスでは実装不要</div>
+  </div>
+</section>
+
+<!-- ==================== 4. APP SPECIFICATIONS ==================== -->
+<section class="section" id="app-spec">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">4</span> アプリ仕様</h2>
+  <p class="section-desc">ユーザー向けアプリの画面設計と挙動を定義します。</p>
+
+  <!-- 4.1 店舗詳細 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.1 店舗詳細 - 期間パスタブ</h3>
+    <div class="card hl-change">
+      <table class="spec-table">
+        <tr><td>タブ並び</td><td>月額プラン &rarr; 期間パス &rarr; ドロップイン</td></tr>
+        <tr><td>非提供店舗</td><td>タブ自体を非表示</td></tr>
+        <tr><td>判定方法</td><td>ShopPlanの有無で判定（planType=4のShopPlanが存在するかチェック）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4.2 購入フロー -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.2 購入フロー - 4画面構成 <span class="tag-inline tag-new">新規</span></h3>
+    <div class="screen-flow">
+      <div class="screen-card hl-new">
+        <div class="screen-header">
+          <span class="step-num">1</span>
+          パス選択 + クーポン入力
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>期間パスカードを一覧表示</li>
+            <li>日割り表示あり（税込価格 &divide; 日数）</li>
+            <li>クーポンコード入力フィールド</li>
+            <li>年齢割引の自動適用</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen-card hl-new">
+        <div class="screen-header">
+          <span class="step-num">2</span>
+          開始日選択
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>本日から7日以内のカレンダー表示</li>
+            <li>定休日も選択可能</li>
+            <li>今日がデフォルト選択</li>
+            <li>終了日を自動計算して表示</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen-card hl-new">
+        <div class="screen-header">
+          <span class="step-num">3</span>
+          確認 + クーポン + 3DS決済
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>料金明細（年齢割引・クーポン適用後）</li>
+            <li>「キャンセル不可に同意」チェック必須</li>
+            <li>カード未登録時はカード登録フローに遷移</li>
+            <li>3Dセキュア認証（既存流用）</li>
+          </ul>
+        </div>
+      </div>
+      <div class="screen-card hl-new">
+        <div class="screen-header">
+          <span class="step-num">4</span>
+          完了
+        </div>
+        <div class="screen-body">
+          <ul>
+            <li>チェックインボタン（即日開始のみ表示）</li>
+            <li>利用方法ガイド（初回のみ）</li>
+            <li>開始日・終了日の確認表示</li>
+            <li>マイページへの遷移ボタン</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.3 マイページ -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.3 マイページ <span class="tag-inline tag-change">変更</span></h3>
+    <div class="grid-2">
+      <div class="card hl-new">
+        <h3>期間パスカード表示</h3>
+        <table class="spec-table">
+          <tr><td>配置</td><td>月額カードと上下に並べて表示</td></tr>
+          <tr><td>残り日数表示</td><td>常時表示（カウントダウン）</td></tr>
+          <tr><td>延長ボタン</td><td>残り7日を切ったら表示</td></tr>
+          <tr><td>警告色（オレンジ）</td><td>残り3日を切ったら適用</td></tr>
+          <tr><td>警告色（赤）</td><td>残り1日を切ったら適用</td></tr>
+        </table>
+      </div>
+      <div class="card hl-change">
+        <h3>期限切れ後の挙動</h3>
+        <table class="spec-table">
+          <tr><td>期限切れバッジ</td><td>7日間「期限切れ」バッジを表示</td></tr>
+          <tr><td>7日経過後</td><td>カードを非表示</td></tr>
+          <tr><td>再購入導線</td><td>期限切れバッジ内にリンク設置</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.4 チェックイン -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.4 チェックイン <span class="tag-inline tag-change">変更</span></h3>
+    <div class="card hl-change">
+      <table class="spec-table">
+        <tr><td>月額+期間パス同時</td><td>期間パスを優先してチェックイン</td></tr>
+        <tr><td>期限切れ後</td><td>「期限切れ」画面を表示 + 3択（再購入 / ドロップイン / 月額申込）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4.5 ホーム画面 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.5 ホーム画面 <span class="tag-inline tag-change">変更</span></h3>
+    <div class="card hl-change">
+      <table class="spec-table">
+        <tr><td>警告バナー</td><td>期限間近の場合のみ表示（残り3日以内）</td></tr>
+        <tr><td>バナー内容</td><td>残り日数 + 延長ボタンへの導線</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4.6 その他の画面 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">4.6 その他の画面対応</h3>
+    <div class="grid-2">
+      <div class="card hl-change">
+        <h3>利用履歴</h3>
+        <p style="font-size:13px;">通常履歴に「期間パス利用」ラベル付きで混在表示。フィルタリングは不要。</p>
+      </div>
+      <div class="card hl-reuse">
+        <h3>領収書</h3>
+        <p style="font-size:13px;">発行する（既存機能に統合）。期間パス購入の領収書を一覧に追加。</p>
+      </div>
+      <div class="card">
+        <h3>お知らせ</h3>
+        <p style="font-size:13px;">フィルタなし（時系列で混在表示）。期間パス関連通知は既存のお知らせ一覧に統合。</p>
+      </div>
+      <div class="card hl-new">
+        <h3>店舗検索</h3>
+        <p style="font-size:13px;">「期間パス対応」フィルタを追加。planType=4のShopPlanが存在する店舗を抽出。</p>
+      </div>
+      <div class="card hl-change">
+        <h3>契約上限</h3>
+        <p style="font-size:13px;">MAXIMUM_CONTRACT（2店舗制限）に含めない。月額2店舗契約中でも期間パスは購入可能。</p>
+      </div>
+      <div class="card hl-reuse">
+        <h3>カード / 3DS</h3>
+        <p style="font-size:13px;">既存のカード登録・3Dセキュア認証フローをそのまま流用。</p>
+      </div>
+      <div class="card hl-change">
+        <h3>延長フロー</h3>
+        <p style="font-size:13px;">新規購入と同じ4画面フロー。別期間の選択可、クーポン利用可。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. ADMIN PANEL SPECIFICATIONS ==================== -->
+<section class="section" id="admin-spec">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">5</span> 管理画面仕様</h2>
+  <p class="section-desc">本部管理画面と加盟法人管理画面それぞれの対応範囲を定義します。</p>
+
+  <!-- 5.1 本部管理画面 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">5.1 本部管理画面（HQ Admin）</h3>
+    <div class="admin-grid">
+      <div class="admin-card hl-new">
+        <h4>プラン作成 <span class="tag-inline tag-new">新規</span></h4>
+        <ul>
+          <li>月額と同様の入力項目を持つフォーム</li>
+          <li>name（プラン名）</li>
+          <li>subTitle（サブタイトル）</li>
+          <li>categoryTitle（カテゴリ名）</li>
+          <li>code（プランコード）</li>
+          <li>price（税込価格）</li>
+          <li>durationDays（期間日数）</li>
+          <li>ageDiscountAge / ageDiscountRate</li>
+          <li>isActive（有効/無効）</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-new">
+        <h4>プラン一覧 <span class="tag-inline tag-new">新規</span></h4>
+        <ul>
+          <li>期間パス専用の一覧画面を新設</li>
+          <li>プラン名、期間、価格、ステータス表示</li>
+          <li>有効/無効の切替機能</li>
+          <li>編集・詳細表示リンク</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-new">
+        <h4>契約一覧 <span class="tag-inline tag-new">新規</span></h4>
+        <ul>
+          <li>期間パス契約一覧を新設</li>
+          <li>ステータス（pending/active/expired）</li>
+          <li>期間（開始日〜終了日）</li>
+          <li>ユーザー情報、店舗情報</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-change">
+        <h4>手数料率設定 <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>periodPassCommissionRate入力フィールド追加</li>
+          <li>デフォルト値は月額と同じ手数料率</li>
+          <li>加盟法人ごとに個別設定可能</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-change">
+        <h4>店舗管理 <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>期間パスプランの公開/非公開切替</li>
+          <li>既存UIに統合して追加</li>
+          <li>プランの紐付け管理</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-change">
+        <h4>ユーザー詳細 <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>期間パス契約情報を既存セクションに統合</li>
+          <li>契約履歴の表示追加</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-change">
+        <h4>チェックイン実績 <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>期間パス利用を既存一覧に統合</li>
+          <li>利用タイプのフィルタに追加</li>
+        </ul>
+      </div>
+      <div class="admin-card">
+        <h4>権限ルール</h4>
+        <ul>
+          <li>プラン作成・編集は本部のみ</li>
+          <li>加盟法人は有効/無効の切替のみ</li>
+          <li>価格変更は新プラン作成 &rarr; 旧プラン終了の運用</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5.2 加盟法人管理画面 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">5.2 加盟法人管理画面（Alliance Admin）</h3>
+    <div class="admin-grid">
+      <div class="admin-card hl-change">
+        <h4>ダッシュボード <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>期間パス専用セクションを追加</li>
+          <li>アクティブ契約数の表示</li>
+          <li>売上概要の統合表示</li>
+        </ul>
+      </div>
+      <div class="admin-card">
+        <h4>契約申込承認</h4>
+        <ul>
+          <li>不要（期間パスは承認制なし）</li>
+          <li>将来的に対応を検討</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-new">
+        <h4>契約一覧 <span class="tag-inline tag-new">新規</span></h4>
+        <ul>
+          <li>閲覧のみ（編集不可）</li>
+          <li>ステータス・期間・ユーザー情報表示</li>
+          <li>フィルタ・検索機能</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-reuse">
+        <h4>支払い実績 <span class="tag-inline tag-reuse">流用</span></h4>
+        <ul>
+          <li>既存精算フローに統合</li>
+          <li>期間パス売上を月次精算に含む</li>
+        </ul>
+      </div>
+      <div class="admin-card hl-change">
+        <h4>店舗管理 <span class="tag-inline tag-change">変更</span></h4>
+        <ul>
+          <li>期間パスプランのテーブル追加</li>
+          <li>有効/無効の切替操作</li>
+          <li>プラン詳細の閲覧</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. TECHNICAL SPECIFICATIONS ==================== -->
+<section class="section" id="tech-spec">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">6</span> 技術仕様</h2>
+  <p class="section-desc">DB設計、Stripe決済、バッチ処理、Akerun連携、クーポン対応の技術詳細を定義します。</p>
+
+  <!-- 6.1 DB設計 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">6.1 DB設計（Prismaスキーマ）</h3>
+
+    <div class="card hl-new">
+      <h3>ShopPlan モデル</h3>
+      <div class="code-block"><span class="keyword">model</span> <span class="type">ShopPlan</span> {
+  <span class="comment">// 既存フィールド</span>
+  <span class="field">planType</span>          <span class="type">Int</span>       <span class="comment">// 1:月額, 2:ドロップイン, 3:デフォルト, <span class="new-field">4:期間パス(新規)</span></span>
+  <span class="field">name</span>              <span class="type">String</span>    <span class="comment">// 流用</span>
+  <span class="field">subTitle</span>          <span class="type">String?</span>   <span class="comment">// 流用</span>
+  <span class="field">categoryTitle</span>     <span class="type">String?</span>   <span class="comment">// 流用</span>
+  <span class="field">code</span>              <span class="type">String</span>    <span class="comment">// 流用</span>
+  <span class="field">price</span>             <span class="type">Int</span>       <span class="comment">// 流用（税込価格を格納）</span>
+  <span class="new-field">durationDays</span>      <span class="type">Int?</span>      <span class="comment">// 新規: 期間日数（店舗が任意設定）</span>
+  <span class="field">ageDiscountAge</span>    <span class="type">Int?</span>      <span class="comment">// 流用: 年齢割引対象年齢</span>
+  <span class="field">ageDiscountRate</span>   <span class="type">Int?</span>      <span class="comment">// 流用: 年齢割引率</span>
+  <span class="field">isActive</span>          <span class="type">Boolean</span>   <span class="comment">// 流用</span>
+
+  <span class="comment">// 期間パスでは不要</span>
+  <span class="unnecessary">// maxMinutes - 将来的に検討</span>
+  <span class="unnecessary">// withInitialFee - 不要</span>
+  <span class="unnecessary">// packageDuration - 不要</span>
+  <span class="unnecessary">// packageDiscountRate - 不要</span>
+}</div>
+    </div>
+
+    <div class="card hl-new">
+      <h3>ShopContract モデル</h3>
+      <div class="code-block"><span class="keyword">model</span> <span class="type">ShopContract</span> {
+  <span class="comment">// 既存フィールド流用</span>
+  <span class="field">paymentType</span>           <span class="type">String?</span>   <span class="comment">// <span class="new-field">"period_pass" 追加</span></span>
+
+  <span class="comment">// 期間パス専用（新規）</span>
+  <span class="new-field">periodPassStartDate</span>   <span class="type">DateTime?</span> <span class="comment">// 開始日</span>
+  <span class="new-field">periodPassEndDate</span>     <span class="type">DateTime?</span> <span class="comment">// 終了日</span>
+  <span class="new-field">periodPassStatus</span>      <span class="type">String?</span>   <span class="comment">// "pending" | "active" | "expired"</span>
+
+  <span class="comment">// 期間パスでは不要</span>
+  <span class="unnecessary">// stripeSubscriptionId</span>
+  <span class="unnecessary">// stripeScheduleId</span>
+  <span class="unnecessary">// subscriptionStatus</span>
+  <span class="unnecessary">// statusAsResigningUser</span>
+  <span class="unnecessary">// isConfirmedAsResigningUser</span>
+}</div>
+    </div>
+
+    <div class="card hl-new">
+      <h3>Company モデル</h3>
+      <div class="code-block"><span class="keyword">model</span> <span class="type">Company</span> {
+  <span class="comment">// 新規追加</span>
+  <span class="new-field">periodPassCommissionRate</span>  <span class="type">Int?</span>  <span class="comment">// 期間パス手数料率（デフォルト=月額と同じ）</span>
+}</div>
+    </div>
+
+    <div class="card card-accent-blue">
+      <h3>バリデーションルール</h3>
+      <table class="spec-table">
+        <tr><td>重複チェック</td><td>同一店舗で期間パスの重複契約は不可（planType別にバリデーション）</td></tr>
+        <tr><td>月額との共存</td><td>月額 + 期間パスの同時契約は可</td></tr>
+        <tr><td>契約上限</td><td>MAXIMUM_CONTRACT（2店舗制限）には含めない</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 6.2 Stripe・決済 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">6.2 Stripe・決済</h3>
+    <div class="card card-accent-green hl-change">
+      <table class="spec-table">
+        <tr><td>決済方式</td><td>PaymentIntent（一括払い）のみ <span class="tag-inline tag-new">新規</span></td></tr>
+        <tr><td>Stripe Subscription</td><td>不要（使用しない）</td></tr>
+        <tr><td>Webhook</td><td>invoice/subscription系イベントは不要</td></tr>
+        <tr><td>3Dセキュア</td><td>既存実装を流用 <span class="tag-inline tag-reuse">流用</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 6.3 バッチ処理 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">6.3 バッチ処理</h3>
+    <div class="grid-2">
+      <div class="card card-accent-red hl-new">
+        <h3>期限管理バッチ（新規） - 毎日 0:00</h3>
+        <table class="spec-table">
+          <tr><td>pending &rarr; active</td><td>開始日到来時にステータスを変更</td></tr>
+          <tr><td>active &rarr; expired</td><td>終了日到来時にステータスを変更 + Akerun権限削除</td></tr>
+        </table>
+      </div>
+      <div class="card card-accent-red hl-new">
+        <h3>通知バッチ（新規）</h3>
+        <table class="spec-table">
+          <tr><td>残り3日前</td><td>プッシュ通知 + HTMLメール</td></tr>
+          <tr><td>残り1日前</td><td>プッシュ通知 + HTMLメール</td></tr>
+          <tr><td>期限切れ当日</td><td>プッシュ通知 + HTMLメール</td></tr>
+          <tr><td>送信時刻</td><td>朝 9:00</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <h3>月額用バッチとの関係</h3>
+      <p style="font-size:13px; color: var(--text-secondary);">renewMonthlyContracts（15日サイクル）は期間パスでは不要。期間パスは独立した期限管理バッチで処理する。</p>
+    </div>
+  </div>
+
+  <!-- 6.4 Akerun連携 -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">6.4 Akerun連携 <span class="tag-inline tag-change">変更</span></h3>
+    <div class="card card-accent-blue hl-change">
+      <table class="spec-table">
+        <tr><td>権限付与</td><td>期間連動で解錠権限を付与（開始日に付与）</td></tr>
+        <tr><td>権限削除</td><td>期間終了時に削除（ただし月額契約の有無を確認してから）</td></tr>
+        <tr><td>注意事項</td><td>期間パス終了時に月額契約がある場合は権限を維持</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 6.5 クーポン・支払い -->
+  <div class="sub-section">
+    <h3 class="sub-section-title">6.5 クーポン・支払い <span class="tag-inline tag-reuse">流用</span></h3>
+    <div class="card card-accent-green hl-reuse">
+      <table class="spec-table">
+        <tr><td>クーポン</td><td>既存システムを流用（変更不要）</td></tr>
+        <tr><td>支払い/精算テーブル</td><td>流用（reasonフィールドに期間パス用の値を追加のみ）</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7. IMPLEMENTATION SCOPE ==================== -->
+<section class="section" id="scope">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">7</span> 実装スコープ</h2>
+  <p class="section-desc">全実装項目を新規・変更・流用・不要に分類し、開発範囲を明確化します。</p>
+
+  <div class="scope-grid">
+    <!-- 新規開発 -->
+    <div class="scope-card new">
+      <div class="scope-header">
+        新規開発
+        <span class="scope-count">15項目</span>
+      </div>
+      <div class="scope-body">
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:8px;">DB</strong>
+        <ul>
+          <li>planType = 4（PERIOD_PASS）</li>
+          <li>durationDays フィールド</li>
+          <li>periodPassStartDate / EndDate / Status</li>
+          <li>periodPassCommissionRate</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">Stripe</strong>
+        <ul>
+          <li>PaymentIntent 決済フロー</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">バッチ</strong>
+        <ul>
+          <li>期限管理バッチ（毎日0:00）</li>
+          <li>通知バッチ（3日前/1日前/当日）</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">管理画面</strong>
+        <ul>
+          <li>プラン作成フォーム</li>
+          <li>プラン一覧画面</li>
+          <li>契約一覧画面（本部）</li>
+          <li>加盟法人契約一覧</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">アプリ</strong>
+        <ul>
+          <li>期間パスタブ</li>
+          <li>購入4画面フロー</li>
+          <li>マイページカード</li>
+          <li>期限切れ画面</li>
+          <li>検索フィルタ</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 変更 -->
+    <div class="scope-card change">
+      <div class="scope-header">
+        変更（既存改修）
+        <span class="scope-count">14項目</span>
+      </div>
+      <div class="scope-body">
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:8px;">DB</strong>
+        <ul>
+          <li>paymentType に "period_pass" 追加</li>
+          <li>バリデーション変更（重複チェック等）</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">管理画面</strong>
+        <ul>
+          <li>手数料率設定フィールド追加</li>
+          <li>店舗管理（プラン切替UI統合）</li>
+          <li>ユーザー詳細（契約情報統合）</li>
+          <li>チェックイン実績（タイプ追加）</li>
+          <li>ダッシュボード（セクション追加）</li>
+        </ul>
+        <strong style="font-size:12px; color:var(--text-secondary); display:block; margin: 12px 0 8px;">アプリ</strong>
+        <ul>
+          <li>チェックイン優先判定ロジック</li>
+          <li>ホーム画面（警告バナー）</li>
+          <li>利用履歴（ラベル追加）</li>
+          <li>契約上限制御ロジック</li>
+          <li>Akerun権限制御</li>
+          <li>店舗詳細タブ構成</li>
+          <li>加盟法人 店舗管理</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 流用 -->
+    <div class="scope-card reuse">
+      <div class="scope-header">
+        流用（変更なし）
+        <span class="scope-count">5項目</span>
+      </div>
+      <div class="scope-body">
+        <ul>
+          <li>支払い / 精算テーブル</li>
+          <li>クーポンシステム</li>
+          <li>カード登録 / 3DS決済フロー</li>
+          <li>年齢割引ロジック</li>
+          <li>領収書発行機能</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 不要 -->
+    <div class="scope-card unnecessary">
+      <div class="scope-header">
+        不要（実装しない）
+        <span class="scope-count">13項目</span>
+      </div>
+      <div class="scope-body">
+        <ul>
+          <li>Stripe Subscription 連携</li>
+          <li>Stripe Webhook（invoice系）</li>
+          <li>解約フロー（3画面）</li>
+          <li>休会機能</li>
+          <li>承認制フロー</li>
+          <li>キャンセルキュー</li>
+          <li>入会金処理</li>
+          <li>パック割引計算</li>
+          <li>15日更新サイクル</li>
+          <li>renewMonthlyContracts バッチ</li>
+          <li>Stripe Schedule 管理</li>
+          <li>subscription系ステータス管理</li>
+          <li>退会予約ユーザー管理</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8. EDGE CASES ==================== -->
+<section class="section" id="edge-cases">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">8</span> エッジケース</h2>
+  <p class="section-desc">想定される特殊ケースとその対応方針を整理します。</p>
+
+  <div class="card">
+    <table class="edge-table">
+      <thead>
+        <tr>
+          <th style="width:28%;">ケース</th>
+          <th>対応方針</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>利用中に終了日到来</td>
+          <td>終了日の閉店（営業時間終了）まで利用可能。チェックイン中に0:00を跨いでも強制退出はしない。</td>
+        </tr>
+        <tr>
+          <td>プラン非公開時</td>
+          <td>購入済みの契約は有効のまま継続。新規購入のみ不可になる。</td>
+        </tr>
+        <tr>
+          <td>臨時休業時</td>
+          <td>期間は延長しない（利用規約に明記）。暦日ベースのため休業日も期間に含む。</td>
+        </tr>
+        <tr>
+          <td>アカウント削除時</td>
+          <td>警告表示して削除を許可（返金なし）。「期間パスの残り期間がありますが、返金はできません」旨を表示。</td>
+        </tr>
+        <tr>
+          <td>複数店舗同時購入</td>
+          <td>許可する。MAXIMUM_CONTRACTに含めないため、月額2店舗 + 期間パス複数の組み合わせも可。</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 9. UNDECIDED ITEMS ==================== -->
+<section class="section" id="undecided">
+  <hr class="section-divider">
+  <h2 class="section-title"><span class="num">9</span> 残り未決定事項</h2>
+  <p class="section-desc">開発進行には影響しない範囲で、後から決定可能な事項をまとめます。</p>
+
+  <div class="undecided-card">
+    <div class="code">U6</div>
+    <div class="desc">「詳細を見る」画面に表示する情報の範囲</div>
+    <div class="note">店舗詳細の期間パスタブから遷移する詳細画面の表示項目。購入フローへの影響はないため、後から決定可能。</div>
+  </div>
+
+  <div class="undecided-card">
+    <div class="code">A2</div>
+    <div class="desc">管理者の契約操作権限（手動失効 / 延長 / 返金 / CSVエクスポート等）</div>
+    <div class="note">管理画面の契約一覧からの操作権限。初期リリースでは閲覧のみとし、運用開始後に必要な操作を追加検討。</div>
+  </div>
+
+  <div class="undecided-card">
+    <div class="code">A5</div>
+    <div class="desc">利用統計ダッシュボードの指標（契約数 / 延長率 / 転換率等）</div>
+    <div class="note">加盟法人向けダッシュボードに表示する統計指標の詳細。データ収集は初期から行い、表示は後から対応可能。</div>
+  </div>
+
+  <div class="card" style="background: var(--green-light); border: 1px solid #A5D6A7; margin-top: 16px;">
+    <p style="font-size:14px; font-weight:700; color: var(--green-dark); margin-bottom:4px;">開発への影響</p>
+    <p style="font-size:13px; color: var(--text-secondary);">上記3項目はいずれも開発進行に影響しません。コア機能の実装を先行し、これらの詳細は開発中または運用開始後に決定可能です。</p>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  <strong>スタディGO 期間パス企画書 v1.0</strong> - 2026年2月24日作成
+</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// Highlight toggle
+function toggleHighlight() {
+  const body = document.body;
+  const btn = document.getElementById('highlightToggle');
+  body.classList.toggle('highlight-mode');
+  if (body.classList.contains('highlight-mode')) {
+    btn.textContent = '変更点ハイライト OFF';
+    btn.classList.add('active-toggle');
+  } else {
+    btn.textContent = '変更点ハイライト ON';
+    btn.classList.remove('active-toggle');
+  }
+}
+
+// Active nav tracking on scroll
+document.addEventListener('DOMContentLoaded', function() {
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  function updateActiveNav() {
+    let current = '';
+    sections.forEach(function(section) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 100) {
+        current = section.getAttribute('id');
+      }
+    });
+    navItems.forEach(function(item) {
+      item.classList.remove('active');
+      if (item.getAttribute('data-section') === current) {
+        item.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveNav);
+  updateActiveNav();
+});
+</script>
+
+</body>
+</html>

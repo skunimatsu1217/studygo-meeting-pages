@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 開発資料</title>
+<style>
+  :root{--blue:#1a73e8;--green:#4CAF50;--purple:#7C3AED;--orange:#FF9800;--text:#333;--text-sub:#757575;--border:#E0E0E0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#1a1a2e;min-height:100vh;color:white;}
+  .header{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:40px 24px 20px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);}
+  .header h1{font-size:28px;margin-bottom:6px;}
+  .header p{font-size:14px;opacity:0.6;}
+  .main{max-width:1000px;margin:0 auto;padding:24px;}
+  .section-title{font-size:18px;font-weight:700;margin:28px 0 14px;padding-left:12px;border-left:4px solid var(--purple);}
+  .section-title:first-child{margin-top:0;}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+  .card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 18px;text-decoration:none;color:white;transition:all 0.2s;display:block;}
+  .card:hover{background:rgba(255,255,255,0.12);border-color:var(--purple);transform:translateY(-2px);}
+  .card .title{font-size:15px;font-weight:700;margin-bottom:4px;}
+  .card .desc{font-size:12px;opacity:0.6;line-height:1.5;}
+  .card .tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;margin-bottom:8px;}
+  .tag.meeting{background:var(--blue);}
+  .tag.spec{background:var(--purple);}
+  .tag.mockup{background:var(--green);}
+  .tag.other{background:var(--orange);}
+  .footer{text-align:center;padding:40px 24px;font-size:12px;opacity:0.3;}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>StudyGO Dev Portal</h1>
+  <p>スタディGO 開発会議資料・仕様書・モックアップ</p>
+</div>
+<div class="main">
+
+  <div class="section-title">会議資料</div>
+  <div class="card-grid">
+    <a class="card" href="meeting-2026-03-03.html">
+      <span class="tag meeting">会議</span>
+      <div class="title">開発会議 2026/03/03</div>
+      <div class="desc">7つの議題（メッセージ分離・履歴分離・短期パス・承認+オプション・一斉送信・会員データ出力・ドロップイン条件表示）</div>
+    </a>
+    <a class="card" href="period-pass-requirements.html">
+      <span class="tag spec">要件定義</span>
+      <div class="title">期間パス 要件定義</div>
+      <div class="desc">日数・料金・ルールを自由に設計できるインタラクティブな要件定義ページ</div>
+    </a>
+    <a class="card" href="decision-form.html">
+      <span class="tag meeting">会議</span>
+      <div class="title">決定事項フォーム</div>
+      <div class="desc">会議の決定事項を入力・管理するフォーム</div>
+    </a>
+    <a class="card" href="review-hub.html">
+      <span class="tag meeting">会議</span>
+      <div class="title">レビューハブ</div>
+      <div class="desc">仕様レビュー・フィードバック集約</div>
+    </a>
+  </div>
+
+  <div class="section-title">期間パス</div>
+  <div class="card-grid">
+    <a class="card" href="mockup-4-period-pass.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">期間パス 仕様モック</div>
+      <div class="desc">期間パスの画面モックアップ・実装仕様</div>
+    </a>
+    <a class="card" href="期間パス_企画書.html">
+      <span class="tag spec">企画書</span>
+      <div class="title">期間パス 企画書</div>
+      <div class="desc">期間パス機能の企画提案書</div>
+    </a>
+    <a class="card" href="期間パス_決定事項まとめ.html">
+      <span class="tag spec">仕様</span>
+      <div class="title">期間パス 決定事項まとめ</div>
+      <div class="desc">決定済み仕様の一覧（39/42項目決定）</div>
+    </a>
+    <a class="card" href="期間パス_未決定事項チェックリスト.html">
+      <span class="tag spec">チェック</span>
+      <div class="title">期間パス 未決定事項チェックリスト</div>
+      <div class="desc">全42項目の決定/未決定チェックリスト</div>
+    </a>
+    <a class="card" href="期間パス_全項目チェックリスト_管理画面含む.html">
+      <span class="tag spec">チェック</span>
+      <div class="title">期間パス 全項目チェックリスト</div>
+      <div class="desc">管理画面を含む全項目チェックリスト</div>
+    </a>
+    <a class="card" href="期間パス_アプリ画面モック.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">期間パス アプリ画面モック</div>
+      <div class="desc">アプリの10画面モックアップ</div>
+    </a>
+    <a class="card" href="期間パス_ユーザー利用フロー.html">
+      <span class="tag spec">フロー</span>
+      <div class="title">期間パス ユーザー利用フロー</div>
+      <div class="desc">お客様の利用フロー図</div>
+    </a>
+  </div>
+
+  <div class="section-title">機能別モックアップ</div>
+  <div class="card-grid">
+    <a class="card" href="mockup-3-1-checkin-note-v2.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">チェックインメッセージ v2</div>
+      <div class="desc">プラン別チェックインメッセージの画面モック</div>
+    </a>
+    <a class="card" href="mockup-3-1-checkin-message.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">チェックインメッセージ v1</div>
+      <div class="desc">チェックインメッセージ初期版</div>
+    </a>
+    <a class="card" href="mockup-3-2-checkin-history-v2.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">チェックイン履歴 v2</div>
+      <div class="desc">プラン別チェックイン履歴の管理画面モック</div>
+    </a>
+    <a class="card" href="mockup-3-2-checkin-history.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">チェックイン履歴 v1</div>
+      <div class="desc">チェックイン履歴初期版</div>
+    </a>
+    <a class="card" href="mockup-3-3-bulk-message-v2.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">一斉メッセージ v2</div>
+      <div class="desc">一斉メッセージ・メール送信の画面モック</div>
+    </a>
+    <a class="card" href="mockup-3-3-bulk-email.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">一斉メール v1</div>
+      <div class="desc">一斉メール送信初期版</div>
+    </a>
+    <a class="card" href="mockup-3-4-member-export-v2.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">会員エクスポート v2</div>
+      <div class="desc">会員データCSVエクスポートの画面モック</div>
+    </a>
+    <a class="card" href="mockup-3-4-member-export.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">会員エクスポート v1</div>
+      <div class="desc">会員エクスポート初期版</div>
+    </a>
+    <a class="card" href="mockup-3-5-auto-checkout.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">自動チェックアウト</div>
+      <div class="desc">自動チェックアウト機能のモック</div>
+    </a>
+    <a class="card" href="mockup-10-approval-option.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">承認制度 + オプション契約</div>
+      <div class="desc">月額プラン承認時のオプション同時申込</div>
+    </a>
+  </div>
+
+  <div class="section-title">クーポン機能</div>
+  <div class="card-grid">
+    <a class="card" href="coupon-proposal.html">
+      <span class="tag spec">企画書</span>
+      <div class="title">クーポン 企画書</div>
+      <div class="desc">クーポン機能の企画提案</div>
+    </a>
+    <a class="card" href="coupon-spec.html">
+      <span class="tag spec">仕様</span>
+      <div class="title">クーポン 仕様書</div>
+      <div class="desc">クーポン機能の詳細仕様</div>
+    </a>
+    <a class="card" href="coupon-design-screens.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">クーポン 画面デザイン</div>
+      <div class="desc">クーポン関連の画面デザイン</div>
+    </a>
+    <a class="card" href="coupon-usage-history-design.html">
+      <span class="tag mockup">モック</span>
+      <div class="title">クーポン 利用履歴</div>
+      <div class="desc">クーポン利用履歴の画面デザイン</div>
+    </a>
+  </div>
+
+  <div class="section-title">その他</div>
+  <div class="card-grid">
+    <a class="card" href="discussion-time-usage.html">
+      <span class="tag other">議論</span>
+      <div class="title">利用時間に関する議論</div>
+      <div class="desc">利用時間の計算・表示に関する検討資料</div>
+    </a>
+  </div>
+
+</div>
+<div class="footer">StudyGO Development Team</div>
+</body>
+</html>

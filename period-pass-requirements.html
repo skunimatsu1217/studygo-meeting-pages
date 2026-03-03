@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期間パス 要件定義 - スタディGO</title>
+<style>
+  :root {
+    --purple:#7C3AED; --purple-light:#F3E8FF;
+    --blue:#1a73e8; --blue-light:#E3F2FD;
+    --green:#4CAF50; --green-light:#E8F5E9;
+    --orange:#FF9800; --orange-light:#FFF3E0;
+    --red:#F44336; --red-light:#FFEBEE;
+    --text:#333; --text-sub:#757575; --border:#E0E0E0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#1a1a2e;min-height:100vh;}
+
+  /* ===== ヘッダー ===== */
+  .top-header{background:linear-gradient(135deg,#4a148c,#7C3AED);color:white;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;top:0;z-index:100;}
+  .top-header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .top-title h1{font-size:20px;margin-bottom:2px;}
+  .top-title .sub{font-size:12px;opacity:0.7;}
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .top-actions button{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-save{background:var(--green);color:white;}
+  .btn-export{background:white;color:var(--purple);}
+  .btn-clear{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)!important;}
+  .save-status{font-size:11px;color:rgba(255,255,255,0.5);}
+
+  /* ===== ナビ ===== */
+  .nav{background:#16213e;padding:0 24px;border-bottom:1px solid rgba(255,255,255,0.1);overflow-x:auto;white-space:nowrap;position:sticky;top:64px;z-index:99;}
+  .nav-inner{max-width:1200px;margin:0 auto;display:flex;gap:0;}
+  .nav-tab{padding:12px 16px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
+  .nav-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+  .nav-tab.active{color:white;border-bottom-color:var(--purple);}
+
+  /* ===== コンテンツ ===== */
+  .main{max-width:1200px;margin:0 auto;padding:24px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* カード */
+  .card{background:white;border-radius:12px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+  .card-header{padding:14px 20px;font-size:15px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .card-header .toggle{margin-left:auto;font-size:12px;opacity:0.7;}
+  .card-body{padding:20px;}
+  .card.collapsed .card-body{display:none;}
+
+  /* 概要 */
+  .intro{background:linear-gradient(135deg,#f8f9fa,#fff);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);}
+  .intro h2{font-size:18px;color:var(--purple);margin-bottom:10px;}
+  .intro p{font-size:14px;color:var(--text);line-height:1.8;}
+  .highlight{color:var(--purple);font-weight:700;}
+
+  /* テーブル */
+  table.spec{width:100%;border-collapse:collapse;font-size:14px;}
+  table.spec th,table.spec td{padding:12px 16px;text-align:left;border-bottom:1px solid #eee;}
+  table.spec th{background:#f8f9fa;font-weight:600;color:var(--text-sub);width:200px;vertical-align:top;}
+  table.spec td{color:var(--text);line-height:1.7;}
+
+  /* 決定事項 */
+  .decision-list{list-style:none;padding:0;}
+  .decision-item{display:flex;align-items:flex-start;gap:10px;padding:14px 0;border-bottom:1px solid #f0f0f0;}
+  .decision-item:last-child{border-bottom:none;}
+  .decision-item select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;min-width:100px;}
+  .decision-item select.decided{border-color:var(--green);background:var(--green-light);}
+  .decision-item select.pending{border-color:var(--orange);background:var(--orange-light);}
+  .decision-item select.rejected{border-color:var(--red);background:var(--red-light);}
+  .decision-item .d-label{font-size:14px;color:var(--text);flex:1;line-height:1.7;}
+  .decision-item .d-note{width:260px;}
+  .decision-item .d-note input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;}
+  .decision-item .d-note input:focus{outline:none;border-color:var(--purple);}
+
+  /* 重要ボックス */
+  .important-box{background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .important-box h4{color:#E65100;font-size:15px;margin-bottom:8px;}
+  .important-box p{font-size:13px;color:var(--text);line-height:1.7;}
+
+  .rethink-box{background:var(--purple-light);border:2px solid var(--purple);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .rethink-box h4{color:var(--purple);font-size:15px;margin-bottom:8px;}
+  .rethink-box p{font-size:13px;color:var(--text);line-height:1.7;}
+
+  /* インライン編集 */
+  .editable{display:inline-block;border-bottom:2px dashed var(--purple);padding:2px 4px;min-width:60px;cursor:text;color:var(--purple);font-weight:700;}
+  .editable:focus{outline:none;background:var(--purple-light);border-bottom-style:solid;}
+  .editable:empty::before{content:attr(data-placeholder);color:#bbb;font-weight:400;}
+
+  /* 日数カスタム入力 */
+  .duration-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:16px 0;}
+  .duration-card{background:white;border:2px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all 0.2s;position:relative;}
+  .duration-card.selected{border-color:var(--purple);background:var(--purple-light);}
+  .duration-card .dur-days{font-size:24px;font-weight:700;color:var(--purple);}
+  .duration-card .dur-label{font-size:12px;color:var(--text-sub);margin-top:2px;}
+  .duration-card .dur-remove{position:absolute;top:6px;right:8px;background:var(--red);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;line-height:20px;display:none;}
+  .duration-card:hover .dur-remove{display:block;}
+  .duration-card.add-new{border-style:dashed;cursor:pointer;color:var(--purple);}
+  .duration-card.add-new:hover{background:var(--purple-light);}
+
+  /* スマホモック */
+  .phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:16px 0;}
+  .phone-wrapper{text-align:center;}
+  .phone-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
+  .phone{width:280px;background:#000;border-radius:32px;border:6px solid #1a1a1a;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+  .phone-notch{width:100px;height:24px;background:#000;border-radius:0 0 14px 14px;margin:0 auto;}
+  .phone-status{display:flex;justify-content:space-between;padding:0 16px;font-size:10px;color:white;margin-top:-18px;position:relative;z-index:5;}
+  .app-header{background:var(--purple);color:white;padding:10px 14px;text-align:center;font-size:14px;font-weight:600;}
+  .phone-body{background:#f5f5f5;min-height:420px;position:relative;padding:12px;}
+
+  /* 管理画面モック */
+  .admin-mock{background:#f8f9fa;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--border);margin-bottom:16px;}
+  .admin-mock-header{color:white;padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;}
+  .admin-mock-header.purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
+  .admin-mock-header .role-badge{background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:10px;font-size:10px;margin-left:auto;}
+  .admin-mock-body{padding:20px;}
+
+  /* フロー図 */
+  .flow-steps{max-width:700px;margin:0 auto;}
+  .flow-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px;}
+  .flow-num{width:30px;height:30px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+  .flow-box{flex:1;padding:10px 14px;border-radius:6px;border:1px solid var(--border);font-size:13px;line-height:1.6;background:#fafafa;}
+  .flow-arrow{text-align:center;color:var(--purple);font-size:14px;margin:2px 0 2px 10px;}
+
+  /* メモ */
+  .memo-area{margin-top:16px;background:#FFFDE7;border:1px solid #FFE082;border-radius:8px;overflow:hidden;}
+  .memo-area-header{background:#FFE082;padding:8px 14px;font-size:12px;font-weight:600;color:#F57F17;}
+  .memo-area textarea{width:100%;border:none;padding:12px 14px;font-size:13px;font-family:inherit;min-height:80px;resize:vertical;background:transparent;line-height:1.6;}
+  .memo-area textarea:focus{outline:none;background:#FFF9C4;}
+
+  /* 進捗バー */
+  .progress{margin-bottom:20px;}
+  .progress-bar{background:#eee;border-radius:10px;height:10px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:10px;background:linear-gradient(135deg,var(--purple),#9333EA);transition:width 0.5s;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);}
+
+  /* タグ */
+  .tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;color:white;}
+  .tag.decided{background:var(--green);}
+  .tag.pending{background:var(--orange);}
+  .tag.new{background:var(--red);}
+
+  @media print{
+    .top-header,.nav{position:static;}
+    .panel{display:block!important;page-break-before:always;}
+    .nav{display:none;}
+    .btn-save,.btn-export,.btn-clear{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== ヘッダー ===== -->
+<div class="top-header">
+  <div class="top-header-inner">
+    <div class="top-title">
+      <h1>期間パス 要件定義</h1>
+      <div class="sub">スタディGO — 日数・料金・ルールを自由に設計</div>
+    </div>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus"></span>
+      <button class="btn-save" onclick="saveAll()">保存</button>
+      <button class="btn-export" onclick="exportAll()">エクスポート</button>
+      <button class="btn-clear" onclick="if(confirm('すべての入力をクリアしますか？')){clearAll();}">クリア</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ナビ ===== -->
+<div class="nav">
+  <div class="nav-inner" id="navTabs">
+    <button class="nav-tab active" onclick="showPanel(0)">概要・日数設定</button>
+    <button class="nav-tab" onclick="showPanel(1)">料金・お支払い</button>
+    <button class="nav-tab" onclick="showPanel(2)">契約ルール</button>
+    <button class="nav-tab" onclick="showPanel(3)">アプリ画面</button>
+    <button class="nav-tab" onclick="showPanel(4)">管理画面</button>
+    <button class="nav-tab" onclick="showPanel(5)">通知・お知らせ</button>
+    <button class="nav-tab" onclick="showPanel(6)">導入計画</button>
+  </div>
+</div>
+
+<!-- ===== コンテンツ ===== -->
+<div class="main">
+
+<!-- ============================================ -->
+<!-- パネル0: 概要・日数設定 -->
+<!-- ============================================ -->
+<div class="panel active" id="panel-0">
+
+  <div class="intro">
+    <h2>期間パスとは？</h2>
+    <p>
+      <span class="highlight">決まった日数のあいだ、追加料金なしで使い放題になる「買い切り」のパス</span>です。<br>
+      月額プランと違い、自動更新はありません。期間が終われば自動的に終了します。<br>
+      お客様が自分で好きなタイミングに、好きな日数のパスを購入できます。
+    </p>
+  </div>
+
+  <!-- 進捗 -->
+  <div class="progress" id="progressArea">
+    <div class="progress-label">
+      <span>決定項目の進捗</span>
+      <span id="progressText">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <!-- 日数設定（メイン） -->
+  <div class="rethink-box">
+    <h4>ここが今回の要件定義のポイント</h4>
+    <p>
+      前回は「7日・14日・30日の3種類」としていましたが、<strong>店舗が日数を自由に決められる</strong>仕組みにするかを改めて検討します。<br>
+      例: 3日パス、5日パス、10日パス、60日パスなど、店舗のニーズに合った日数を設定可能にするか？
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      パスの日数を決める <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">日数の設定方法: <strong>店舗が自由に日数を決められる</strong>ようにするか？ それとも<strong>固定の選択肢（7日/14日/30日）</strong>から選ぶ方式にするか？</span>
+          <span class="d-note"><input placeholder="自由 / 固定" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">自由に設定する場合、<strong>最短</strong>は何日から？</span>
+          <span class="d-note"><input placeholder="__日〜" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">自由に設定する場合、<strong>最長</strong>は何日まで？</span>
+          <span class="d-note"><input placeholder="〜__日" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">1つの店舗で<strong>同時に何種類</strong>のパスを販売できるか？</span>
+          <span class="d-note"><input placeholder="__種類まで" class="memo-input"></span>
+        </li>
+      </ul>
+
+      <h4 style="margin:20px 0 10px;color:var(--purple);font-size:14px;">パス日数のイメージ（自由設定の場合）</h4>
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">管理画面で店舗が自由に日数を決めて、パスを作成できるイメージです。</p>
+      <div class="duration-grid" id="durationGrid">
+        <div class="duration-card selected">
+          <div class="dur-days">3<span style="font-size:14px;">日</span></div>
+          <div class="dur-label">お試しパス</div>
+          <button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>
+        </div>
+        <div class="duration-card selected">
+          <div class="dur-days">7<span style="font-size:14px;">日</span></div>
+          <div class="dur-label">1週間パス</div>
+          <button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>
+        </div>
+        <div class="duration-card selected">
+          <div class="dur-days">14<span style="font-size:14px;">日</span></div>
+          <div class="dur-label">2週間パス</div>
+          <button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>
+        </div>
+        <div class="duration-card selected">
+          <div class="dur-days">30<span style="font-size:14px;">日</span></div>
+          <div class="dur-label">1ヶ月パス</div>
+          <button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>
+        </div>
+        <div class="duration-card add-new" onclick="addDuration()">
+          <div class="dur-days" style="color:var(--purple);">+</div>
+          <div class="dur-label">追加する</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      基本仕様の確認 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>商品の種類</th><td>買い切り型（1回の支払いで完了。自動更新なし）</td></tr>
+        <tr><th>日数の計算方法</th><td><strong>カレンダー日数</strong>で計算（営業日ではなく連続した日数）</td></tr>
+        <tr><th>利用可能時間</th><td>各店舗の<strong>営業時間内</strong>であれば、何回でも・何時間でも利用可能</td></tr>
+        <tr><th>利用できる店舗</th><td>購入した<strong>1店舗のみ</strong></td></tr>
+        <tr><th>複数店舗で購入</th><td>可能（別の店舗のパスも同時に持てる）</td></tr>
+        <tr><th>月額プランとの併用</th><td>可能（同じ店舗でも両方持てる。チェックイン時は期間パスが優先）</td></tr>
+        <tr><th>2店舗制限</th><td>月額プランの2店舗制限には<strong>含めない</strong>（パスは何店舗でもOK）</td></tr>
+      </table>
+
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">上記の基本仕様でよいか？ 変更したい点はあるか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">期間パスに<strong>入会金</strong>は必要か？（現在の案: 不要）</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（概要・日数設定）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル1: 料金・お支払い -->
+<!-- ============================================ -->
+<div class="panel" id="panel-1">
+
+  <div class="intro">
+    <h2>料金とお支払いの仕組み</h2>
+    <p>
+      お客様がパスを購入する際の<span class="highlight">料金設定の方法・支払いの流れ・手数料</span>について決めます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      料金の設定方法 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金は<strong>店舗が自由に設定</strong>できるようにするか？ それとも<strong>運営が決める</strong>か？</span>
+          <span class="d-note"><input placeholder="店舗 / 運営" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金の表示は<strong>税込価格</strong>でよいか？（店舗が税込で入力 → そのまま表示）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">「1日あたり○○円」の<strong>日割り表示</strong>をアプリに出すか？</span>
+          <span class="d-note"><input placeholder="出す / 出さない" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">最低料金の制限はあるか？（例: 100円以上など）</span>
+          <span class="d-note"><input placeholder="__円以上" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      お支払い方法 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>支払い方法</th><td><strong>クレジットカードのみ</strong>（月額プランと同じ）</td></tr>
+        <tr><th>支払いのタイミング</th><td><strong>購入時に即座に引き落とし</strong>（月額のように後から請求ではない）</td></tr>
+        <tr><th>本人確認</th><td>カード会社の確認画面（3Dセキュア）あり</td></tr>
+        <tr><th>自動更新</th><td><strong>なし</strong>（勝手に課金されない）</td></tr>
+      </table>
+
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">支払い方法は<strong>クレジットカードのみ</strong>でよいか？（現金・コンビニ払い・電子マネーは対応する？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      割引・クーポン <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>年齢割引</strong>は期間パスにも適用するか？（月額プランと同じルール？）</span>
+          <span class="d-note"><input placeholder="適用 / 不適用" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>クーポン</strong>は期間パスにも使えるようにするか？</span>
+          <span class="d-note"><input placeholder="使える / 使えない" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">クーポンの<strong>入力タイミング</strong>は？ パス選択時？ 購入確認時？ 両方？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      手数料・売上配分 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">法人（店舗運営会社）への<strong>手数料率</strong>は月額プランと<strong>同じ</strong>にするか？ <strong>別の料率</strong>にするか？</span>
+          <span class="d-note"><input placeholder="同じ / 別（__%）" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">法人への入金（精算）のタイミングは？（月次精算？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">売上の計上タイミングは<strong>購入日</strong>でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>領収書</strong>は発行するか？（既存の仕組みに統合？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（料金・お支払い）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル2: 契約ルール -->
+<!-- ============================================ -->
+<div class="panel" id="panel-2">
+
+  <div class="intro">
+    <h2>契約のルール</h2>
+    <p>
+      お客様がパスを購入してから期限が切れるまでの<span class="highlight">ルール</span>を決めます。<br>
+      キャンセル・延長・再購入などの取り扱いも含みます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      開始日の選択 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開始日の選択画面は<strong>カレンダー表示</strong>か、<strong>日付リスト（今日/明日/明後日...）</strong>の選択式か？</span>
+          <span class="d-note"><input placeholder="カレンダー / リスト" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開始日は<strong>何日後まで</strong>選べるか？（現在の案: 7日後まで）</span>
+          <span class="d-note"><input placeholder="__日後まで" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">デフォルトの開始日は<strong>「今日」</strong>でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">カレンダーに<strong>店舗の定休日</strong>を表示するか？（定休日は選択不可にする？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      期限の扱い <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">最終日のチェックインは<strong>営業時間の閉店まで</strong>利用可能でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>途中解約（キャンセル）</strong>はできないでよいか？（返金なし）</span>
+          <span class="d-note"><input placeholder="不可 / 条件付き可" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>臨時休業</strong>があった場合、パスの期間は延長するか？しないか？</span>
+          <span class="d-note"><input placeholder="延長する / しない" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      延長・再購入 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">パスの<strong>延長（再購入）</strong>は期限切れ前でもできるか？ 切れてからのみか？</span>
+          <span class="d-note"><input placeholder="期限前OK / 切れてから" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">延長時に<strong>違う日数のパス</strong>に変更できるか？（例: 7日パス → 30日パスに変更）</span>
+          <span class="d-note"><input placeholder="可能 / 同じ日数のみ" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>連続購入（同じパスを繰り返し買う）</strong>に回数制限は設けるか？</span>
+          <span class="d-note"><input placeholder="制限なし / __回まで" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">延長時にクーポンは使えるか？</span>
+          <span class="d-note"><input placeholder="使える / 使えない" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      チェックイン時の動き <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps" style="margin-bottom:20px;">
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">1</div><div class="flow-box">お客様がQRコードをスキャンしてチェックイン</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">2</div><div class="flow-box"><strong style="color:var(--purple);">まず期間パスをチェック</strong> → 有効なパスがあれば追加料金なし</div></div>
+        <div class="flow-arrow">&#9660; パスがない場合</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">3</div><div class="flow-box"><strong style="color:var(--blue);">次に月額プランをチェック</strong> → 月額プランでチェックイン</div></div>
+        <div class="flow-arrow">&#9660; 月額もない場合</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">4</div><div class="flow-box"><strong style="color:#E65100;">都度利用（ドロップイン）</strong> → 時間に応じた料金</div></div>
+      </div>
+
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">チェックインの<strong>優先順位</strong>は上記の順番（パス → 月額 → ドロップイン）でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">期限切れ後にチェックインした場合の画面は？（案: <strong>「再購入 / ドロップイン / 月額へ切替」の3択を表示</strong>）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>決済失敗</strong>した場合の画面は？（案: エラー表示 + 再試行 or カード変更ボタン）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（契約ルール）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル3: アプリ画面 -->
+<!-- ============================================ -->
+<div class="panel" id="panel-3">
+
+  <div class="intro">
+    <h2>アプリ画面の設計</h2>
+    <p>
+      お客様が使うスマートフォンアプリの<span class="highlight">画面の見た目・操作の流れ</span>を決めます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      購入フロー（お客様が見る画面の流れ） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps" style="margin-bottom:20px;">
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box">店舗詳細画面 → 「期間パス」タブを選ぶ</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box">パスを選択 + クーポン入力</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box">開始日を選択（カレンダーまたはリスト）</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box">購入確認 → カード決済 → 完了</div></div>
+      </div>
+
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">店舗詳細画面のタブの順番は？（案: <strong>月額プラン → 期間パス → 都度利用</strong>）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">期間パスを<strong>提供しない店舗</strong>では、タブを非表示にするか？「現在提供なし」と表示するか？</span>
+          <span class="d-note"><input placeholder="非表示 / メッセージ" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">ログインしていないお客様でも<strong>パスの内容を閲覧</strong>できるか？（購入時にログインを促す）</span>
+          <span class="d-note"><input placeholder="閲覧可 / ログイン必須" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      マイページの表示 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">マイページでの期間パスカードの表示: <strong>残り日数</strong>と<strong>進捗バー</strong>を表示するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">パスの「<strong>詳細を見る</strong>」画面に何を表示するか？（パス名/期間/料金/利用回数/購入日...）</span>
+          <span class="d-note"><input placeholder="表示したい項目..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>延長ボタン</strong>は残り何日から表示するか？（案: 残り7日から）</span>
+          <span class="d-note"><input placeholder="残り__日" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">期限切れ後、カードは<strong>何日間</strong>表示するか？（案: 7日間 → その後非表示）</span>
+          <span class="d-note"><input placeholder="__日間" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      店舗検索画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">店舗検索に<strong>「期間パス対応」のフィルター</strong>を追加するか？</span>
+          <span class="d-note"><input placeholder="追加 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（アプリ画面）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル4: 管理画面 -->
+<!-- ============================================ -->
+<div class="panel" id="panel-4">
+
+  <div class="intro">
+    <h2>管理画面の設計</h2>
+    <p>
+      店舗スタッフや運営側が使う<span class="highlight">管理画面でのパスの設定・確認方法</span>を決めます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      パスの作成・料金設定 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <!-- 管理画面モック -->
+      <div class="admin-mock" style="margin-bottom:20px;">
+        <div class="admin-mock-header purple">
+          期間パス プラン設定
+          <span class="role-badge">運営管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">店舗ごとに期間パスのプランを作成・管理します。日数と料金を自由に設定できます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:#f8f9fa;">
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">パス名</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">日数</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">料金（税込）</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">1日あたり</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">年齢割引</th>
+                <th style="padding:10px;text-align:left;border-bottom:2px solid var(--border);">状態</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #eee;">3日お試しパス</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="number" value="3" style="width:60px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:center;">日</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="text" value="1,500" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:right;">円</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--text-sub);">&#165;500</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);">適用</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);font-weight:600;">販売中</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #eee;">7日パス</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="number" value="7" style="width:60px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:center;">日</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="text" value="3,500" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:right;">円</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--text-sub);">&#165;500</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);">適用</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);font-weight:600;">販売中</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #eee;">14日パス</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="number" value="14" style="width:60px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:center;">日</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;"><input type="text" value="5,600" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:right;">円</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--text-sub);">&#165;400</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);">適用</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;color:var(--green);font-weight:600;">販売中</td>
+              </tr>
+              <tr>
+                <td style="padding:10px;">30日パス</td>
+                <td style="padding:10px;"><input type="number" value="30" style="width:60px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:center;">日</td>
+                <td style="padding:10px;"><input type="text" value="9,000" style="width:80px;padding:4px;border:1px solid var(--border);border-radius:4px;text-align:right;">円</td>
+                <td style="padding:10px;color:var(--text-sub);">&#165;300</td>
+                <td style="padding:10px;color:var(--green);">適用</td>
+                <td style="padding:10px;color:#999;">未公開</td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:12px;">
+            <button style="padding:8px 20px;background:var(--purple);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">+ 新しいパスを追加</button>
+          </div>
+        </div>
+      </div>
+
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">パスの作成・料金変更は<strong>運営（本部）のみ</strong>か？ <strong>法人（店舗）も</strong>できるか？</span>
+          <span class="d-note"><input placeholder="本部のみ / 法人も" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">法人は<strong>パスの有効/無効の切替</strong>のみ可能にするか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金を変更する場合の方法: <strong>直接変更</strong>か、<strong>新しいプランを作り直す</strong>か？</span>
+          <span class="d-note"><input placeholder="直接変更 / 作り直し" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      契約一覧・管理操作 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">管理者（スタッフ）が<strong>手動でパスを期限切れ</strong>にする機能は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">管理者が手動で<strong>パスを延長</strong>する機能は必要か？（特別対応用）</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">契約データの<strong>CSV出力</strong>機能は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      売上レポート・統計 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>売上レポート画面</strong>に表示する数値は？</span>
+          <span class="d-note"><input placeholder="販売数/売上額/延長率..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">レポートに<strong>期間パスと月額の比較</strong>グラフは必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（管理画面）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル5: 通知・お知らせ -->
+<!-- ============================================ -->
+<div class="panel" id="panel-5">
+
+  <div class="intro">
+    <h2>通知・お知らせの設計</h2>
+    <p>
+      期限が近づいた時や期限切れ時に、<span class="highlight">お客様にどのようにお知らせするか</span>を決めます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      通知のタイミングと方法 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec" style="margin-bottom:16px;">
+        <tr><th>残り3日</th><td>プッシュ通知 + メール（朝9:00）<br><span style="color:var(--orange);">注意（オレンジ）</span>のお知らせ</td></tr>
+        <tr><th>残り1日</th><td>プッシュ通知 + メール（朝9:00）<br><span style="color:var(--red);">緊急（赤）</span>のお知らせ</td></tr>
+        <tr><th>当日（期限切れ日）</th><td>プッシュ通知 + メール（朝9:00）</td></tr>
+        <tr><th>購入完了時</th><td>プッシュ通知 + アプリ内お知らせに追加</td></tr>
+      </table>
+
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知のタイミングは上記（<strong>残り3日・1日・当日</strong>）でよいか？ 残り7日も必要？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知の送信時刻は<strong>朝9:00</strong>でよいか？</span>
+          <span class="d-note"><input placeholder="__:00" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">お客様が通知を<strong>オフにできる設定</strong>は必要か？（案: オフ不可 — 常に通知）</span>
+          <span class="d-note"><input placeholder="オフ可能 / 常に通知" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">メールの形式は<strong>HTML（画像つき）</strong>か、<strong>テキストのみ</strong>か？</span>
+          <span class="d-note"><input placeholder="HTML / テキスト" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      通知からのアクション <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知の<strong>「延長する」ボタン</strong>を押すと、どの画面に遷移するか？（案: 簡易延長画面）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">「<strong>あとで</strong>」ボタンを押した場合の動作は？（案: 通知を閉じるのみ。アプリ内履歴には残る）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      既存会員への告知 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">既存の月額会員に<strong>「期間パス始めました」の告知</strong>を送るか？</span>
+          <span class="d-note"><input placeholder="送る / 送らない" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">告知の方法は？（プッシュ通知 / アプリ内バナー / メール / 全部）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（通知・お知らせ）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル6: 導入計画 -->
+<!-- ============================================ -->
+<div class="panel" id="panel-6">
+
+  <div class="intro">
+    <h2>導入計画</h2>
+    <p>
+      <span class="highlight">どこから始めるか・いつまでに何をするか</span>を決めます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      導入方式 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>全店舗に一斉導入</strong>するか、<strong>一部店舗でテスト</strong>してから広げるか？</span>
+          <span class="d-note"><input placeholder="一斉 / 段階的" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">テスト導入の場合、<strong>対象店舗</strong>はどこか？</span>
+          <span class="d-note"><input placeholder="店舗名..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？（他の機能と並行 / 先にこちら / 後回し）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      利用規約・法的準備 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>利用規約の文言</strong>（キャンセル不可・返金不可・休業時の扱い）の作成担当は？</span>
+          <span class="d-note"><input placeholder="担当者名..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>アカウント削除</strong>時の扱いは？（案: 警告表示 → 削除可能 → 返金なし）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（導入計画）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ===== パネル切替 =====
+function showPanel(idx) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('panel-' + idx).classList.add('active');
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+// ===== カード折り畳み =====
+function toggleCard(header) {
+  header.parentElement.classList.toggle('collapsed');
+  var toggle = header.querySelector('.toggle');
+  toggle.textContent = header.parentElement.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
+}
+
+// ===== 決定事項スタイル =====
+function updateStyle(sel) {
+  sel.className = sel.value;
+  autoSave();
+  updateProgress();
+}
+
+// ===== 進捗更新 =====
+function updateProgress() {
+  var all = document.querySelectorAll('.decision-item select');
+  var decided = 0;
+  all.forEach(function(sel) { if (sel.value === 'decided') decided++; });
+  var pct = all.length > 0 ? Math.round(decided / all.length * 100) : 0;
+  document.getElementById('progressText').textContent = decided + ' / ' + all.length;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ===== 日数追加 =====
+function addDuration() {
+  var days = prompt('追加するパスの日数を入力してください（例: 10）');
+  if (!days || isNaN(days) || days <= 0) return;
+  var label = prompt('パスの名前を入力してください（例: 10日パス）', days + '日パス');
+  if (!label) return;
+  var grid = document.getElementById('durationGrid');
+  var addBtn = grid.querySelector('.add-new');
+  var card = document.createElement('div');
+  card.className = 'duration-card selected';
+  card.innerHTML = '<div class="dur-days">' + days + '<span style="font-size:14px;">日</span></div>' +
+    '<div class="dur-label">' + label + '</div>' +
+    '<button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>';
+  grid.insertBefore(card, addBtn);
+  autoSave();
+}
+
+// ===== 保存 =====
+var saveTimeout;
+function autoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() { saveAll(); }, 1000);
+}
+
+function saveAll() {
+  var data = {
+    memos: [],
+    decisions: [],
+    durations: [],
+    timestamp: new Date().toISOString()
+  };
+
+  document.querySelectorAll('.section-memo').forEach(function(ta) {
+    data.memos.push(ta.value);
+  });
+
+  document.querySelectorAll('.decision-item').forEach(function(item) {
+    var sel = item.querySelector('select');
+    var input = item.querySelector('.memo-input');
+    data.decisions.push({
+      status: sel ? sel.value : '',
+      note: input ? input.value : ''
+    });
+  });
+
+  document.querySelectorAll('.duration-card:not(.add-new)').forEach(function(card) {
+    data.durations.push({
+      days: card.querySelector('.dur-days').textContent.replace(/[^0-9]/g, ''),
+      label: card.querySelector('.dur-label').textContent
+    });
+  });
+
+  localStorage.setItem('period-pass-requirements-v1', JSON.stringify(data));
+  document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
+}
+
+function loadAll() {
+  var raw = localStorage.getItem('period-pass-requirements-v1');
+  if (!raw) return;
+  try {
+    var data = JSON.parse(raw);
+
+    if (data.memos) {
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
+        if (data.memos[i]) ta.value = data.memos[i];
+      });
+    }
+
+    if (data.decisions) {
+      document.querySelectorAll('.decision-item').forEach(function(item, i) {
+        if (data.decisions[i]) {
+          var sel = item.querySelector('select');
+          var input = item.querySelector('.memo-input');
+          if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
+          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+        }
+      });
+    }
+
+    if (data.durations && data.durations.length > 0) {
+      var grid = document.getElementById('durationGrid');
+      var addBtn = grid.querySelector('.add-new');
+      grid.querySelectorAll('.duration-card:not(.add-new)').forEach(function(c) { c.remove(); });
+      data.durations.forEach(function(d) {
+        var card = document.createElement('div');
+        card.className = 'duration-card selected';
+        card.innerHTML = '<div class="dur-days">' + d.days + '<span style="font-size:14px;">\u65E5</span></div>' +
+          '<div class="dur-label">' + d.label + '</div>' +
+          '<button class="dur-remove" onclick="this.parentElement.remove()">&#10005;</button>';
+        grid.insertBefore(card, addBtn);
+      });
+    }
+
+    document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
+  } catch(e) { console.error(e); }
+}
+
+function clearAll() {
+  localStorage.removeItem('period-pass-requirements-v1');
+  document.querySelectorAll('.section-memo').forEach(function(ta) { ta.value = ''; });
+  document.querySelectorAll('.memo-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.selectedIndex = 0; sel.className = sel.value; });
+  document.getElementById('saveStatus').textContent = '\u30AF\u30EA\u30A2\u6E08\u307F';
+  updateProgress();
+}
+
+// ===== エクスポート =====
+function exportAll() {
+  var text = '# \u671F\u9593\u30D1\u30B9 \u8981\u4EF6\u5B9A\u7FA9 \u30A8\u30AF\u30B9\u30DD\u30FC\u30C8\n\n';
+
+  var panelNames = ['\u6982\u8981\u30FB\u65E5\u6570\u8A2D\u5B9A', '\u6599\u91D1\u30FB\u304A\u652F\u6255\u3044', '\u5951\u7D04\u30EB\u30FC\u30EB', '\u30A2\u30D7\u30EA\u753B\u9762', '\u7BA1\u7406\u753B\u9762', '\u901A\u77E5\u30FB\u304A\u77E5\u3089\u305B', '\u5C0E\u5165\u8A08\u753B'];
+
+  // Duration cards
+  text += '## \u30D1\u30B9\u65E5\u6570\u8A2D\u5B9A\n';
+  document.querySelectorAll('.duration-card:not(.add-new)').forEach(function(card) {
+    text += '- ' + card.querySelector('.dur-days').textContent.replace(/[^0-9]/g, '') + '\u65E5: ' + card.querySelector('.dur-label').textContent + '\n';
+  });
+  text += '\n';
+
+  // Decisions
+  var decIdx = 0;
+  document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
+    text += '## ' + (pIdx + 1) + '. ' + panelNames[pIdx] + '\n\n';
+    var decisions = panel.querySelectorAll('.decision-item');
+    if (decisions.length > 0) {
+      text += '### \u6C7A\u5B9A\u4E8B\u9805\n';
+      decisions.forEach(function(item) {
+        var sel = item.querySelector('select');
+        var label = item.querySelector('.d-label').textContent;
+        var note = item.querySelector('.memo-input').value;
+        var statusMap = { decided: '\u6C7A\u5B9A', pending: '\u4FDD\u7559', rejected: '\u5374\u4E0B' };
+        text += '- [' + (statusMap[sel.value] || sel.value) + '] ' + label;
+        if (note) text += ' \u2192 ' + note;
+        text += '\n';
+      });
+      text += '\n';
+    }
+    var memo = panel.querySelector('.section-memo');
+    if (memo && memo.value.trim()) {
+      text += '### \u30E1\u30E2\n' + memo.value.trim() + '\n';
+    }
+    text += '\n---\n\n';
+  });
+
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.btn-export');
+    btn.textContent = '\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F!';
+    btn.style.background = '#4CAF50';
+    btn.style.color = 'white';
+    setTimeout(function() { btn.textContent = '\u30A8\u30AF\u30B9\u30DD\u30FC\u30C8'; btn.style.background = 'white'; btn.style.color = 'var(--purple)'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('\u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F');
+  });
+}
+
+// ===== 初期化 =====
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.decision-item select').forEach(function(sel) {
+    sel.className = sel.value;
+  });
+  loadAll();
+  updateProgress();
+});
+</script>
+
+</body>
+</html>

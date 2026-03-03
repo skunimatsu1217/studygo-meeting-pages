@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO プッシュ通知 - アプリ画面モック</title>
+<style>
+  :root {
+    --green: #4CAF50;
+    --green-dark: #388E3C;
+    --green-light: #E8F5E9;
+    --orange: #FF9800;
+    --orange-light: #FFF3E0;
+    --red: #F44336;
+    --red-light: #FFEBEE;
+    --blue: #2196F3;
+    --blue-light: #E3F2FD;
+    --purple: #7C3AED;
+    --purple-light: #F3E8FF;
+    --bg: #F5F5F5;
+    --white: #FFFFFF;
+    --text: #333333;
+    --text-sub: #757575;
+    --border: #E0E0E0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+    background: #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .page-header {
+    color: white;
+    text-align: center;
+    margin-bottom: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .page-header h1 { font-size: 24px; margin-bottom: 8px; }
+  .page-header p { font-size: 13px; opacity: 0.7; }
+
+  /* カテゴリ選択ナビ */
+  .screen-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+    max-width: 1400px;
+  }
+  .screen-nav button {
+    padding: 8px 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .screen-nav button:hover { background: rgba(255,255,255,0.2); }
+  .screen-nav button.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  /* カテゴリラベル */
+  .cat-label {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+  .cat-checkin { background: var(--green-light); color: var(--green-dark); }
+  .cat-payment { background: var(--red-light); color: var(--red); }
+  .cat-visit { background: var(--blue-light); color: var(--blue); }
+  .cat-info { background: var(--purple-light); color: var(--purple); }
+  .cat-msg { background: var(--orange-light); color: var(--orange); }
+
+  .screens-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    justify-content: center;
+    max-width: 1600px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    min-height: 700px;
+    background: var(--bg);
+    border-radius: 36px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    position: relative;
+    border: 8px solid #1a1a1a;
+    display: none;
+  }
+  .phone-frame.visible { display: block; }
+
+  .screen-label {
+    text-align: center;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 12px;
+    padding-bottom: 4px;
+    opacity: 0.8;
+  }
+  .screen-label .screen-num {
+    display: inline-block;
+    background: var(--green);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    line-height: 24px;
+    text-align: center;
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  .screen-wrapper {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+  .screen-wrapper.visible { display: flex; }
+
+  .status-bar {
+    background: #000;
+    color: white;
+    padding: 8px 20px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .app-header {
+    background: var(--green);
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+  }
+  .app-header .back { font-size: 20px; cursor: pointer; width: 28px; }
+  .app-header .title { font-size: 16px; font-weight: 700; flex: 1; }
+
+  /* ロック画面背景 */
+  .lockscreen {
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    height: 640px;
+    padding: 20px 16px;
+    color: white;
+    position: relative;
+  }
+  .lockscreen-time {
+    text-align: center;
+    padding-top: 40px;
+  }
+  .lockscreen-time .time {
+    font-size: 64px;
+    font-weight: 200;
+    letter-spacing: -2px;
+  }
+  .lockscreen-time .date {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  /* 通知バナー共通 */
+  .notif-banner {
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: #333;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-bottom: 10px;
+  }
+  .notif-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .notif-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .notif-app-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #333;
+  }
+  .notif-time {
+    font-size: 10px;
+    color: #999;
+  }
+  .notif-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .notif-body {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+  }
+  .notif-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .notif-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .notif-btn-primary { background: var(--green); color: white; }
+  .notif-btn-secondary { background: #f0f0f0; color: #666; }
+  .notif-btn-orange { background: var(--orange); color: white; }
+  .notif-btn-red { background: var(--red); color: white; }
+  .notif-btn-blue { background: var(--blue); color: white; }
+
+  /* 凡例 */
+  .legend {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    max-width: 1000px;
+    width: 100%;
+  }
+  .legend h3 { color: white; font-size: 14px; margin-bottom: 10px; }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    padding: 4px 0;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* セクション区切り */
+  .section-divider {
+    width: 100%;
+    max-width: 1400px;
+    text-align: center;
+    color: rgba(255,255,255,0.5);
+    margin: 16px 0;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-divider.visible { display: flex; }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+
+  /* タブバー */
+  .tab-bar {
+    display: flex;
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 6px 0 10px;
+  }
+  .tab-item {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-sub);
+    cursor: pointer;
+    padding-top: 4px;
+  }
+  .tab-item .tab-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+  .tab-item.active { color: var(--green); }
+
+  /* 通知一覧のインジケーター */
+  .badge-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>スタディGO プッシュ通知 - アプリ画面モック</h1>
+  <p>既存機能を含む全通知パターンの仮画面（全10画面）｜ 期間パス以外の通知</p>
+</div>
+
+<!-- 凡例 -->
+<div class="legend">
+  <h3>通知カテゴリ</h3>
+  <div class="legend-grid">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> チェックイン / チェックアウト</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> 支払い・決済</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> 見学予約</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> メッセージ</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div> お知らせ・キャンペーン</div>
+  </div>
+</div>
+
+<!-- 画面切替ナビ -->
+<div class="screen-nav">
+  <button class="active" onclick="showScreens('all')">全画面表示</button>
+  <button onclick="showScreens('checkin')">1. チェックイン完了</button>
+  <button onclick="showScreens('checkout')">2. チェックアウト</button>
+  <button onclick="showScreens('autocheckout')">3. 自動チェックアウト</button>
+  <button onclick="showScreens('payok')">4. 月額更新完了</button>
+  <button onclick="showScreens('payfail')">5. 支払い失敗</button>
+  <button onclick="showScreens('visitconfirm')">6. 見学予約確定</button>
+  <button onclick="showScreens('visitremind')">7. 見学リマインダー</button>
+  <button onclick="showScreens('message')">8. メッセージ受信</button>
+  <button onclick="showScreens('campaign')">9. キャンペーン</button>
+  <button onclick="showScreens('notiflist')">10. 通知一覧</button>
+</div>
+
+<div class="screens-container">
+
+<!-- ========== 画面1: チェックイン完了 ========== -->
+<div class="screen-wrapper visible" data-screen="checkin">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>10:15</span><span>92%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">10:15</div>
+        <div class="date">2月20日 木曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--green);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--green);">&#9989; チェックインしました</div>
+          <div class="notif-body">
+            <strong>スタディGO テスト店</strong>にチェックインしました。<br>
+            利用プラン: フルタイムプラン（月額）
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">1</span> チェックイン完了 <span class="cat-label cat-checkin">チェックイン</span></div>
+</div>
+
+<!-- ========== 画面2: チェックアウト完了（ドロップイン料金確定） ========== -->
+<div class="screen-wrapper visible" data-screen="checkout">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>14:30</span><span>68%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">14:30</div>
+        <div class="date">2月20日 木曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--green);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title">&#128682; チェックアウトしました</div>
+          <div class="notif-body">
+            スタディGO テスト店のご利用ありがとうございました。
+          </div>
+          <div style="background: #f8f8f8; border-radius: 8px; padding: 10px 12px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #999;">利用時間</span>
+              <span style="font-weight: 700;">4時間15分</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #999;">ご利用料金</span>
+              <span style="font-weight: 700; color: var(--green); font-size: 15px;">1,650円（税込）</span>
+            </div>
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn notif-btn-primary">領収書を見る</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">2</span> チェックアウト（ドロップイン料金確定） <span class="cat-label cat-checkin">チェックイン</span></div>
+</div>
+
+<!-- ========== 画面3: 自動チェックアウト ========== -->
+<div class="screen-wrapper visible" data-screen="autocheckout">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>22:59</span><span>31%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">22:59</div>
+        <div class="date">2月20日 木曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner" style="border-left: 4px solid var(--orange);">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--orange);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--orange);">&#9888; 自動チェックアウトされました</div>
+          <div class="notif-body">
+            営業時間終了のため、スタディGO テスト店から自動チェックアウトされました。
+          </div>
+          <div style="background: #FFF3E0; border-radius: 8px; padding: 10px 12px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #999;">チェックイン</span>
+              <span style="font-weight: 600;">18:00</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #999;">自動チェックアウト</span>
+              <span style="font-weight: 600;">22:59</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #999;">利用時間</span>
+              <span style="font-weight: 700;">4時間59分</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">3</span> 自動チェックアウト <span class="cat-label cat-checkin">チェックイン</span></div>
+</div>
+
+<!-- ========== 画面4: 月額プラン更新完了 ========== -->
+<div class="screen-wrapper visible" data-screen="payok">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>10:00</span><span>95%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">10:00</div>
+        <div class="date">2月15日 土曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--green);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--green);">&#128179; 月額プランの更新が完了しました</div>
+          <div class="notif-body">
+            フルタイムプラン（スタディGO テスト店）のお支払いが正常に完了しました。
+          </div>
+          <div style="background: #f8f8f8; border-radius: 8px; padding: 10px 12px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #999;">プラン</span>
+              <span style="font-weight: 600;">フルタイムプラン</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #999;">お支払い額</span>
+              <span style="font-weight: 700; color: var(--green);">9,900円（税込）</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #999;">次回更新日</span>
+              <span style="font-weight: 600;">3月15日</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">4</span> 月額プラン更新完了 <span class="cat-label cat-payment">支払い</span></div>
+</div>
+
+<!-- ========== 画面5: 支払い失敗 ========== -->
+<div class="screen-wrapper visible" data-screen="payfail">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>10:05</span><span>95%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">10:05</div>
+        <div class="date">2月15日 土曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner" style="border-left: 4px solid var(--red);">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--red);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--red);">&#10060; お支払いに失敗しました</div>
+          <div class="notif-body">
+            フルタイムプランの月額料金のお支払いが完了できませんでした。お支払い方法をご確認ください。
+          </div>
+          <div style="background: var(--red-light); border-radius: 8px; padding: 10px 12px; margin-top: 10px; font-size: 12px; color: #b71c1c; line-height: 1.6;">
+            <strong>対応が必要です:</strong> お支払い方法を更新しない場合、サービスのご利用が制限される場合があります。
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn notif-btn-red">支払い方法を更新</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">5</span> 支払い失敗 <span class="cat-label cat-payment">支払い</span></div>
+</div>
+
+<!-- ========== 画面6: 見学予約確定 ========== -->
+<div class="screen-wrapper visible" data-screen="visitconfirm">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>15:30</span><span>76%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">15:30</div>
+        <div class="date">2月18日 火曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--blue);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--blue);">&#128197; 見学予約が確定しました</div>
+          <div class="notif-body">
+            スタディGO テスト店の見学予約が確定しました。
+          </div>
+          <div style="background: var(--blue-light); border-radius: 8px; padding: 10px 12px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #666;">店舗</span>
+              <span style="font-weight: 700;">スタディGO テスト店</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+              <span style="color: #666;">日時</span>
+              <span style="font-weight: 700;">2月22日（土）14:00〜</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px;">
+              <span style="color: #666;">所要時間</span>
+              <span style="font-weight: 600;">約30分</span>
+            </div>
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn notif-btn-blue">予約詳細を見る</div>
+            <div class="notif-btn notif-btn-secondary">キャンセル</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">6</span> 見学予約確定 <span class="cat-label cat-visit">見学予約</span></div>
+</div>
+
+<!-- ========== 画面7: 見学予約リマインダー ========== -->
+<div class="screen-wrapper visible" data-screen="visitremind">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>9:00</span><span>88%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">9:00</div>
+        <div class="date">2月22日 土曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--blue);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--blue);">&#128276; 本日の見学予約リマインダー</div>
+          <div class="notif-body">
+            本日 <strong>14:00〜</strong> にスタディGO テスト店の見学予約があります。
+          </div>
+          <div style="background: var(--blue-light); border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center;">
+            <div style="font-size: 11px; color: #666;">見学開始まで</div>
+            <div style="font-size: 28px; font-weight: 800; color: var(--blue);">あと5時間</div>
+          </div>
+          <div style="margin-top: 10px; font-size: 12px; color: #999; line-height: 1.5;">
+            &#128205; 東京都新宿区西新宿1-1-1<br>
+            &#128222; ご不明点は店舗にお問い合わせください
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn notif-btn-blue">地図を開く</div>
+            <div class="notif-btn notif-btn-secondary">予約変更</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">7</span> 見学予約リマインダー <span class="cat-label cat-visit">見学予約</span></div>
+</div>
+
+<!-- ========== 画面8: メッセージ受信 ========== -->
+<div class="screen-wrapper visible" data-screen="message">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>16:45</span><span>55%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">16:45</div>
+        <div class="date">2月21日 金曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--orange);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title">&#128172; 店舗からメッセージが届きました</div>
+          <div class="notif-body">
+            <strong>スタディGO テスト店</strong>
+          </div>
+          <div style="background: #f8f8f8; border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #333; line-height: 1.6; border-left: 3px solid var(--orange);">
+            いつもご利用ありがとうございます。2/25（火）は設備メンテナンスのため、14:00〜16:00の間、一部エリアがご利用いただけません。ご不便をおかけしますが...
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn notif-btn-orange">メッセージを開く</div>
+          </div>
+        </div>
+
+        <!-- 古い通知 -->
+        <div class="notif-banner" style="opacity: 0.85; margin-top: 10px;">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--green); width: 24px; height: 24px; font-size: 11px; border-radius: 6px;">S</div>
+            <div style="flex:1;">
+              <div style="font-size: 11px; font-weight: 600;">スタディGO</div>
+              <div style="font-size: 10px; color: #999;">14:30</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: #666;">チェックアウトしました。利用時間: 2時間15分</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">8</span> メッセージ受信 <span class="cat-label cat-msg">メッセージ</span></div>
+</div>
+
+<!-- ========== 画面9: キャンペーン・お知らせ ========== -->
+<div class="screen-wrapper visible" data-screen="campaign">
+  <div class="phone-frame visible">
+    <div class="status-bar"><span>12:00</span><span>80%</span></div>
+    <div class="lockscreen">
+      <div class="lockscreen-time">
+        <div class="time">12:00</div>
+        <div class="date">2月19日 水曜日</div>
+      </div>
+      <div style="margin-top: 60px;">
+        <!-- キャンペーン通知 -->
+        <div class="notif-banner">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: var(--purple);">S</div>
+            <div style="flex:1;">
+              <div class="notif-app-name">スタディGO</div>
+              <div class="notif-time">今</div>
+            </div>
+          </div>
+          <div class="notif-title" style="color: var(--purple);">&#127873; 友達紹介キャンペーン実施中！</div>
+          <div class="notif-body">
+            お友達をスタディGOに紹介すると、紹介者・お友達の両方に<strong style="color: var(--purple);">Amazonギフト券 500円分</strong>をプレゼント！
+          </div>
+          <div style="background: var(--purple-light); border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center;">
+            <div style="font-size: 11px; color: #666;">キャンペーン期間</div>
+            <div style="font-size: 14px; font-weight: 700; color: var(--purple);">2月15日〜3月31日</div>
+          </div>
+          <div class="notif-actions">
+            <div class="notif-btn" style="background: var(--purple); color: white;">詳細を見る</div>
+          </div>
+        </div>
+
+        <!-- メンテナンス通知 -->
+        <div class="notif-banner" style="opacity: 0.85; margin-top: 10px;">
+          <div class="notif-header">
+            <div class="notif-icon" style="background: #607D8B; width: 24px; height: 24px; font-size: 11px; border-radius: 6px;">S</div>
+            <div style="flex:1;">
+              <div style="font-size: 11px; font-weight: 600;">スタディGO</div>
+              <div style="font-size: 10px; color: #999;">11:00</div>
+            </div>
+          </div>
+          <div style="font-size: 12px; color: #666;">&#128295; 2/25 深夜2:00〜5:00 システムメンテナンスのため一時的にアプリがご利用いただけません</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">9</span> キャンペーン・お知らせ <span class="cat-label cat-info">お知らせ</span></div>
+</div>
+
+<!-- ========== 画面10: アプリ内通知一覧 ========== -->
+<div class="screen-wrapper visible" data-screen="notiflist">
+  <div class="phone-frame visible">
+    <div class="status-bar" style="background: var(--green-dark);"><span>10:30</span><span>85%</span></div>
+    <div class="app-header">
+      <span class="back">&lt;</span>
+      <span class="title">お知らせ</span>
+    </div>
+    <div style="height: 560px; overflow-y: auto; background: var(--bg);">
+
+      <!-- ヘッダー -->
+      <div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: white; border-bottom: 1px solid #eee;">
+        <div style="font-size: 13px; color: var(--text-sub);">新着 <span style="background: var(--red); color: white; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">3</span></div>
+        <div style="font-size: 12px; color: var(--green); font-weight: 600;">すべて既読にする</div>
+      </div>
+
+      <!-- 支払い失敗（未読・緊急） -->
+      <div style="background: #FFEBEE; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: white;">&#10060;</div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--red);">お支払いに失敗しました</div>
+            <span class="badge-dot"></span>
+          </div>
+          <div style="font-size: 12px; color: #666; line-height: 1.5;">フルタイムプランの月額料金のお支払いが完了できませんでした</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月15日 10:05</div>
+        </div>
+      </div>
+
+      <!-- チェックアウト（未読） -->
+      <div style="background: #FFF8E1; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: white;">&#128682;</div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <div style="font-size: 13px; font-weight: 700;">チェックアウトしました</div>
+            <span class="badge-dot"></span>
+          </div>
+          <div style="font-size: 12px; color: #666;">利用時間: 4時間15分 / 料金: 1,650円</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月20日 14:30</div>
+        </div>
+      </div>
+
+      <!-- 見学リマインダー（未読） -->
+      <div style="background: #FFF8E1; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--blue); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: white;">&#128276;</div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--blue);">本日の見学予約リマインダー</div>
+            <span class="badge-dot"></span>
+          </div>
+          <div style="font-size: 12px; color: #666;">本日 14:00〜 スタディGO テスト店</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月22日 9:00</div>
+        </div>
+      </div>
+
+      <!-- チェックイン（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--green-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#9989;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">チェックインしました</div>
+          <div style="font-size: 12px; color: #666;">スタディGO テスト店 / フルタイムプラン</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月20日 10:15</div>
+        </div>
+      </div>
+
+      <!-- キャンペーン（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--purple-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#127873;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">友達紹介キャンペーン実施中！</div>
+          <div style="font-size: 12px; color: #666;">紹介者・お友達の両方にAmazonギフト券500円分</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月19日 12:00</div>
+        </div>
+      </div>
+
+      <!-- 見学確定（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--blue-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#128197;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">見学予約が確定しました</div>
+          <div style="font-size: 12px; color: #666;">2/22（土）14:00〜 スタディGO テスト店</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月18日 15:30</div>
+        </div>
+      </div>
+
+      <!-- メッセージ（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--orange-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#128172;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">店舗からメッセージ</div>
+          <div style="font-size: 12px; color: #666;">2/25 設備メンテナンスのお知らせ</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月21日 16:45</div>
+        </div>
+      </div>
+
+      <!-- 月額更新（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: var(--green-light); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#128179;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">月額プランの更新が完了しました</div>
+          <div style="font-size: 12px; color: #666;">フルタイムプラン / 9,900円</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月15日 10:00</div>
+        </div>
+      </div>
+
+      <!-- メンテナンス（既読） -->
+      <div style="background: white; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 40px; height: 40px; background: #ECEFF1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">&#128295;</div>
+        <div style="flex: 1;">
+          <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">システムメンテナンスのお知らせ</div>
+          <div style="font-size: 12px; color: #666;">2/25 深夜2:00〜5:00 一時的にご利用いただけません</div>
+          <div style="font-size: 11px; color: #999; margin-top: 4px;">2月19日 11:00</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item"><span class="tab-icon">&#127968;</span>ホーム</div>
+      <div class="tab-item"><span class="tab-icon">&#128269;</span>検索</div>
+      <div class="tab-item active"><span class="tab-icon">&#128100;</span>マイページ</div>
+    </div>
+  </div>
+  <div class="screen-label"><span class="screen-num">10</span> 通知一覧（全カテゴリ）</div>
+</div>
+
+</div><!-- screens-container -->
+
+<script>
+function showScreens(screen) {
+  const wrappers = document.querySelectorAll('.screen-wrapper');
+  const buttons = document.querySelectorAll('.screen-nav button');
+
+  buttons.forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (screen === 'all') {
+    wrappers.forEach(w => {
+      w.classList.add('visible');
+      w.querySelector('.phone-frame').classList.add('visible');
+    });
+  } else {
+    wrappers.forEach(w => {
+      if (w.dataset.screen === screen) {
+        w.classList.add('visible');
+        w.querySelector('.phone-frame').classList.add('visible');
+      } else {
+        w.classList.remove('visible');
+        w.querySelector('.phone-frame').classList.remove('visible');
+      }
+    });
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-2 チェックイン利用履歴 プランタイプ別閲覧 - 仕様モック</title>
+<style>
+  :root {
+    --blue: #1a73e8;
+    --blue-light: #E3F2FD;
+    --green: #4CAF50;
+    --green-light: #E8F5E9;
+    --orange: #FF9800;
+    --orange-light: #FFF3E0;
+    --purple: #7C3AED;
+    --purple-light: #F3E8FF;
+    --red: #F44336;
+    --gray: #757575;
+    --bg: #F5F5F5;
+    --white: #FFFFFF;
+    --text: #333333;
+    --text-sub: #757575;
+    --border: #E0E0E0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+    background: #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .page-header {
+    color: white;
+    text-align: center;
+    margin-bottom: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .page-header h1 { font-size: 24px; margin-bottom: 8px; }
+  .page-header p { font-size: 13px; opacity: 0.7; }
+
+  /* タブナビ */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 24px;
+    max-width: 1400px;
+    flex-wrap: wrap;
+  }
+  .tab-nav button {
+    padding: 10px 24px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .tab-nav button:hover { background: rgba(255,255,255,0.2); }
+  .tab-nav button.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: white;
+  }
+  .tab-nav button[data-tab="alliance"].active { background: var(--green); border-color: var(--green); }
+  .tab-nav button[data-tab="compare"].active { background: var(--purple); border-color: var(--purple); }
+  .tab-nav button[data-tab="impl"].active { background: var(--orange); border-color: var(--orange); }
+
+  .tab-content { display: none; width: 100%; max-width: 1400px; }
+  .tab-content.active { display: block; }
+
+  /* ===== 管理画面共通 ===== */
+  .admin-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .admin-header {
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .admin-header.blue { background: linear-gradient(135deg, #1a73e8, #1557b0); }
+  .admin-header.green { background: linear-gradient(135deg, #4CAF50, #388E3C); }
+  .admin-header h2 { font-size: 18px; }
+  .admin-header .badge {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+  }
+  .admin-body { padding: 24px; }
+
+  .admin-breadcrumb {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 20px;
+  }
+  .admin-breadcrumb span { color: var(--blue); }
+
+  /* 検索フォーム */
+  .search-form {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .search-form-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin-bottom: 12px;
+  }
+  .search-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: flex-end;
+  }
+  .search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .search-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .search-field select,
+  .search-field input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    min-width: 160px;
+  }
+  .search-field select:focus,
+  .search-field input:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px rgba(26,115,232,0.1);
+  }
+  .search-btn {
+    padding: 8px 24px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .search-btn:hover { opacity: 0.9; }
+
+  /* NEW badge */
+  .new-badge {
+    display: inline-block;
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* プランタイプフィルタータブ */
+  .plan-filter-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .plan-filter-tab {
+    flex: 1;
+    padding: 12px 16px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: white;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-sub);
+    border-right: 1px solid var(--border);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .plan-filter-tab:last-child { border-right: none; }
+  .plan-filter-tab:hover { background: #f5f5f5; }
+  .plan-filter-tab.active { color: white; }
+  .plan-filter-tab.active.all { background: var(--blue); }
+  .plan-filter-tab.active.monthly { background: #1565C0; }
+  .plan-filter-tab.active.period { background: var(--purple); }
+  .plan-filter-tab.active.dropin { background: #E65100; }
+
+  .plan-filter-tab .count {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+  .plan-filter-tab.active .count {
+    background: rgba(255,255,255,0.3);
+  }
+  .plan-filter-tab:not(.active) .count {
+    background: #f1f3f4;
+    color: var(--text-sub);
+  }
+
+  /* サマリーカード */
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .summary-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 14px;
+    text-align: center;
+    border-top: 3px solid;
+  }
+  .summary-card.all { border-top-color: var(--blue); }
+  .summary-card.monthly { border-top-color: #1565C0; }
+  .summary-card.period { border-top-color: var(--purple); }
+  .summary-card.dropin { border-top-color: #E65100; }
+  .summary-card .s-label {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+  }
+  .summary-card .s-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .summary-card .s-sub {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-top: 2px;
+  }
+
+  /* テーブル */
+  .data-table-wrapper {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .data-table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table-toolbar .result-count {
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .export-btn {
+    padding: 6px 16px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .export-btn:hover { opacity: 0.9; }
+
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.data-table th {
+    background: #f8f9fa;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-sub);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  table.data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    color: var(--text);
+  }
+  table.data-table tr:hover { background: #fafafa; }
+
+  .plan-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .plan-badge.monthly { background: #E3F2FD; color: #1565C0; }
+  .plan-badge.period { background: #F3E8FF; color: #7C3AED; }
+  .plan-badge.dropin { background: #FFF3E0; color: #E65100; }
+  .plan-badge.default { background: #E8F5E9; color: #2E7D32; }
+
+  .btn-sm {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 4px;
+  }
+  .btn-sm.edit { background: var(--blue); color: white; }
+  .btn-sm.detail { background: var(--green); color: white; }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 比較タブ */
+  .compare-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .compare-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .compare-header h2 { font-size: 20px; color: var(--text); margin-bottom: 8px; }
+  .compare-header p { font-size: 13px; color: var(--text-sub); }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) { .compare-grid { grid-template-columns: 1fr; } }
+
+  .compare-card {
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    overflow: hidden;
+  }
+  .compare-card.old { border-color: #ccc; }
+  .compare-card.new { border-color: var(--blue); }
+  .compare-card-header {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .compare-card.old .compare-card-header { background: #eee; color: #666; }
+  .compare-card.new .compare-card-header { background: var(--blue); color: white; }
+  .compare-card-body { padding: 16px; }
+  .compare-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+  .compare-item:last-child { margin-bottom: 0; border-bottom: none; }
+  .compare-item-label { font-size: 12px; color: #999; margin-bottom: 4px; }
+  .compare-item-value { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+  /* 実装セクション */
+  .impl-section {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .impl-header {
+    background: #f1f3f4;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .impl-body { padding: 16px; }
+  .impl-body table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .impl-body th, .impl-body td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  .impl-body th { background: #f8f9fa; font-weight: 600; color: var(--text-sub); width: 200px; }
+  .impl-body code {
+    background: #f1f3f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #d63384;
+  }
+  .help-text {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.5;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid var(--blue);
+    margin-bottom: 12px;
+  }
+
+  .section-desc {
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .highlight-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>3-2 チェックイン利用履歴 プランタイプ別閲覧</h1>
+  <p>既存のチェックイン実績画面にプランタイプフィルターを追加し、月額/期間パス/ドロップインごとに閲覧可能にする</p>
+</div>
+
+<!-- タブナビ -->
+<div class="tab-nav">
+  <button class="active" data-tab="admin" onclick="showTab('admin')">運営管理画面</button>
+  <button data-tab="alliance" onclick="showTab('alliance')">加盟法人管理画面</button>
+  <button data-tab="compare" onclick="showTab('compare')">変更前後比較</button>
+  <button data-tab="impl" onclick="showTab('impl')">実装概要</button>
+</div>
+
+<!-- ===== 運営管理画面タブ ===== -->
+<div class="tab-content active" id="tab-admin">
+  <div class="admin-container">
+    <div class="admin-header blue">
+      <span style="font-size:24px">🏢</span>
+      <div>
+        <h2>チェックイン実績</h2>
+        <div style="font-size:11px; opacity:0.8">プランタイプ別閲覧</div>
+      </div>
+      <div class="badge">Admin（運営）</div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-breadcrumb">
+        <span>ダッシュボード</span> &gt; <span>チェックイン実績</span>
+      </div>
+
+      <!-- 検索フォーム -->
+      <div class="search-form">
+        <div class="search-form-title">検索条件</div>
+        <div class="search-row">
+          <div class="search-field">
+            <label>対象加盟法人 <span style="color:var(--red)">*</span></label>
+            <select>
+              <option>株式会社サンプル</option>
+              <option>株式会社テスト</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>対象店舗 <span style="color:var(--red)">*</span></label>
+            <select>
+              <option>スタディGO 渋谷店</option>
+              <option>スタディGO 新宿店</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>期間（チェックイン） <span style="color:var(--red)">*</span></label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="date" value="2026-03-01">
+              <span style="color:var(--text-sub)">〜</span>
+              <input type="date" value="2026-03-02">
+            </div>
+          </div>
+          <div class="search-field">
+            <label>会員ID（前方一致）</label>
+            <input type="text" placeholder="" style="min-width:100px">
+          </div>
+          <div class="search-field" style="position:relative;">
+            <label>プランタイプ<span class="new-badge">NEW</span></label>
+            <select id="admin-plan-filter" onchange="filterPlanType('admin')">
+              <option value="all">すべて</option>
+              <option value="monthly">月額プラン</option>
+              <option value="period">期間パス</option>
+              <option value="dropin">ドロップイン</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>&nbsp;</label>
+            <button class="search-btn">検索</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- プランタイプ別タブフィルター -->
+      <div class="plan-filter-tabs" id="admin-plan-tabs">
+        <button class="plan-filter-tab active all" onclick="setPlanTab(this, 'admin', 'all')">
+          すべて <span class="count">47</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'admin', 'monthly')">
+          月額プラン <span class="count">18</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'admin', 'period')">
+          期間パス <span class="count">12</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'admin', 'dropin')">
+          ドロップイン <span class="count">17</span>
+        </button>
+      </div>
+
+      <!-- サマリーカード -->
+      <div class="summary-cards">
+        <div class="summary-card all">
+          <div class="s-label">合計利用回数</div>
+          <div class="s-value">47</div>
+          <div class="s-sub">合計 1,892分</div>
+        </div>
+        <div class="summary-card monthly">
+          <div class="s-label">月額プラン</div>
+          <div class="s-value">18</div>
+          <div class="s-sub">合計 1,024分</div>
+        </div>
+        <div class="summary-card period">
+          <div class="s-label">期間パス</div>
+          <div class="s-value">12</div>
+          <div class="s-sub">合計 486分</div>
+        </div>
+        <div class="summary-card dropin">
+          <div class="s-label">ドロップイン</div>
+          <div class="s-value">17</div>
+          <div class="s-sub">合計 382分</div>
+        </div>
+      </div>
+
+      <!-- データテーブル -->
+      <div class="data-table-wrapper">
+        <div class="data-table-toolbar">
+          <span class="result-count">47件の結果</span>
+          <button class="export-btn">エクスポート</button>
+        </div>
+        <table class="data-table" id="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>利用者氏名</th>
+              <th>契約店舗</th>
+              <th>プランタイプ<span class="new-badge">NEW</span></th>
+              <th>チェックイン時のプラン</th>
+              <th>チェックイン日時</th>
+              <th>チェックアウト日時</th>
+              <th>利用時間</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-plan="monthly">
+              <td>1247</td>
+              <td>田中 太郎 <span style="color:#999; font-size:11px;">U00123</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge monthly">月額</span></td>
+              <td>スタンダードプラン</td>
+              <td>2026/03/02 09:30</td>
+              <td>2026/03/02 12:45</td>
+              <td>195分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="period">
+              <td>1246</td>
+              <td>佐藤 花子 <span style="color:#999; font-size:11px;">U00456</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge period">期間パス</span></td>
+              <td>14日パス</td>
+              <td>2026/03/02 10:15</td>
+              <td>2026/03/02 14:30</td>
+              <td>255分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="dropin">
+              <td>1245</td>
+              <td>鈴木 一郎 <span style="color:#999; font-size:11px;">U00789</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge dropin">ドロップイン</span></td>
+              <td>都度利用プラン</td>
+              <td>2026/03/02 11:00</td>
+              <td>2026/03/02 13:00</td>
+              <td>120分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="monthly">
+              <td>1244</td>
+              <td>高橋 美咲 <span style="color:#999; font-size:11px;">U00234</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge monthly">月額</span></td>
+              <td>プレミアムプラン</td>
+              <td>2026/03/02 08:00</td>
+              <td><span style="color:var(--green); font-weight:600;">利用中</span></td>
+              <td>—</td>
+              <td>
+                <button class="btn-sm edit">編集</button>
+              </td>
+            </tr>
+            <tr data-plan="period">
+              <td>1243</td>
+              <td>山田 健一 <span style="color:#999; font-size:11px;">U00567</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge period">期間パス</span></td>
+              <td>7日パス</td>
+              <td>2026/03/01 14:00</td>
+              <td>2026/03/01 17:30</td>
+              <td>210分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="dropin">
+              <td>1242</td>
+              <td>伊藤 さくら <span style="color:#999; font-size:11px;">U00890</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge dropin">ドロップイン</span></td>
+              <td>都度利用プラン</td>
+              <td>2026/03/01 09:00</td>
+              <td>2026/03/01 10:30</td>
+              <td>90分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="monthly">
+              <td>1241</td>
+              <td>渡辺 翔太 <span style="color:#999; font-size:11px;">U00345</span></td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge monthly">月額</span></td>
+              <td>スタンダードプラン</td>
+              <td>2026/03/01 13:00</td>
+              <td>2026/03/01 18:00</td>
+              <td>300分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== 加盟法人管理画面タブ ===== -->
+<div class="tab-content" id="tab-alliance">
+  <div class="admin-container">
+    <div class="admin-header green">
+      <span style="font-size:24px">🏪</span>
+      <div>
+        <h2>チェックイン実績</h2>
+        <div style="font-size:11px; opacity:0.8">プランタイプ別閲覧</div>
+      </div>
+      <div class="badge">Company（加盟法人）</div>
+    </div>
+    <div class="admin-body">
+      <div class="admin-breadcrumb">
+        <span>ダッシュボード</span> &gt; <span>チェックイン実績</span>
+      </div>
+
+      <!-- 検索フォーム（Companyは加盟法人選択なし） -->
+      <div class="search-form">
+        <div class="search-form-title">検索条件</div>
+        <div class="search-row">
+          <div class="search-field">
+            <label>対象店舗 <span style="color:var(--red)">*</span></label>
+            <select>
+              <option>スタディGO 渋谷店</option>
+              <option>スタディGO 池袋店</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>期間（チェックイン） <span style="color:var(--red)">*</span></label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="date" value="2026-03-01">
+              <span style="color:var(--text-sub)">〜</span>
+              <input type="date" value="2026-03-02">
+            </div>
+          </div>
+          <div class="search-field">
+            <label>会員ID（前方一致）</label>
+            <input type="text" placeholder="" style="min-width:100px">
+          </div>
+          <div class="search-field" style="position:relative;">
+            <label>プランタイプ<span class="new-badge">NEW</span></label>
+            <select id="alliance-plan-filter" onchange="filterPlanType('alliance')">
+              <option value="all">すべて</option>
+              <option value="monthly">月額プラン</option>
+              <option value="period">期間パス</option>
+              <option value="dropin">ドロップイン</option>
+            </select>
+          </div>
+          <div class="search-field">
+            <label>&nbsp;</label>
+            <button class="search-btn" style="background:var(--green)">検索</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- プランタイプ別タブフィルター -->
+      <div class="plan-filter-tabs" id="alliance-plan-tabs">
+        <button class="plan-filter-tab active all" onclick="setPlanTab(this, 'alliance', 'all')">
+          すべて <span class="count">32</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'alliance', 'monthly')">
+          月額プラン <span class="count">14</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'alliance', 'period')">
+          期間パス <span class="count">8</span>
+        </button>
+        <button class="plan-filter-tab" onclick="setPlanTab(this, 'alliance', 'dropin')">
+          ドロップイン <span class="count">10</span>
+        </button>
+      </div>
+
+      <!-- サマリーカード -->
+      <div class="summary-cards">
+        <div class="summary-card all">
+          <div class="s-label">合計利用回数</div>
+          <div class="s-value">32</div>
+          <div class="s-sub">合計 1,340分</div>
+        </div>
+        <div class="summary-card monthly">
+          <div class="s-label">月額プラン</div>
+          <div class="s-value">14</div>
+          <div class="s-sub">合計 780分</div>
+        </div>
+        <div class="summary-card period">
+          <div class="s-label">期間パス</div>
+          <div class="s-value">8</div>
+          <div class="s-sub">合計 320分</div>
+        </div>
+        <div class="summary-card dropin">
+          <div class="s-label">ドロップイン</div>
+          <div class="s-value">10</div>
+          <div class="s-sub">合計 240分</div>
+        </div>
+      </div>
+
+      <!-- データテーブル -->
+      <div class="data-table-wrapper">
+        <div class="data-table-toolbar">
+          <span class="result-count">32件の結果</span>
+          <button class="export-btn" style="background:var(--green)">エクスポート</button>
+        </div>
+        <table class="data-table" id="alliance-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>利用者氏名</th>
+              <th>契約店舗</th>
+              <th>プランタイプ<span class="new-badge">NEW</span></th>
+              <th>チェックイン時のプラン</th>
+              <th>チェックイン日時</th>
+              <th>チェックアウト日時</th>
+              <th>利用時間</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-plan="monthly">
+              <td>1247</td>
+              <td>田中 太郎</td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge monthly">月額</span></td>
+              <td>スタンダードプラン</td>
+              <td>2026/03/02 09:30</td>
+              <td>2026/03/02 12:45</td>
+              <td>195分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="period">
+              <td>1246</td>
+              <td>佐藤 花子</td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge period">期間パス</span></td>
+              <td>14日パス</td>
+              <td>2026/03/02 10:15</td>
+              <td>2026/03/02 14:30</td>
+              <td>255分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="dropin">
+              <td>1245</td>
+              <td>鈴木 一郎</td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge dropin">ドロップイン</span></td>
+              <td>都度利用プラン</td>
+              <td>2026/03/02 11:00</td>
+              <td>2026/03/02 13:00</td>
+              <td>120分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+            <tr data-plan="monthly">
+              <td>1244</td>
+              <td>高橋 美咲</td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge monthly">月額</span></td>
+              <td>プレミアムプラン</td>
+              <td>2026/03/02 08:00</td>
+              <td><span style="color:var(--green); font-weight:600;">利用中</span></td>
+              <td>—</td>
+              <td>
+                <button class="btn-sm edit">編集</button>
+              </td>
+            </tr>
+            <tr data-plan="dropin">
+              <td>1242</td>
+              <td>伊藤 さくら</td>
+              <td>スタディGO 渋谷店</td>
+              <td><span class="plan-badge dropin">ドロップイン</span></td>
+              <td>都度利用プラン</td>
+              <td>2026/03/01 09:00</td>
+              <td>2026/03/01 10:30</td>
+              <td>90分</td>
+              <td>
+                <button class="btn-sm edit" disabled>編集</button>
+                <button class="btn-sm detail">明細</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ===== 変更前後比較タブ ===== -->
+<div class="tab-content" id="tab-compare">
+  <div class="compare-container">
+    <div class="compare-header">
+      <h2>変更前後の比較</h2>
+      <p>既存のチェックイン実績ページにプランタイプフィルターを追加します</p>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card old">
+        <div class="compare-card-header">現在の画面</div>
+        <div class="compare-card-body">
+          <div class="compare-item">
+            <div class="compare-item-label">検索フィルター</div>
+            <div class="compare-item-value">
+              加盟法人 / 店舗 / 期間 / 会員ID<br>
+              <strong style="color:var(--red)">プランタイプでの絞り込み不可</strong>
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">テーブル列</div>
+            <div class="compare-item-value">
+              ID / 利用者氏名 / 契約店舗 / チェックイン時のプラン / チェックイン日時 / チェックアウト日時 / 利用時間 / ボタン
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">プランタイプ表示</div>
+            <div class="compare-item-value">
+              「チェックイン時のプラン」列にプラン名のみ表示<br>
+              プランタイプ（月額/ドロップイン/期間パス）の区別がつきにくい
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">集計</div>
+            <div class="compare-item-value" style="color:var(--red);">なし</div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">CSVエクスポート</div>
+            <div class="compare-item-value">全件出力のみ（プランタイプ列なし）</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="compare-card new">
+        <div class="compare-card-header">変更後の画面</div>
+        <div class="compare-card-body">
+          <div class="compare-item">
+            <div class="compare-item-label">検索フィルター</div>
+            <div class="compare-item-value">
+              加盟法人 / 店舗 / 期間 / 会員ID / <strong style="color:var(--blue)">プランタイプ</strong><br>
+              セレクトボックス + タブ切替の2つの方法で絞り込み可能
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">テーブル列</div>
+            <div class="compare-item-value">
+              ID / 利用者氏名 / 契約店舗 / <strong style="color:var(--blue)">プランタイプ</strong> / チェックイン時のプラン / チェックイン日時 / チェックアウト日時 / 利用時間 / ボタン
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">プランタイプ表示</div>
+            <div class="compare-item-value">
+              色分けバッジで一目で識別可能<br>
+              <span class="plan-badge monthly">月額</span>
+              <span class="plan-badge period">期間パス</span>
+              <span class="plan-badge dropin">ドロップイン</span>
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">集計</div>
+            <div class="compare-item-value" style="color:var(--green); font-weight:600;">
+              プランタイプ別の利用回数・合計利用時間をサマリーカードで表示
+            </div>
+          </div>
+          <div class="compare-item">
+            <div class="compare-item-label">CSVエクスポート</div>
+            <div class="compare-item-value">プランタイプ列を追加 + フィルター適用時はフィルター後のデータを出力</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API変更 -->
+    <div class="impl-section" style="margin-top:24px;">
+      <div class="impl-header">APIリクエスト変更</div>
+      <div class="impl-body">
+        <div class="help-text">
+          既存の <code>adminShopUsages</code> / <code>companyShopUsages</code> エンドポイントに <code>planType</code> パラメータを追加。<br>
+          サーバー側で <code>ShopPlan.planType</code> による WHERE 条件を追加してフィルタリング。
+        </div>
+        <table>
+          <tr>
+            <th>パラメータ名</th>
+            <td><code>planType?: number</code></td>
+          </tr>
+          <tr>
+            <th>型</th>
+            <td><code>number | undefined</code> — PLAN_TYPE定数値 (1=月額, 2=ドロップイン, 3=店舗デフォルト, 4=期間パス)</td>
+          </tr>
+          <tr>
+            <th>省略時</th>
+            <td>全プランタイプを返す（現在と同じ動作）</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 実装概要タブ ===== -->
+<div class="tab-content" id="tab-impl">
+  <div class="compare-container">
+    <div class="compare-header">
+      <h2>実装概要</h2>
+      <p>既存の検索フォーム・テーブルにプランタイプフィルターを追加する最小変更</p>
+    </div>
+
+    <div class="impl-section" style="margin-top:0;">
+      <div class="impl-header">1. API バックエンド</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>definition.ts</th><td>
+            <code>adminShopUsages</code> / <code>companyShopUsages</code> の Input に<br>
+            <code>planType?: number</code> を追加
+          </td></tr>
+          <tr><th>adminShopResolver.ts</th><td>
+            <code>adminShopUsages()</code> の Prisma where に条件追加:<br>
+            <code>shopPlan: { planType: input.planType }</code> (planType指定時のみ)
+          </td></tr>
+          <tr><th>CompanyShopResolver.ts</th><td>
+            <code>companyShopUsages()</code> に同じフィルター追加
+          </td></tr>
+          <tr><th>レスポンス</th><td>
+            既存の <code>include: { shopPlan: true }</code> で <code>shopPlan.planType</code> は既に返されている → 追加不要
+          </td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="impl-section">
+      <div class="impl-header">2. フロントエンド（Admin）</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>pages/admin/shopUsages/<br>index.tsx</th><td>
+            <code>SearchParam</code> 型に <code>planType?: number</code> 追加<br>
+            検索フォームに <code>ValidatableSelectBox</code> 追加（プランタイプ選択）<br>
+            プランタイプタブ UI 追加（クライアントサイド切り替え or API再取得）
+          </td></tr>
+          <tr><th>pages/admin/shopUsages/<br>config.tsx</th><td>
+            テーブル列に「プランタイプ」列を追加:<br>
+            <code>key: 'planType'</code><br>
+            <code>formatValue: item.shopPlan.planType → バッジ表示</code><br>
+            <code>csvFormatValue: planType名称文字列</code>
+          </td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="impl-section">
+      <div class="impl-header">3. フロントエンド（Alliance）</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>pages/alliance/shopUsages/<br>index.tsx</th><td>
+            Admin版と同様に <code>planType</code> フィルター追加
+          </td></tr>
+          <tr><th>pages/alliance/shopUsages/<br>config.tsx</th><td>
+            Admin版と同様にテーブル列追加
+          </td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="impl-section">
+      <div class="impl-header">4. 変更ファイル一覧</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>#</th><th style="width:auto">ファイル</th><th style="width:100px">変更種別</th></tr>
+          <tr><td>1</td><td><code>studygo-api-backup/src/apidef/definition.ts</code></td><td>修正</td></tr>
+          <tr><td>2</td><td><code>studygo-api-backup/src/api/resolvers/admin/adminShopResolver.ts</code></td><td>修正</td></tr>
+          <tr><td>3</td><td><code>studygo-api-backup/src/api/resolvers/company/CompanyShopResolver.ts</code></td><td>修正</td></tr>
+          <tr><td>4</td><td><code>studygo-front-backup/src/pages/admin/shopUsages/index.tsx</code></td><td>修正</td></tr>
+          <tr><td>5</td><td><code>studygo-front-backup/src/pages/admin/shopUsages/config.tsx</code></td><td>修正</td></tr>
+          <tr><td>6</td><td><code>studygo-front-backup/src/pages/alliance/shopUsages/index.tsx</code></td><td>修正</td></tr>
+          <tr><td>7</td><td><code>studygo-front-backup/src/pages/alliance/shopUsages/config.tsx</code></td><td>修正</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="impl-section">
+      <div class="impl-header">5. 影響範囲</div>
+      <div class="impl-body">
+        <table>
+          <tr>
+            <th>DBスキーマ</th>
+            <td><strong style="color:var(--green)">変更なし</strong> — ShopPlan.planType は既存フィールド</td>
+          </tr>
+          <tr>
+            <th>Flutter アプリ</th>
+            <td><strong style="color:var(--green)">変更なし</strong> — 管理画面のみの変更</td>
+          </tr>
+          <tr>
+            <th>既存API互換性</th>
+            <td><strong style="color:var(--green)">後方互換</strong> — planType は optional。省略時は全件返す</td>
+          </tr>
+          <tr>
+            <th>破壊的変更</th>
+            <td><strong style="color:var(--green)">なし</strong></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-nav button').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  document.querySelector('[data-tab="' + tabName + '"]').classList.add('active');
+}
+
+function setPlanTab(btn, context, plan) {
+  const tabs = document.getElementById(context + '-plan-tabs');
+  tabs.querySelectorAll('.plan-filter-tab').forEach(t => {
+    t.classList.remove('active', 'all', 'monthly', 'period', 'dropin');
+  });
+  btn.classList.add('active', plan);
+
+  // テーブルフィルタリング
+  const table = document.getElementById(context + '-table');
+  table.querySelectorAll('tbody tr').forEach(row => {
+    if (plan === 'all') {
+      row.style.display = '';
+    } else {
+      row.style.display = row.dataset.plan === plan ? '' : 'none';
+    }
+  });
+}
+
+function filterPlanType(context) {
+  const select = document.getElementById(context + '-plan-filter');
+  const plan = select.value;
+  const tabs = document.getElementById(context + '-plan-tabs');
+  const tabButtons = tabs.querySelectorAll('.plan-filter-tab');
+
+  tabButtons.forEach(t => {
+    t.classList.remove('active', 'all', 'monthly', 'period', 'dropin');
+  });
+
+  // 対応するタブをアクティブに
+  const idx = {all: 0, monthly: 1, period: 2, dropin: 3}[plan];
+  tabButtons[idx].classList.add('active', plan);
+
+  // テーブルフィルタリング
+  const table = document.getElementById(context + '-table');
+  table.querySelectorAll('tbody tr').forEach(row => {
+    if (plan === 'all') {
+      row.style.display = '';
+    } else {
+      row.style.display = row.dataset.plan === plan ? '' : 'none';
+    }
+  });
+}
+</script>
+
+</body>
+</html>

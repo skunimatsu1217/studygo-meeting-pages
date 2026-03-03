@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-5. 自動チェックアウト通知 - 画面モックアップ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+    background: #f0f2f5;
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  .page-header {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* Tab Navigation */
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: var(--primary);
+    color: white;
+  }
+  .tab-btn:hover:not(.active) { background: var(--gray-100); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Section */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--gray-900);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 16px;
+  }
+  .section-badge {
+    font-size: 11px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .badge-web { background: #dbeafe; color: #1d4ed8; }
+  .badge-app { background: #dcfce7; color: #15803d; }
+  .badge-api { background: #fef3c7; color: #b45309; }
+
+  /* ===== APP MOCKUPS ===== */
+  .phone-frame {
+    width: 320px;
+    min-height: 580px;
+    background: white;
+    border-radius: 32px;
+    border: 3px solid var(--gray-300);
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    position: relative;
+    margin: 0 auto;
+  }
+  .phone-notch {
+    width: 120px;
+    height: 24px;
+    background: var(--gray-800);
+    border-radius: 0 0 16px 16px;
+    margin: 0 auto;
+  }
+  .phone-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-800);
+  }
+  .phone-content {
+    padding: 0;
+    min-height: 480px;
+  }
+  .phone-nav-bar {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .phone-nav-bar .back-arrow { font-size: 20px; cursor: pointer; }
+  .phone-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    border-top: 1px solid var(--gray-200);
+    background: white;
+  }
+  .phone-bottom-nav .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    color: var(--gray-400);
+    gap: 2px;
+  }
+  .phone-bottom-nav .nav-item.active { color: var(--primary); }
+  .phone-bottom-nav .nav-icon { font-size: 18px; }
+
+  .mockup-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .mockup-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .mockup-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-700);
+    text-align: center;
+    background: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .mockup-note {
+    font-size: 12px;
+    color: var(--gray-500);
+    max-width: 300px;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  /* Push Notification Banner */
+  .push-banner {
+    background: white;
+    margin: 8px 12px;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .push-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #2563eb, #60a5fa);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .push-text { flex: 1; }
+  .push-text .push-app { font-size: 11px; color: var(--gray-400); font-weight: 600; }
+  .push-text .push-title { font-size: 13px; font-weight: 700; color: var(--gray-900); }
+  .push-text .push-body { font-size: 12px; color: var(--gray-600); margin-top: 2px; line-height: 1.4; }
+  .push-text .push-time { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+
+  /* Message Bubble */
+  .msg-bubble {
+    margin: 8px 12px;
+    max-width: 260px;
+  }
+  .msg-bubble.from-shop {
+    margin-right: auto;
+  }
+  .msg-sender {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-bottom: 4px;
+    padding-left: 4px;
+  }
+  .msg-content {
+    background: var(--gray-100);
+    border-radius: 0 16px 16px 16px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--gray-800);
+    white-space: pre-line;
+  }
+  .msg-time {
+    font-size: 10px;
+    color: var(--gray-400);
+    margin-top: 4px;
+    padding-left: 4px;
+  }
+
+  /* Settings Toggle */
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .setting-label { font-size: 14px; font-weight: 500; }
+  .setting-desc { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .toggle {
+    width: 48px;
+    height: 28px;
+    background: var(--success);
+    border-radius: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.off { background: var(--gray-300); }
+  .toggle::after {
+    content: '';
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.off::after { right: auto; left: 3px; }
+
+  /* ===== WEB ADMIN MOCKUPS ===== */
+  .web-frame {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+  }
+  .web-titlebar {
+    background: var(--gray-100);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .web-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .web-dot.red { background: #ef4444; }
+  .web-dot.yellow { background: #f59e0b; }
+  .web-dot.green { background: #22c55e; }
+  .web-url {
+    flex: 1;
+    background: white;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-left: 8px;
+  }
+  .web-sidebar {
+    width: 200px;
+    background: var(--gray-900);
+    color: white;
+    min-height: 500px;
+    padding: 16px 0;
+    float: left;
+  }
+  .web-sidebar .sidebar-title {
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0 16px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+  }
+  .web-sidebar .sidebar-item {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .web-sidebar .sidebar-item:hover { background: rgba(255,255,255,0.05); color: white; }
+  .web-sidebar .sidebar-item.active { background: rgba(37,99,235,0.3); color: white; border-left: 3px solid var(--primary); }
+  .web-sidebar .sidebar-group { font-size: 11px; color: rgba(255,255,255,0.3); padding: 12px 16px 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .web-main {
+    margin-left: 200px;
+    padding: 24px;
+    min-height: 500px;
+  }
+  .web-page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .web-page-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+
+  /* Table */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    background: var(--gray-50);
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-600);
+    border-bottom: 2px solid var(--gray-200);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--gray-100);
+    color: var(--gray-700);
+  }
+  .data-table tr:hover td { background: var(--gray-50); }
+
+  .status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .status-sent { background: #dcfce7; color: #15803d; }
+  .status-pending { background: #fef3c7; color: #b45309; }
+  .status-failed { background: #fee2e2; color: #dc2626; }
+  .status-auto { background: #dbeafe; color: #1d4ed8; }
+
+  /* Stats Cards */
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .stat-card .stat-label { font-size: 12px; color: var(--gray-500); }
+  .stat-card .stat-value { font-size: 28px; font-weight: 700; color: var(--gray-900); margin-top: 4px; }
+  .stat-card .stat-sub { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-input, .filter-select {
+    padding: 6px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--gray-700);
+    background: white;
+  }
+  .filter-btn {
+    padding: 6px 16px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Clearfix */
+  .clearfix::after { content: ''; display: table; clear: both; }
+
+  /* Flow Diagram */
+  .flow-diagram {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--gray-200);
+  }
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .flow-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .flow-dot.warning { background: var(--warning); }
+  .flow-dot.success { background: var(--success); }
+  .flow-dot.danger { background: var(--danger); }
+  .flow-line {
+    width: 2px;
+    height: 20px;
+    background: var(--gray-300);
+    margin-left: 15px;
+    margin-bottom: 8px;
+  }
+  .flow-text { padding-top: 4px; }
+  .flow-text .flow-title { font-size: 14px; font-weight: 700; }
+  .flow-text .flow-desc { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+  .flow-channels {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .flow-channel {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .ch-push { background: #ede9fe; color: #7c3aed; }
+  .ch-inapp { background: #dbeafe; color: #1d4ed8; }
+  .ch-email { background: #fce7f3; color: #be185d; }
+
+  @media (max-width: 768px) {
+    .mockup-row { flex-direction: column; align-items: center; }
+    .web-sidebar { display: none; }
+    .web-main { margin-left: 0; }
+    .stats-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>3-5. 自動チェックアウト時のアプリ内通知</h1>
+  <p>WEB管理画面 + アプリ画面 モックアップ</p>
+</div>
+
+<div class="container">
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('flow')">通知フロー</button>
+    <button class="tab-btn" onclick="showTab('app')">アプリ画面</button>
+    <button class="tab-btn" onclick="showTab('admin')">管理画面</button>
+    <button class="tab-btn" onclick="showTab('company')">法人画面</button>
+  </div>
+
+  <!-- ==================== FLOW TAB ==================== -->
+  <div class="tab-content active" id="tab-flow">
+    <div class="section">
+      <div class="section-title">通知フロー全体図</div>
+      <div class="section-desc">チェックイン → 15分前警告 → 自動チェックアウト → 通知の流れ</div>
+
+      <div class="flow-diagram">
+        <div class="flow-step">
+          <div class="flow-dot">1</div>
+          <div class="flow-text">
+            <div class="flow-title">ユーザーがチェックイン</div>
+            <div class="flow-desc">checkOutWillBeAt = 営業終了時刻 - 1秒 が自動設定される</div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot" style="background:var(--gray-400)">...</div>
+          <div class="flow-text">
+            <div class="flow-title" style="color:var(--gray-400)">利用中（バッチ10分間隔で監視）</div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot warning">2</div>
+          <div class="flow-text">
+            <div class="flow-title">閉店15分前 — 事前警告通知</div>
+            <div class="flow-desc">「あと15分で営業時間が終了します。チェックアウトをお願いします。」</div>
+            <div class="flow-channels">
+              <span class="flow-channel ch-push">Push通知</span>
+              <span class="flow-channel ch-inapp">アプリ内メッセージ</span>
+            </div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot" style="background:var(--gray-400)">?</div>
+          <div class="flow-text">
+            <div class="flow-title">ユーザーが手動チェックアウトした場合</div>
+            <div class="flow-desc" style="color:var(--success)">→ 通常のチェックアウト処理（自動チェックアウトは発生しない）</div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot danger">3</div>
+          <div class="flow-text">
+            <div class="flow-title">営業時間終了 — 自動チェックアウト実行</div>
+            <div class="flow-desc">料金計算 → Stripe決済 → チェックアウト完了</div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot success">4</div>
+          <div class="flow-text">
+            <div class="flow-title">自動チェックアウト完了通知</div>
+            <div class="flow-desc">店舗名・利用時間・料金を含む通知を3チャネルで送信</div>
+            <div class="flow-channels">
+              <span class="flow-channel ch-push">Push通知</span>
+              <span class="flow-channel ch-inapp">アプリ内メッセージ</span>
+              <span class="flow-channel ch-email">メール</span>
+            </div>
+          </div>
+        </div>
+        <div class="flow-line"></div>
+
+        <div class="flow-step">
+          <div class="flow-dot danger" style="background:var(--danger)">!</div>
+          <div class="flow-text">
+            <div class="flow-title">決済失敗の場合</div>
+            <div class="flow-desc">既存の決済失敗フロー（リトライ通知 + 決済リンク送付）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== APP TAB ==================== -->
+  <div class="tab-content" id="tab-app">
+
+    <!-- Push Notifications -->
+    <div class="section">
+      <div class="section-title"><span class="section-badge badge-app">APP</span> Push通知</div>
+      <div class="section-desc">ロック画面・通知センターに表示されるPush通知のイメージ</div>
+
+      <div class="mockup-row">
+        <!-- 15min warning push -->
+        <div class="mockup-item">
+          <div class="mockup-label">15分前 事前警告</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+              <span>21:45</span>
+              <span>100%</span>
+            </div>
+            <div style="padding:16px 8px; background:#f5f5f5; min-height:480px;">
+              <div style="text-align:center; font-size:48px; color:var(--gray-300); margin:40px 0 60px;">
+                <div style="font-size:60px;">21:45</div>
+                <div style="font-size:14px; color:var(--gray-400);">3月2日 日曜日</div>
+              </div>
+              <div class="push-banner">
+                <div class="push-icon">S</div>
+                <div class="push-text">
+                  <div class="push-app">スタディGO</div>
+                  <div class="push-title">渋谷スタディラウンジ</div>
+                  <div class="push-body">あと15分で営業時間が終了します（22:00閉店）。チェックアウトをお願いします。</div>
+                  <div class="push-time">今</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">営業終了15分前にPush通知で警告。ユーザーが手動チェックアウトする猶予を与える。</div>
+        </div>
+
+        <!-- Auto checkout completed push -->
+        <div class="mockup-item">
+          <div class="mockup-label">自動チェックアウト完了</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+              <span>22:00</span>
+              <span>98%</span>
+            </div>
+            <div style="padding:16px 8px; background:#f5f5f5; min-height:480px;">
+              <div style="text-align:center; font-size:48px; color:var(--gray-300); margin:40px 0 60px;">
+                <div style="font-size:60px;">22:00</div>
+                <div style="font-size:14px; color:var(--gray-400);">3月2日 日曜日</div>
+              </div>
+              <div class="push-banner">
+                <div class="push-icon">S</div>
+                <div class="push-text">
+                  <div class="push-app">スタディGO</div>
+                  <div class="push-title">渋谷スタディラウンジ</div>
+                  <div class="push-body">営業時間終了のため、自動チェックアウトしました。利用時間: 3時間20分 料金: 1,650円</div>
+                  <div class="push-time">今</div>
+                </div>
+              </div>
+              <div class="push-banner" style="opacity:0.6; margin-top:8px;">
+                <div class="push-icon">S</div>
+                <div class="push-text">
+                  <div class="push-app">スタディGO</div>
+                  <div class="push-title">渋谷スタディラウンジ</div>
+                  <div class="push-body">あと15分で営業時間が終了します...</div>
+                  <div class="push-time">15分前</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">自動チェックアウト実行時に完了通知。利用時間と料金を表示。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- In-app Message -->
+    <div class="section">
+      <div class="section-title"><span class="section-badge badge-app">APP</span> アプリ内メッセージ</div>
+      <div class="section-desc">店舗とのメッセージスレッド内に通知が表示される</div>
+
+      <div class="mockup-row">
+        <!-- Message Thread -->
+        <div class="mockup-item">
+          <div class="mockup-label">メッセージスレッド</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+              <span>22:01</span>
+              <span>98%</span>
+            </div>
+            <div class="phone-nav-bar">
+              <span class="back-arrow">&lt;</span>
+              渋谷スタディラウンジ
+            </div>
+            <div class="phone-content" style="padding:12px 0; background:#fafafa;">
+              <!-- Warning message -->
+              <div class="msg-bubble from-shop">
+                <div class="msg-sender">渋谷スタディラウンジ</div>
+                <div class="msg-content">まもなく営業時間が終了します（22:00閉店）。
+チェックアウトをお願いいたします。
+
+チェックアウトされない場合、営業時間終了時に自動チェックアウトが行われます。</div>
+                <div class="msg-time">21:45</div>
+              </div>
+
+              <!-- Auto checkout message -->
+              <div class="msg-bubble from-shop" style="margin-top:16px;">
+                <div class="msg-sender">渋谷スタディラウンジ</div>
+                <div class="msg-content">営業時間終了のため、自動チェックアウトいたしました。
+
+【利用内容】
+・店舗名: 渋谷スタディラウンジ
+・チェックイン: 2026年3月2日 18:40
+・チェックアウト: 22:00
+・利用時間: 3時間20分
+・料金: 1,650円
+
+領収書はマイページの「利用履歴を確認」より発行可能です。</div>
+                <div class="msg-time">22:00</div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">既存のメッセージスレッドUIを利用。店舗からのメッセージとして表示される。</div>
+        </div>
+
+        <!-- Message List -->
+        <div class="mockup-item">
+          <div class="mockup-label">メッセージ一覧</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+              <span>22:01</span>
+              <span>98%</span>
+            </div>
+            <div class="phone-nav-bar">
+              メッセージ
+            </div>
+            <div class="phone-content">
+              <!-- Thread list -->
+              <div style="border-bottom:1px solid var(--gray-100); padding:14px 16px; display:flex; gap:12px; align-items:center; background:#eef4ff;">
+                <div style="width:44px;height:44px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;flex-shrink:0;">渋</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:700;">渋谷スタディラウンジ</span><span style="font-size:11px;color:var(--gray-400);">22:00</span></div>
+                  <div style="font-size:12px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">営業時間終了のため、自動チェックアウト...</div>
+                </div>
+                <div style="width:20px;height:20px;background:var(--danger);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:700;">2</div>
+              </div>
+              <div style="border-bottom:1px solid var(--gray-100); padding:14px 16px; display:flex; gap:12px; align-items:center;">
+                <div style="width:44px;height:44px;background:var(--gray-400);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;flex-shrink:0;">S</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:600;">スタディGO運営</span><span style="font-size:11px;color:var(--gray-400);">2日前</span></div>
+                  <div style="font-size:12px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">アプリをアップデートしました。</div>
+                </div>
+              </div>
+              <div style="border-bottom:1px solid var(--gray-100); padding:14px 16px; display:flex; gap:12px; align-items:center;">
+                <div style="width:44px;height:44px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;flex-shrink:0;">新</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="display:flex;justify-content:space-between;"><span style="font-size:14px;font-weight:600;">新宿ワークスペース</span><span style="font-size:11px;color:var(--gray-400);">1週間前</span></div>
+                  <div style="font-size:12px;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">ご利用ありがとうございました。</div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-bottom-nav">
+              <div class="nav-item"><span class="nav-icon">&#x1F50D;</span>検索</div>
+              <div class="nav-item"><span class="nav-icon">&#x2764;</span>お気に入り</div>
+              <div class="nav-item active"><span class="nav-icon">&#x1F4AC;</span>メッセージ</div>
+              <div class="nav-item"><span class="nav-icon">&#x1F464;</span>マイページ</div>
+            </div>
+          </div>
+          <div class="mockup-note">未読バッジ(2)で警告+完了の2件を表示。タップでスレッドに遷移。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div class="section">
+      <div class="section-title"><span class="section-badge badge-app">APP</span> 通知設定画面</div>
+      <div class="section-desc">マイページ → 設定 → 通知設定</div>
+
+      <div class="mockup-row">
+        <div class="mockup-item">
+          <div class="mockup-label">通知設定</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar">
+              <span>12:30</span>
+              <span>85%</span>
+            </div>
+            <div class="phone-nav-bar">
+              <span class="back-arrow">&lt;</span>
+              通知設定
+            </div>
+            <div class="phone-content" style="background:var(--gray-50);">
+              <div style="padding:16px;font-size:12px;color:var(--gray-500);">チェックイン・チェックアウト</div>
+              <div style="background:white;">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">自動チェックアウト通知</div>
+                    <div class="setting-desc">営業時間終了時の自動チェックアウトを通知</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">事前警告通知</div>
+                    <div class="setting-desc">閉店15分前にチェックアウトのリマインド</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+              </div>
+
+              <div style="padding:16px;font-size:12px;color:var(--gray-500);">決済</div>
+              <div style="background:white;">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">決済完了通知</div>
+                    <div class="setting-desc">チェックアウト時の決済完了を通知</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">決済失敗通知</div>
+                    <div class="setting-desc">決済エラー時の通知（推奨：ON）</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+              </div>
+
+              <div style="padding:16px;font-size:12px;color:var(--gray-500);">その他</div>
+              <div style="background:white;">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">お知らせ・キャンペーン</div>
+                    <div class="setting-desc">新機能やキャンペーン情報</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+              </div>
+
+              <div style="padding:16px;font-size:11px;color:var(--gray-400);text-align:center;">
+                ※ 決済失敗通知はOFFにしても重要な通知は送信されます
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">3-5の実装では「自動チェックアウト通知」と「事前警告通知」のトグルを追加。将来のPush通知基盤（4-2）拡張に備えた設計。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ADMIN TAB ==================== -->
+  <div class="tab-content" id="tab-admin">
+    <div class="section">
+      <div class="section-title"><span class="section-badge badge-web">WEB</span> 管理画面 — 自動チェックアウト履歴</div>
+      <div class="section-desc">admin.studygo.jp/auto-checkout — スタディGO管理者が自動チェックアウトの状況を一覧確認</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div>
+          <div class="web-dot yellow"></div>
+          <div class="web-dot green"></div>
+          <div class="web-url">admin.studygo.jp/auto-checkout</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">StudyGO Admin</div>
+            <div class="sidebar-group">店舗管理</div>
+            <div class="sidebar-item">店舗一覧</div>
+            <div class="sidebar-item">プラン管理</div>
+            <div class="sidebar-group">ユーザー管理</div>
+            <div class="sidebar-item">会員一覧</div>
+            <div class="sidebar-item">契約一覧</div>
+            <div class="sidebar-group">チェックイン</div>
+            <div class="sidebar-item">利用履歴</div>
+            <div class="sidebar-item active">自動チェックアウト</div>
+            <div class="sidebar-group">通知</div>
+            <div class="sidebar-item">通知ログ</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">自動チェックアウト履歴</div>
+            <div class="web-page-desc">営業時間終了による自動チェックアウトの実行状況と通知送信結果</div>
+
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-label">今日の自動チェックアウト</div>
+                <div class="stat-value">12</div>
+                <div class="stat-sub">前日比 +3</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">事前警告送信数</div>
+                <div class="stat-value">18</div>
+                <div class="stat-sub">うち6名が手動C/O</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">通知送信成功率</div>
+                <div class="stat-value" style="color:var(--success);">97%</div>
+                <div class="stat-sub">Push + アプリ内 + メール</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">決済失敗</div>
+                <div class="stat-value" style="color:var(--danger);">1</div>
+                <div class="stat-sub">リトライ中</div>
+              </div>
+            </div>
+
+            <div class="filter-bar">
+              <input type="date" class="filter-input" value="2026-03-01">
+              <span style="color:var(--gray-400);">〜</span>
+              <input type="date" class="filter-input" value="2026-03-02">
+              <select class="filter-select">
+                <option>全店舗</option>
+                <option>渋谷スタディラウンジ</option>
+                <option>新宿ワークスペース</option>
+              </select>
+              <select class="filter-select">
+                <option>全ステータス</option>
+                <option>チェックアウト完了</option>
+                <option>決済失敗</option>
+              </select>
+              <button class="filter-btn">検索</button>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>日時</th>
+                  <th>ユーザー</th>
+                  <th>店舗</th>
+                  <th>利用時間</th>
+                  <th>料金</th>
+                  <th>事前警告</th>
+                  <th>C/O通知</th>
+                  <th>決済</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>3/2 22:00</td>
+                  <td>田中 太郎</td>
+                  <td>渋谷スタディラウンジ</td>
+                  <td>3時間20分</td>
+                  <td>1,650円</td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+                <tr>
+                  <td>3/2 22:00</td>
+                  <td>佐藤 花子</td>
+                  <td>渋谷スタディラウンジ</td>
+                  <td>5時間10分</td>
+                  <td>2,200円</td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+                <tr>
+                  <td>3/2 21:00</td>
+                  <td>鈴木 一郎</td>
+                  <td>新宿ワークスペース</td>
+                  <td>2時間45分</td>
+                  <td>1,320円</td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-failed">失敗</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+                <tr>
+                  <td>3/2 21:00</td>
+                  <td>山田 次郎</td>
+                  <td>新宿ワークスペース</td>
+                  <td>4時間00分</td>
+                  <td>1,980円</td>
+                  <td><span class="status-tag status-pending">OFF</span></td>
+                  <td><span class="status-tag status-pending">OFF</span></td>
+                  <td><span class="status-tag status-failed">失敗</span></td>
+                </tr>
+                <tr>
+                  <td>3/1 23:00</td>
+                  <td>高橋 美咲</td>
+                  <td>池袋スタディルーム</td>
+                  <td>6時間30分</td>
+                  <td>月額プラン</td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><span class="status-tag status-auto">月額</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== COMPANY TAB ==================== -->
+  <div class="tab-content" id="tab-company">
+    <div class="section">
+      <div class="section-title"><span class="section-badge badge-web">WEB</span> 加盟法人画面 — 自動チェックアウト状況</div>
+      <div class="section-desc">company.studygo.jp/auto-checkout — 自社店舗の自動チェックアウト状況を確認</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div>
+          <div class="web-dot yellow"></div>
+          <div class="web-dot green"></div>
+          <div class="web-url">company.studygo.jp/auto-checkout</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">渋谷スタディラウンジ</div>
+            <div class="sidebar-group">ダッシュボード</div>
+            <div class="sidebar-item">売上サマリー</div>
+            <div class="sidebar-item">来店状況</div>
+            <div class="sidebar-group">会員</div>
+            <div class="sidebar-item">会員一覧</div>
+            <div class="sidebar-item">契約管理</div>
+            <div class="sidebar-group">チェックイン</div>
+            <div class="sidebar-item">利用履歴</div>
+            <div class="sidebar-item active">自動チェックアウト</div>
+            <div class="sidebar-group">設定</div>
+            <div class="sidebar-item">営業時間</div>
+            <div class="sidebar-item">プラン設定</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">自動チェックアウト状況</div>
+            <div class="web-page-desc">営業時間終了時に自動チェックアウトされた利用者の一覧</div>
+
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-label">今月の自動C/O件数</div>
+                <div class="stat-value">45</div>
+                <div class="stat-sub">全C/Oの18%</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">事前警告 → 手動C/O率</div>
+                <div class="stat-value">33%</div>
+                <div class="stat-sub">警告後に手動C/Oした割合</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">自動C/O時の平均利用時間</div>
+                <div class="stat-value">4.2h</div>
+                <div class="stat-sub">通常平均: 2.8h</div>
+              </div>
+            </div>
+
+            <div class="filter-bar">
+              <input type="date" class="filter-input" value="2026-03-01">
+              <span style="color:var(--gray-400);">〜</span>
+              <input type="date" class="filter-input" value="2026-03-02">
+              <select class="filter-select">
+                <option>全プラン</option>
+                <option>ドロップイン</option>
+                <option>月額</option>
+                <option>期間パス</option>
+              </select>
+              <button class="filter-btn">検索</button>
+              <button class="filter-btn" style="background:var(--gray-600);">CSVエクスポート</button>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>日時</th>
+                  <th>会員名</th>
+                  <th>プラン</th>
+                  <th>チェックイン</th>
+                  <th>利用時間</th>
+                  <th>料金</th>
+                  <th>事前警告</th>
+                  <th>決済</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>3/2 22:00</td>
+                  <td>田中 太郎</td>
+                  <td>ドロップイン</td>
+                  <td>18:40</td>
+                  <td>3時間20分</td>
+                  <td>1,650円</td>
+                  <td><span class="status-tag status-sent">通知済</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+                <tr>
+                  <td>3/2 22:00</td>
+                  <td>佐藤 花子</td>
+                  <td>ドロップイン</td>
+                  <td>16:50</td>
+                  <td>5時間10分</td>
+                  <td>2,200円</td>
+                  <td><span class="status-tag status-sent">通知済</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+                <tr>
+                  <td>3/1 22:00</td>
+                  <td>高橋 美咲</td>
+                  <td>月額プラン</td>
+                  <td>15:30</td>
+                  <td>6時間30分</td>
+                  <td>—</td>
+                  <td><span class="status-tag status-sent">通知済</span></td>
+                  <td><span class="status-tag status-auto">月額</span></td>
+                </tr>
+                <tr>
+                  <td>3/1 22:00</td>
+                  <td>伊藤 健太</td>
+                  <td>ドロップイン</td>
+                  <td>19:15</td>
+                  <td>2時間45分</td>
+                  <td>1,320円</td>
+                  <td><span class="status-tag status-pending">OFF</span></td>
+                  <td><span class="status-tag status-sent">成功</span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style="margin-top:20px; padding:16px; background:#fffbeb; border-radius:8px; border:1px solid #fde68a;">
+              <div style="font-size:13px; font-weight:600; color:#b45309; margin-bottom:4px;">ヒント</div>
+              <div style="font-size:12px; color:#92400e; line-height:1.5;">
+                自動チェックアウトが多い場合、営業時間の案内を店舗内に掲示することで、手動チェックアウト率が向上します。
+                事前警告通知後に手動チェックアウトした割合は「事前警告→手動C/O率」で確認できます。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

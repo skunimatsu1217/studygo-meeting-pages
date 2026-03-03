@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4. 短期パス（期間パス）実装 - 会議資料</title>
+<style>
+  :root { --blue:#1a73e8; --green:#4CAF50; --orange:#FF9800; --purple:#7C3AED; --red:#F44336; --text:#333; --text-sub:#757575; --border:#E0E0E0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Hiragino Sans','Meiryo',sans-serif; background:#2c2c2c; display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:20px; }
+  .page-header { color:white; text-align:center; margin-bottom:24px; max-width:1400px; width:100%; }
+  .page-header h1 { font-size:24px; margin-bottom:8px; }
+  .page-header p { font-size:13px; opacity:0.7; }
+  .tab-nav { display:flex; gap:4px; justify-content:center; margin-bottom:24px; flex-wrap:wrap; }
+  .tab-nav button { padding:10px 20px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; border-radius:8px 8px 0 0; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s; }
+  .tab-nav button:hover { background:rgba(255,255,255,0.2); }
+  .tab-nav button.active { background:var(--purple); border-color:var(--purple); }
+  .tab-nav button[data-tab="flow"].active { background:var(--blue); border-color:var(--blue); }
+  .tab-nav button[data-tab="scope"].active { background:var(--green); border-color:var(--green); }
+  .tab-nav button[data-tab="issue"].active { background:var(--orange); border-color:var(--orange); }
+  .tab-content { display:none; width:100%; max-width:1400px; }
+  .tab-content.active { display:block; }
+  .card { background:#f8f9fa; border-radius:12px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.3); margin-bottom:20px; }
+  .card h2 { font-size:20px; color:var(--text); margin-bottom:16px; text-align:center; }
+  .card h3 { font-size:16px; color:var(--text); margin:16px 0 8px; padding-bottom:4px; border-bottom:2px solid var(--purple); display:inline-block; }
+  table.spec { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:16px; }
+  table.spec th, table.spec td { padding:10px 14px; text-align:left; border-bottom:1px solid #eee; }
+  table.spec th { background:#f8f9fa; font-weight:600; color:var(--text-sub); width:200px; }
+  table.spec td { color:var(--text); line-height:1.6; }
+  .status-done { color:var(--green); font-weight:700; }
+  .status-todo { color:var(--orange); font-weight:700; }
+  .status-na { color:#999; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+  .badge.purple { background:#F3E8FF; color:#7C3AED; }
+  .badge.blue { background:#E3F2FD; color:#1565C0; }
+  .badge.green { background:#E8F5E9; color:#2E7D32; }
+  .badge.orange { background:#FFF3E0; color:#E65100; }
+  .badge.red { background:#FFEBEE; color:#D32F2F; }
+  .flow-steps { display:flex; flex-direction:column; gap:12px; max-width:800px; margin:0 auto; }
+  .flow-step { display:flex; gap:12px; align-items:flex-start; }
+  .flow-num { width:32px; height:32px; border-radius:50%; background:var(--purple); color:white; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+  .flow-box { flex:1; padding:12px 16px; border-radius:8px; border:1px solid var(--border); background:white; font-size:13px; line-height:1.6; }
+  .flow-box strong { color:var(--purple); }
+  .flow-arrow { text-align:center; color:var(--purple); font-size:18px; }
+  .phase-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:800px){.phase-grid{grid-template-columns:1fr;}}
+  .phase-card { border:2px solid var(--border); border-radius:8px; overflow:hidden; }
+  .phase-card-header { padding:10px 16px; font-size:14px; font-weight:600; color:white; }
+  .phase-card-header.p1 { background:var(--purple); }
+  .phase-card-header.p2 { background:var(--blue); }
+  .phase-card-body { padding:12px 16px; font-size:13px; }
+  .phase-card-body ul { margin:0; padding-left:20px; }
+  .phase-card-body li { margin-bottom:6px; line-height:1.5; }
+  .issue-card { background:white; border:2px solid var(--orange); border-radius:8px; padding:16px; margin-bottom:12px; }
+  .issue-card h4 { color:#E65100; font-size:14px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .issue-card p { font-size:13px; color:var(--text); line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>4. 短期パス（期間パス）実装</h1>
+  <p>7日/14日/30日の買い切り型パス。DB設計・ビジネスロジックは決定済み。</p>
+</div>
+<div class="tab-nav">
+  <button class="active" data-tab="summary" onclick="showTab('summary')">基本仕様</button>
+  <button data-tab="flow" onclick="showTab('flow')">ユーザーフロー</button>
+  <button data-tab="scope" onclick="showTab('scope')">実装スコープ</button>
+  <button data-tab="issue" onclick="showTab('issue')">検討事項</button>
+</div>
+
+<!-- 基本仕様 -->
+<div class="tab-content active" id="tab-summary">
+  <div class="card">
+    <h2>期間パス 基本仕様サマリー</h2>
+    <table class="spec">
+      <tr><th>プランタイプ</th><td><span class="badge purple">PLAN_TYPE = 4 (PERIOD_PASS)</span></td></tr>
+      <tr><th>利用期間</th><td><span class="badge purple">7日</span> <span class="badge purple">14日</span> <span class="badge purple">30日</span> の3種類</td></tr>
+      <tr><th>課金方式</th><td>一括前払い・買い切り（Stripe PaymentIntent）自動更新なし</td></tr>
+      <tr><th>利用制限</th><td>期間内使い放題（営業時間内、回数・時間制限なし）</td></tr>
+      <tr><th>対象店舗</th><td>購入した店舗のみ</td></tr>
+      <tr><th>開始日選択</th><td>本日〜7日以内（デフォルト：今日）</td></tr>
+      <tr><th>期間計算</th><td>暦日ベース（開始日 + 日数 - 1日 の営業時間終了まで）</td></tr>
+      <tr><th>返金・解約</th><td>不可（買い切り）</td></tr>
+      <tr><th>月額との同時契約</th><td><span class="status-done">可能</span> — 同一店舗でも両方契約OK。チェックイン時は期間パス優先</td></tr>
+      <tr><th>契約上限</th><td>月額2店舗制限に<strong>含めない</strong>。月額2店舗 + 期間パス複数店舗OK</td></tr>
+      <tr><th>年齢割引</th><td>適用する（既存の ageDiscountAge, ageDiscountRate を流用）</td></tr>
+      <tr><th>クーポン</th><td>適用可能（既存システム流用）</td></tr>
+    </table>
+
+    <h3>DB設計（既にスキーマ定義済み）</h3>
+    <table class="spec">
+      <tr><th>ShopPlan</th><td><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">durationDays Int?</code> — 7/14/30<br><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">periodPassPrice Int?</code> — 税込価格</td></tr>
+      <tr><th>ShopContract</th><td><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">periodPassStartDate DateTime?</code><br><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">periodPassEndDate DateTime?</code><br><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">periodPassStatus String?</code> — pending / active / expired</td></tr>
+      <tr><th>Company</th><td><code style="background:#f1f3f4;padding:2px 6px;border-radius:4px;font-size:12px;color:#d63384;">periodPassCommissionRate Int?</code> — 手数料率(%)</td></tr>
+    </table>
+
+    <h3>通知・警告</h3>
+    <table class="spec">
+      <tr><th>残り7日</th><td><span class="badge blue">延長ボタン表示</span> — 青テーマ</td></tr>
+      <tr><th>残り3日</th><td><span class="badge orange">オレンジ警告</span> — Push + メール（朝9:00）</td></tr>
+      <tr><th>残り1日</th><td><span class="badge red">赤警告</span> — Push + メール（朝9:00）</td></tr>
+      <tr><th>期限切れ当日</th><td>Push + メール。期限切れ後7日間バッジ表示</td></tr>
+    </table>
+
+    <h3>決定状況</h3>
+    <table class="spec">
+      <tr><th>決定済み</th><td><span class="status-done">39 / 42 項目</span> — 開発着手条件クリア</td></tr>
+      <tr><th>未決定（並行可）</th><td>
+        ・詳細画面の表示情報範囲<br>
+        ・管理者の契約操作権限<br>
+        ・利用統計ダッシュボード指標
+      </td></tr>
+      <tr><th>別途決定要</th><td>
+        ・期間パス専用手数料率の具体値<br>
+        ・利用規約の文言
+      </td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ユーザーフロー -->
+<div class="tab-content" id="tab-flow">
+  <div class="card">
+    <h2>ユーザー購入フロー</h2>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-box"><strong>店舗詳細画面</strong><br>タブ切替：月額プラン / <strong>期間パス</strong> / ドロップイン<br>7日・14日・30日の3プランを表示（日割り単価・お得バッジ付き）</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-box"><strong>購入確認画面</strong><br>プラン詳細 + 開始日選択（本日〜7日以内）+ 支払い方法 + クーポン入力<br>合計金額表示 →「お支払い・購入」ボタン</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-box"><strong>3Dセキュア認証</strong><br>Stripe PaymentIntent → 3DS認証（既存フロー流用）</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-box"><strong>購入完了画面</strong><br>パスカード表示 + 利用ガイド（QRスキャン → 自由に利用 → チェックアウト）</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-box"><strong>マイページ</strong><br>パスカード（残り日数・プログレスバー表示）<br>月額プランとは別枠で上下に並べて表示</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px;">チェックイン時の判定フロー</h3>
+    <div class="flow-steps" style="margin-top:12px;">
+      <div class="flow-step">
+        <div class="flow-num" style="background:var(--green);">A</div>
+        <div class="flow-box">ユーザーがQRスキャンでチェックイン</div>
+      </div>
+      <div class="flow-arrow">▼</div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:var(--blue);">B</div>
+        <div class="flow-box"><strong>期間パス判定</strong><br>有効な期間パスがあるか？ → <span class="status-done">あり</span>：期間パスでチェックイン（追加課金なし）</div>
+      </div>
+      <div class="flow-arrow">▼ なし</div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:var(--orange);">C</div>
+        <div class="flow-box"><strong>月額プラン判定</strong><br>有効な月額契約があるか？ → 月額でチェックイン</div>
+      </div>
+      <div class="flow-arrow">▼ なし</div>
+      <div class="flow-step">
+        <div class="flow-num" style="background:var(--red);">D</div>
+        <div class="flow-box"><strong>ドロップイン</strong><br>都度利用料金でチェックイン</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 実装スコープ -->
+<div class="tab-content" id="tab-scope">
+  <div class="card">
+    <h2>実装スコープ</h2>
+    <div class="phase-grid">
+      <div class="phase-card">
+        <div class="phase-card-header p1">Phase 1: 基本機能（優先）</div>
+        <div class="phase-card-body">
+          <ul>
+            <li><strong>DB マイグレーション</strong> — ShopPlan, ShopContract, Company のフィールド追加</li>
+            <li><strong>API</strong> — 契約作成(PaymentIntent), 詳細取得, 一覧, 延長(再購入)</li>
+            <li><strong>チェックイン判定</strong> — 期間パス優先ロジック追加</li>
+            <li><strong>チェックアウト</strong> — 期間パスは追加課金なし</li>
+            <li><strong>バッチ</strong> — status更新(pending→active→expired), 通知(3日前/1日前/当日)</li>
+            <li><strong>Flutter</strong> — 店舗詳細タブ, 購入フロー(4画面), マイページ表示, 警告UI</li>
+            <li><strong>Akerun</strong> — 契約時に権限付与, 終了時に削除(月額確認)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="phase-card">
+        <div class="phase-card-header p2">Phase 2: 管理画面・高度機能</div>
+        <div class="phase-card-body">
+          <ul>
+            <li><strong>Admin管理画面</strong> — 期間パスプラン作成・編集</li>
+            <li><strong>Admin</strong> — 期間パス契約一覧・詳細</li>
+            <li><strong>Company管理画面</strong> — 契約閲覧・統計</li>
+            <li><strong>手数料率</strong> — Company別の設定UI</li>
+            <li><strong>統計ダッシュボード</strong> — 販売数・売上・利用率等</li>
+            <li><strong>CSVエクスポート</strong> — 期間パス契約一覧</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h3>主な変更ファイル（Phase 1）</h3>
+    <table class="spec">
+      <tr><th>API</th><td>
+        schema.prisma, CheckInService.ts, CheckOutService.ts,<br>
+        ShopContractManagementService.ts（期間パス契約作成）,<br>
+        新バッチ: periodPassBatch（status更新 + 通知）,<br>
+        definition.ts（エンドポイント追加）
+      </td></tr>
+      <tr><th>Flutter</th><td>
+        店舗詳細画面（タブ追加）, 購入フロー画面x4,<br>
+        マイページ（パスカード表示）, チェックイン完了画面,<br>
+        通知ハンドリング, 警告UI
+      </td></tr>
+      <tr><th>Front</th><td>Phase 2で対応</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- 検討事項 -->
+<div class="tab-content" id="tab-issue">
+  <div class="card">
+    <h2>会議での検討事項</h2>
+
+    <div class="issue-card">
+      <h4>⚠ 1. 手数料率の具体値</h4>
+      <p>期間パス専用の手数料率（<code>periodPassCommissionRate</code>）を何%にするか。<br>月額プランの手数料率と同じか、別に設定するか。</p>
+    </div>
+
+    <div class="issue-card">
+      <h4>⚠ 2. 利用規約の文言</h4>
+      <p>キャンセル不可・返金不可・臨時休業時の期間延長なし を利用規約に明記する必要あり。<br>購入確認画面に同意チェックボックスを表示するか。</p>
+    </div>
+
+    <div class="issue-card">
+      <h4>⚠ 3. 開発優先度・スケジュール</h4>
+      <p>Phase 1（基本機能）から着手。DB設計は既に完了しているので、API → Flutter → バッチ の順で実装可能。<br>カテゴリ3の機能と並行で進めるか、順次対応か。</p>
+    </div>
+
+    <div class="issue-card">
+      <h4>⚠ 4. 既存店舗への展開</h4>
+      <p>全店舗に一斉展開か、一部店舗でテスト運用してから全店舗か。<br>店舗ごとに期間パスの有効/無効を切り替える仕組みは必要か（ShopPlanの有無で制御可能）。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-nav button').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');document.querySelector('[data-tab="'+t+'"]').classList.add('active');}
+</script>
+</body>
+</html>

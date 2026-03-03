@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO ダイナミックプライシング企画 × 期間パス</title>
+<style>
+:root {
+  --primary: #6d28d9;
+  --primary-light: #f3e8ff;
+  --danger: #d93025;
+  --danger-light: #fce8e6;
+  --warning: #f9ab00;
+  --warning-light: #fef7e0;
+  --success: #1e8e3e;
+  --success-light: #e6f4ea;
+  --teal: #0d9488;
+  --teal-light: #f0fdfa;
+  --blue: #1a73e8;
+  --blue-light: #e8f0fe;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #dadce0;
+  --text: #202124;
+  --text-secondary: #5f6368;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif; background:var(--bg); color:var(--text); line-height:1.8; font-size:14px; }
+
+.header { background:linear-gradient(135deg, #6d28d9 0%, #4c1d95 50%, #1e1b4b 100%); color:white; padding:48px 24px 36px; text-align:center; }
+.header h1 { font-size:28px; font-weight:800; margin-bottom:8px; }
+.header p { font-size:14px; opacity:.85; }
+.header .badge { display:inline-block; background:rgba(255,255,255,.2); padding:4px 14px; border-radius:20px; font-size:12px; margin-top:12px; }
+
+.nav { position:sticky; top:0; z-index:100; background:white; border-bottom:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,.06); }
+.nav-inner { max-width:1200px; margin:0 auto; display:flex; overflow-x:auto; gap:0; }
+.nav-item { padding:12px 16px; font-size:13px; font-weight:600; color:var(--text-secondary); white-space:nowrap; cursor:pointer; border-bottom:3px solid transparent; transition:all .2s; text-decoration:none; }
+.nav-item:hover { color:var(--primary); background:var(--primary-light); }
+.nav-item.active { color:var(--primary); border-bottom-color:var(--primary); background:var(--primary-light); }
+
+.container { max-width:1200px; margin:0 auto; padding:0 16px 80px; }
+.section { padding:32px 0; scroll-margin-top:56px; }
+.section-title { font-size:22px; font-weight:800; margin-bottom:6px; display:flex; align-items:center; gap:10px; }
+.section-desc { color:var(--text-secondary); margin-bottom:24px; font-size:13px; }
+
+/* Stats */
+.stat-row { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+.stat-item { flex:1; min-width:130px; background:white; border:1px solid var(--border); border-radius:12px; padding:16px 14px; text-align:center; }
+.stat-item .num { font-size:30px; font-weight:800; }
+.stat-item .label { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+.stat-item.purple .num { color:var(--primary); }
+.stat-item.red .num { color:var(--danger); }
+.stat-item.orange .num { color:#b45309; }
+.stat-item.teal .num { color:var(--teal); }
+.stat-item.green .num { color:var(--success); }
+.stat-item.blue .num { color:var(--blue); }
+
+/* Cards */
+.card { background:white; border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:16px; }
+.card h4 { font-size:15px; font-weight:700; margin-bottom:10px; }
+.card-accent { border-left:4px solid var(--primary); }
+
+.grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; }
+.grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.grid-4 { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+
+/* Summary boxes */
+.summary-box { padding:20px; border-radius:12px; margin-bottom:16px; }
+.summary-box.info { background:var(--primary-light); border:1px solid #d8b4fe; }
+.summary-box.warn { background:var(--warning-light); border:1px solid #ffe082; }
+.summary-box.danger { background:var(--danger-light); border:1px solid #ef9a9a; }
+.summary-box.success { background:var(--success-light); border:1px solid #a5d6a7; }
+.summary-box.teal { background:var(--teal-light); border:1px solid #99f6e4; }
+.summary-box strong { display:block; margin-bottom:6px; }
+.summary-box p { font-size:13px; color:var(--text-secondary); }
+
+/* Data source cards */
+.data-card { background:white; border:2px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:14px; transition:box-shadow .2s; }
+.data-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.08); }
+.data-card.demand { border-left:5px solid var(--primary); }
+.data-card.supply { border-left:5px solid var(--teal); }
+.data-card.user { border-left:5px solid var(--blue); }
+.data-card.revenue { border-left:5px solid var(--warning); }
+.data-card.external { border-left:5px solid var(--success); }
+.data-header { padding:14px 20px; display:flex; justify-content:space-between; align-items:center; }
+.data-header h3 { font-size:15px; font-weight:700; }
+.data-body { padding:0 20px 16px; }
+.data-body > p { color:var(--text-secondary); font-size:13px; margin-bottom:10px; }
+
+/* Category badges */
+.cat-badge { display:inline-flex; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; }
+.cat-demand { background:var(--primary-light); color:var(--primary); }
+.cat-supply { background:var(--teal-light); color:var(--teal); }
+.cat-user { background:var(--blue-light); color:var(--blue); }
+.cat-revenue { background:var(--warning-light); color:#b45309; }
+.cat-external { background:var(--success-light); color:var(--success); }
+
+/* Source tags */
+.src-tag { display:inline-block; padding:2px 8px; border-radius:6px; font-size:10px; font-weight:700; margin:2px; }
+.src-excel1 { background:#ede7f6; color:#4527a0; }
+.src-excel2 { background:#e3f2fd; color:#1565c0; }
+.src-db { background:#e0f2f1; color:#00695c; }
+
+/* Bar chart CSS */
+.bar-chart { margin:12px 0; }
+.bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.bar-label { width:70px; font-size:12px; font-weight:600; text-align:right; flex-shrink:0; }
+.bar-track { flex:1; height:24px; background:#f1f5f9; border-radius:6px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:6px; display:flex; align-items:center; padding-left:8px; font-size:11px; font-weight:700; color:white; transition:width .5s; }
+.bar-value { font-size:12px; font-weight:600; width:50px; text-align:right; flex-shrink:0; }
+
+/* Time heatmap */
+.time-grid { display:grid; grid-template-columns:60px repeat(24,1fr); gap:1px; font-size:10px; }
+.time-header { text-align:center; font-weight:700; padding:4px 0; }
+.time-cell { text-align:center; padding:6px 2px; border-radius:4px; font-weight:600; }
+.heat-0 { background:#f9fafb; color:#9ca3af; }
+.heat-1 { background:#ede9fe; color:#6d28d9; }
+.heat-2 { background:#ddd6fe; color:#5b21b6; }
+.heat-3 { background:#c4b5fd; color:#4c1d95; }
+.heat-4 { background:#a78bfa; color:white; }
+.heat-5 { background:#7c3aed; color:white; }
+
+/* Strategy cards */
+.strategy-card { background:white; border:2px solid var(--border); border-radius:14px; padding:20px; transition:all .2s; }
+.strategy-card:hover { border-color:var(--primary); box-shadow:0 4px 16px rgba(109,40,217,.1); }
+.strategy-card h4 { font-size:15px; font-weight:700; margin-bottom:8px; }
+.strategy-card .effect { display:inline-block; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700; margin-bottom:8px; }
+.effect-high { background:var(--danger-light); color:var(--danger); }
+.effect-mid { background:var(--warning-light); color:#b45309; }
+.effect-low { background:var(--success-light); color:var(--success); }
+.strategy-card p { font-size:13px; color:var(--text-secondary); }
+.strategy-card .example { background:#f8f9fa; border-radius:8px; padding:10px 14px; margin-top:10px; font-size:12px; }
+.strategy-card .data-refs { margin-top:8px; }
+
+/* Period pass integration */
+.pass-card { background:white; border:2px solid var(--primary); border-radius:14px; padding:20px; position:relative; }
+.pass-card::before { content:'期間パス'; position:absolute; top:-10px; left:16px; background:var(--primary); color:white; font-size:11px; font-weight:700; padding:2px 12px; border-radius:8px; }
+.pass-card h4 { font-size:15px; font-weight:700; margin:8px 0 10px; }
+.price-example { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.price-tag { padding:8px 16px; border-radius:10px; font-size:13px; font-weight:700; text-align:center; }
+.price-tag.normal { background:#f1f5f9; border:1px solid var(--border); }
+.price-tag.discount { background:var(--primary-light); border:1px solid #d8b4fe; color:var(--primary); }
+.price-tag.premium { background:var(--danger-light); border:1px solid #fca5a5; color:var(--danger); }
+.price-tag small { display:block; font-size:10px; font-weight:500; color:var(--text-secondary); margin-bottom:2px; }
+
+/* Concept flow */
+.concept-flow { display:flex; align-items:stretch; gap:0; flex-wrap:wrap; margin:20px 0; }
+.concept-step { flex:1; min-width:160px; padding:16px; text-align:center; position:relative; }
+.concept-step:not(:last-child)::after { content:''; position:absolute; right:-12px; top:50%; transform:translateY(-50%); width:0; height:0; border-left:12px solid; border-top:10px solid transparent; border-bottom:10px solid transparent; z-index:1; }
+.concept-step:nth-child(1) { background:#ede9fe; border-radius:12px 0 0 12px; }
+.concept-step:nth-child(1)::after { border-left-color:#ede9fe; }
+.concept-step:nth-child(2) { background:#ddd6fe; }
+.concept-step:nth-child(2)::after { border-left-color:#ddd6fe; }
+.concept-step:nth-child(3) { background:#c4b5fd; color:white; }
+.concept-step:nth-child(3)::after { border-left-color:#c4b5fd; }
+.concept-step:nth-child(4) { background:#7c3aed; color:white; border-radius:0 12px 12px 0; }
+.concept-step .step-icon { font-size:24px; margin-bottom:4px; }
+.concept-step .step-title { font-size:13px; font-weight:700; }
+.concept-step .step-desc { font-size:11px; opacity:.8; margin-top:2px; }
+
+/* Tables */
+table { width:100%; border-collapse:collapse; font-size:13px; }
+table th { background:#f1f5f9; padding:10px 12px; text-align:left; font-weight:700; border-bottom:2px solid var(--border); }
+table td { padding:10px 12px; border-bottom:1px solid #f1f1f1; }
+table tr:hover { background:#fafafa; }
+
+details { background:white; border:1px solid var(--border); border-radius:12px; margin-bottom:12px; overflow:hidden; }
+details summary { padding:14px 20px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+details summary::marker { content:''; }
+details summary::before { content:'▶'; font-size:10px; transition:transform .2s; color:var(--text-secondary); }
+details[open] summary::before { transform:rotate(90deg); }
+details .details-body { padding:0 20px 16px; }
+
+/* Rank badges */
+.rank-badge { display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; font-size:16px; font-weight:900; color:white; flex-shrink:0; }
+.rank-s { background:linear-gradient(135deg,#7c3aed,#4c1d95); }
+.rank-a { background:linear-gradient(135deg,#f59e0b,#d97706); }
+.rank-b { background:linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.rank-c { background:linear-gradient(135deg,#6b7280,#374151); }
+
+.axis-card { background:white; border:2px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; transition:box-shadow .2s; }
+.axis-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.08); }
+.axis-card.rank-s-border { border-left:5px solid var(--primary); }
+.axis-card.rank-a-border { border-left:5px solid var(--warning); }
+.axis-card.rank-b-border { border-left:5px solid var(--blue); }
+.axis-card.rank-c-border { border-left:5px solid #6b7280; }
+.axis-header { padding:14px 20px; display:flex; align-items:center; gap:12px; }
+.axis-header h3 { font-size:15px; font-weight:700; flex:1; }
+.axis-body { padding:0 20px 16px; }
+.axis-body > p { color:var(--text-secondary); font-size:13px; margin-bottom:10px; }
+
+.eval-row { display:flex; gap:6px; margin-bottom:6px; align-items:center; }
+.eval-dot { width:18px; height:18px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; }
+.eval-dot.yes, .eval-dot.full { background:var(--success-light); color:var(--success); }
+.eval-dot.half { background:var(--warning-light); color:#b45309; }
+.eval-dot.no, .eval-dot.empty { background:var(--danger-light); color:var(--danger); }
+.eval-item { font-size:12px; display:flex; align-items:center; gap:4px; }
+.eval-label { font-size:12px; color:var(--text-secondary); }
+
+.coeff-table td:nth-child(2), .coeff-table td:nth-child(3), .coeff-table td:nth-child(4) { text-align:center; }
+.coeff-low { color:var(--success); font-weight:700; }
+.coeff-mid { color:var(--text); font-weight:600; }
+.coeff-high { color:var(--danger); font-weight:700; }
+
+.formula-box { background:linear-gradient(135deg,#1e1b4b,#312e81); color:white; border-radius:14px; padding:24px; margin:16px 0; }
+.formula-box .formula { font-family:'Courier New',monospace; font-size:13px; line-height:2; background:rgba(255,255,255,.1); padding:14px 18px; border-radius:10px; margin:12px 0; overflow-x:auto; }
+.formula-box .formula .highlight { color:#c4b5fd; font-weight:700; }
+.formula-box .formula .op { color:#fbbf24; }
+
+.sim-card { background:white; border:2px solid var(--border); border-radius:14px; padding:20px; margin-bottom:12px; }
+.sim-card h4 { font-size:14px; font-weight:700; margin-bottom:10px; }
+.sim-row { display:flex; align-items:center; gap:8px; margin-bottom:4px; font-size:12px; }
+.sim-label { width:100px; color:var(--text-secondary); flex-shrink:0; }
+.sim-value { font-weight:600; }
+.sim-coeff { color:var(--primary); font-weight:700; font-family:monospace; }
+.sim-result { font-size:24px; font-weight:800; margin-top:8px; }
+
+/* Next steps */
+.next-card { border-radius:12px; overflow:hidden; border:1px solid var(--border); margin-bottom:12px; background:white; }
+.next-header { padding:14px 20px; font-weight:700; font-size:15px; }
+.next-header.n1 { background:var(--primary-light); color:var(--primary); }
+.next-header.n2 { background:var(--warning-light); color:#92400e; }
+.next-header.n3 { background:var(--teal-light); color:var(--teal); }
+.next-body { padding:16px 20px; }
+.next-body li { padding:6px 0; border-bottom:1px solid #f1f1f1; font-size:13px; list-style:none; }
+.next-body li:last-child { border-bottom:none; }
+.next-body li::before { content:'☐ '; color:var(--text-secondary); }
+
+/* TOC */
+.toc-btn { position:fixed; bottom:24px; right:24px; width:48px; height:48px; border-radius:50%; background:var(--primary); color:white; border:none; font-size:20px; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.2); z-index:200; display:flex; align-items:center; justify-content:center; }
+.toc-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,.3); z-index:300; display:none; }
+.toc-overlay.show { display:block; }
+.toc-panel { position:fixed; top:0; right:0; width:320px; height:100%; background:white; z-index:301; padding:24px; overflow-y:auto; box-shadow:-4px 0 20px rgba(0,0,0,.1); }
+.toc-panel h3 { font-size:16px; margin-bottom:16px; }
+.toc-panel a { display:block; padding:8px 0; color:var(--text); text-decoration:none; font-size:13px; border-bottom:1px solid #f1f1f1; }
+.toc-panel a:hover { color:var(--primary); }
+.toc-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-secondary); }
+
+@media (max-width:768px) {
+  .header h1 { font-size:22px; }
+  .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+  .stat-row { gap:8px; }
+  .stat-item { min-width:100px; padding:12px; }
+  .stat-item .num { font-size:22px; }
+  .concept-flow { flex-direction:column; }
+  .concept-step { border-radius:0 !important; min-width:auto; }
+  .concept-step::after { display:none; }
+  .time-grid { font-size:8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ダイナミックプライシング × 期間パス</h1>
+  <p>実データに基づく価格変動施策の企画書</p>
+  <div class="badge">期間パスを活用した需要最適化プライシング</div>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-item active" href="#concept" onclick="scrollTo_('concept')">コンセプト</a>
+    <a class="nav-item" href="#realdata" onclick="scrollTo_('realdata')">実データ分析</a>
+    <a class="nav-item" href="#datasources" onclick="scrollTo_('datasources')">判断データ29項目</a>
+    <a class="nav-item" href="#axes" onclick="scrollTo_('axes')">判断軸の考え方</a>
+    <a class="nav-item" href="#strategies" onclick="scrollTo_('strategies')">施策パターン</a>
+    <a class="nav-item" href="#periodpass" onclick="scrollTo_('periodpass')">期間パス×価格設計</a>
+    <a class="nav-item" href="#nextsteps" onclick="scrollTo_('nextsteps')">検討すべき項目</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============================================ -->
+<!-- セクション1: コンセプト -->
+<!-- ============================================ -->
+<div class="section" id="concept">
+  <h2 class="section-title">💡 コンセプト</h2>
+  <p class="section-desc">需要・供給・ユーザー属性に応じて期間パスの価格を動的に変える仕組みです。</p>
+
+  <div class="summary-box info">
+    <strong>ダイナミックプライシングとは？</strong>
+    <p>同じサービスでも「いつ」「どこで」「誰が」使うかによって価格を変動させる手法です。ホテル・航空券・ライドシェアで広く使われています。スタディGOでは「期間パス」という買い切り商品にこの仕組みを適用し、閑散時は安く・繁忙時は高く設定することで、稼働率の平準化と売上最大化を同時に目指します。</p>
+  </div>
+
+  <div class="concept-flow">
+    <div class="concept-step">
+      <div class="step-icon">📊</div>
+      <div class="step-title">データ収集</div>
+      <div class="step-desc">利用実績・需要・<br>ユーザー属性</div>
+    </div>
+    <div class="concept-step">
+      <div class="step-icon">🧮</div>
+      <div class="step-title">価格算出</div>
+      <div class="step-desc">基準価格×<br>変動係数</div>
+    </div>
+    <div class="concept-step">
+      <div class="step-icon">🏷️</div>
+      <div class="step-title">期間パス提示</div>
+      <div class="step-desc">条件に応じた<br>価格を表示</div>
+    </div>
+    <div class="concept-step">
+      <div class="step-icon">📈</div>
+      <div class="step-title">最適化</div>
+      <div class="step-desc">稼働率UP<br>売上最大化</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-item purple"><div class="num">221</div><div class="label">公開店舗数</div></div>
+    <div class="stat-item blue"><div class="num">13,651</div><div class="label">登録ユーザー数</div></div>
+    <div class="stat-item orange"><div class="num">5.5%</div><div class="label">クレカ登録率</div></div>
+    <div class="stat-item teal"><div class="num">29</div><div class="label">判断データ候補</div></div>
+    <div class="stat-item green"><div class="num">9</div><div class="label">施策パターン</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="summary-box success">
+      <strong>期間パスとの相性が良い理由</strong>
+      <p>月額契約は継続課金で価格変動させにくい。ドロップインは少額で変動幅が小さい。一方、期間パス（1週間〜1ヶ月の買い切り）は購入タイミングごとに異なる価格を提示しやすく、ダイナミックプライシングの効果が最も出やすい商品形態です。</p>
+    </div>
+    <div class="summary-box warn">
+      <strong>期間パスの基本仕様（決定事項）</strong>
+      <p>種類: 店舗ごと自由設定 / 金額: 店舗別設定 / 営業時間: カレンダーで自由設定 / 利用制限: 使い放題+時間上限ありも検討 / 開始日: 購入日から2ヶ月以内 / 解約: 返金なし（買い切り） / 利用店舗: 購入店舗のみ / 入会金: なし / 延長: 再購入可能 / クーポン: 利用可能</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション2: 実データ分析 -->
+<!-- ============================================ -->
+<div class="section" id="realdata">
+  <h2 class="section-title">📊 実データ分析</h2>
+  <p class="section-desc">スタディGOの実データから、ダイナミックプライシングに使える傾向を可視化します。</p>
+
+  <!-- 曜日別需要 -->
+  <div class="card card-accent">
+    <h4>曜日別ドロップイン利用数（実績）</h4>
+    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">土日が最も多く、火曜が最も少ない → 曜日別価格の根拠</p>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label">月曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:85%; background:#7c3aed;">53</div></div>
+        <div class="bar-value">53件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">火曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:37%; background:#a78bfa;">23</div></div>
+        <div class="bar-value">23件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">水曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:48%; background:#a78bfa;">30</div></div>
+        <div class="bar-value">30件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">木曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:60%; background:#8b5cf6;">37</div></div>
+        <div class="bar-value">37件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">金曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:44%; background:#a78bfa;">27</div></div>
+        <div class="bar-value">27件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label" style="color:var(--blue);">土曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%; background:var(--danger);">62</div></div>
+        <div class="bar-value" style="color:var(--danger); font-weight:700;">62件</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label" style="color:var(--danger);">日曜</div>
+        <div class="bar-track"><div class="bar-fill" style="width:97%; background:var(--danger);">60</div></div>
+        <div class="bar-value" style="color:var(--danger); font-weight:700;">60件</div>
+      </div>
+    </div>
+    <p style="font-size:12px; background:#fef7e0; padding:8px 12px; border-radius:8px; margin-top:8px;">
+      <strong>示唆:</strong> 土日は平日の約2倍の需要。週末を含む期間パスは割増、平日限定は割引の根拠になる。
+    </p>
+  </div>
+
+  <!-- 時間帯別需要 -->
+  <div class="card card-accent">
+    <h4>時間帯別チェックイン分布（実績）</h4>
+    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">9:00〜15:00にピーク。早朝・夜間は閑散 → 時間帯別価格の根拠</p>
+    <div class="time-grid">
+      <div class="time-header">時間</div>
+      <div class="time-header">0</div><div class="time-header">1</div><div class="time-header">2</div>
+      <div class="time-header">3</div><div class="time-header">4</div><div class="time-header">5</div>
+      <div class="time-header">6</div><div class="time-header">7</div><div class="time-header">8</div>
+      <div class="time-header">9</div><div class="time-header">10</div><div class="time-header">11</div>
+      <div class="time-header">12</div><div class="time-header">13</div><div class="time-header">14</div>
+      <div class="time-header">15</div><div class="time-header">16</div><div class="time-header">17</div>
+      <div class="time-header">18</div><div class="time-header">19</div><div class="time-header">20</div>
+      <div class="time-header">21</div><div class="time-header">22</div><div class="time-header">23</div>
+
+      <div class="time-header" style="font-size:10px;">CI数</div>
+      <div class="time-cell heat-0">2</div><!-- 0時 -->
+      <div class="time-cell heat-0">0</div><!-- 1時 -->
+      <div class="time-cell heat-0">1</div><!-- 2時 -->
+      <div class="time-cell heat-0">0</div><!-- 3時 -->
+      <div class="time-cell heat-0">3</div><!-- 4時 -->
+      <div class="time-cell heat-0">2</div><!-- 5時 -->
+      <div class="time-cell heat-1">5</div><!-- 6時 -->
+      <div class="time-cell heat-1">13</div><!-- 7時 -->
+      <div class="time-cell heat-2">18</div><!-- 8時 -->
+      <div class="time-cell heat-5">53</div><!-- 9時 -->
+      <div class="time-cell heat-4">45</div><!-- 10時 -->
+      <div class="time-cell heat-3">31</div><!-- 11時 -->
+      <div class="time-cell heat-5">53</div><!-- 12時 -->
+      <div class="time-cell heat-4">43</div><!-- 13時 -->
+      <div class="time-cell heat-5">52</div><!-- 14時 -->
+      <div class="time-cell heat-3">33</div><!-- 15時 -->
+      <div class="time-cell heat-2">22</div><!-- 16時 -->
+      <div class="time-cell heat-1">14</div><!-- 17時 -->
+      <div class="time-cell heat-1">14</div><!-- 18時 -->
+      <div class="time-cell heat-1">15</div><!-- 19時 -->
+      <div class="time-cell heat-1">14</div><!-- 20時 -->
+      <div class="time-cell heat-1">9</div><!-- 21時 -->
+      <div class="time-cell heat-0">3</div><!-- 22時 -->
+      <div class="time-cell heat-0">0</div><!-- 23時 -->
+    </div>
+    <p style="font-size:12px; background:#fef7e0; padding:8px 12px; border-radius:8px; margin-top:12px;">
+      <strong>示唆:</strong> 9〜15時がピーク（全体の55%）。早朝(6-9時)・夕方以降(17時〜)は閑散。モーニング/ナイト期間パスは割安にする根拠。
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <!-- プラン別利用 -->
+    <div class="card card-accent">
+      <h4>購入プラン別 構成比（実績）</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label" style="width:90px;">1DAY</div>
+          <div class="bar-track"><div class="bar-fill" style="width:95%; background:#7c3aed;">47.6%</div></div>
+          <div class="bar-value">212件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:90px;">1時間</div>
+          <div class="bar-track"><div class="bar-fill" style="width:54%; background:#a78bfa;">27.2%</div></div>
+          <div class="bar-value">121件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:90px;">2時間</div>
+          <div class="bar-track"><div class="bar-fill" style="width:19%; background:#c4b5fd;">9.7%</div></div>
+          <div class="bar-value">43件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:90px;">3時間</div>
+          <div class="bar-track"><div class="bar-fill" style="width:15%; background:#c4b5fd;">7.4%</div></div>
+          <div class="bar-value">33件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:90px;">30分</div>
+          <div class="bar-track"><div class="bar-fill" style="width:9%; background:#ddd6fe;">4.7%</div></div>
+          <div class="bar-value">21件</div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">平均利用時間: <strong>4.5時間</strong>（中央値3時間）→ 長時間利用者が多い = 期間パス需要あり</p>
+    </div>
+
+    <!-- 年代別利用 -->
+    <div class="card card-accent">
+      <h4>年代別利用構成（実績）</h4>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label" style="width:70px;">16〜20歳</div>
+          <div class="bar-track"><div class="bar-fill" style="width:93%; background:#ef4444;">23.4%</div></div>
+          <div class="bar-value">104件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:70px;">21〜25歳</div>
+          <div class="bar-track"><div class="bar-fill" style="width:81%; background:#f97316;">20.4%</div></div>
+          <div class="bar-value">91件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:70px;">26〜30歳</div>
+          <div class="bar-track"><div class="bar-fill" style="width:51%; background:#eab308;">12.8%</div></div>
+          <div class="bar-value">57件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:70px;">36〜40歳</div>
+          <div class="bar-track"><div class="bar-fill" style="width:44%; background:#22c55e;">11.0%</div></div>
+          <div class="bar-value">49件</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label" style="width:70px;">46〜55歳</div>
+          <div class="bar-track"><div class="bar-fill" style="width:57%; background:#3b82f6;">14.4%</div></div>
+          <div class="bar-value">64件</div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">25歳以下が<strong>43.8%</strong>を占める → 学割・若年層割の根拠</p>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- 月額契約 -->
+    <div class="card card-accent">
+      <h4>月額契約の継続期間（実績）</h4>
+      <div style="display:flex; gap:16px; flex-wrap:wrap; margin:8px 0;">
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:28px; font-weight:800; color:var(--primary);">76日</div>
+          <div style="font-size:11px; color:var(--text-secondary);">平均継続期間</div>
+        </div>
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:28px; font-weight:800; color:var(--warning);">8日</div>
+          <div style="font-size:11px; color:var(--text-secondary);">最短</div>
+        </div>
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:28px; font-weight:800; color:var(--success);">145日</div>
+          <div style="font-size:11px; color:var(--text-secondary);">最長</div>
+        </div>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary);">平均約2.5ヶ月で解約。1週間・2週間の期間パスは「月額契約の手前のお試し」として有効。</p>
+    </div>
+
+    <!-- アプリ利用推移 -->
+    <div class="card card-accent">
+      <h4>月別アプリ利用状況（2025/6〜2026/1）</h4>
+      <table>
+        <thead><tr><th>指標</th><th>25/6</th><th>25/9</th><th>25/12</th><th>26/1</th><th>伸び</th></tr></thead>
+        <tbody>
+          <tr><td>店舗検索数</td><td>2,690</td><td>4,487</td><td>14,266</td><td>9,533</td><td style="color:var(--success); font-weight:700;">+254%</td></tr>
+          <tr><td>店舗詳細閲覧</td><td>739</td><td>2,309</td><td>5,468</td><td>3,964</td><td style="color:var(--success); font-weight:700;">+436%</td></tr>
+          <tr><td>アクティブユーザー</td><td>980</td><td>991</td><td>1,780</td><td>—</td><td style="color:var(--success); font-weight:700;">+82%</td></tr>
+          <tr><td>見学予約</td><td>5</td><td>11</td><td>16</td><td>23</td><td style="color:var(--success); font-weight:700;">+360%</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">12月に急増（年末需要）→ 季節料金の根拠</p>
+    </div>
+  </div>
+
+  <!-- 料金分布 -->
+  <div class="card card-accent">
+    <h4>店舗料金の分布（221店舗 実績）</h4>
+    <div class="grid-3">
+      <div style="text-align:center; padding:12px;">
+        <div style="font-size:11px; color:var(--text-secondary);">1分あたり単価</div>
+        <div style="font-size:24px; font-weight:800; color:var(--primary);">13.8円</div>
+        <div style="font-size:11px; color:var(--text-secondary);">（1円〜310円）</div>
+      </div>
+      <div style="text-align:center; padding:12px;">
+        <div style="font-size:11px; color:var(--text-secondary);">1日最大料金</div>
+        <div style="font-size:24px; font-weight:800; color:var(--primary);">2,465円</div>
+        <div style="font-size:11px; color:var(--text-secondary);">（500円〜9,240円）</div>
+      </div>
+      <div style="text-align:center; padding:12px;">
+        <div style="font-size:11px; color:var(--text-secondary);">都道府県カバー</div>
+        <div style="font-size:24px; font-weight:800; color:var(--primary);">38</div>
+        <div style="font-size:11px; color:var(--text-secondary);">（東京83 / 神奈川30 / 愛知13）</div>
+      </div>
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">期間パスの基準価格 = 日最大料金 × 日数 × 割引率 で算出可能</p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション3: 判断データ29項目 -->
+<!-- ============================================ -->
+<div class="section" id="datasources">
+  <h2 class="section-title">🗂️ 判断データ 29項目</h2>
+  <p class="section-desc">ダイナミックプライシングの価格算出に使えるデータを5カテゴリに分類しています。</p>
+
+  <div class="stat-row">
+    <div class="stat-item purple"><div class="num">8</div><div class="label">需要データ</div></div>
+    <div class="stat-item teal"><div class="num">6</div><div class="label">供給データ</div></div>
+    <div class="stat-item blue"><div class="num">7</div><div class="label">ユーザーデータ</div></div>
+    <div class="stat-item orange"><div class="num">5</div><div class="label">収益データ</div></div>
+    <div class="stat-item green"><div class="num">3</div><div class="label">外部データ</div></div>
+  </div>
+
+  <div class="summary-box teal" style="margin-bottom:20px;">
+    <strong>データソース凡例</strong>
+    <p>
+      <span class="src-tag src-excel1">基本データ.xlsx</span> = 店舗情報・利用実績・ダッシュボード
+      <span class="src-tag src-excel2">ユーザーデータ.xlsx</span> = ユーザー活動ログ・属性・検索行動
+      <span class="src-tag src-db">システムDB</span> = Prismaスキーマ (Shop / ShopUsage / ShopContract等)
+    </p>
+  </div>
+
+  <!-- A. 需要データ -->
+  <h3 style="font-size:16px; font-weight:700; margin:20px 0 12px; color:var(--primary);">A. 需要データ（いつ・どれだけ使われているか）</h3>
+
+  <div class="data-card demand">
+    <div class="data-header"><h3>1. 曜日別利用数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>月〜日・祝日のドロップイン利用回数。土日が平日の約2倍 → 曜日別価格の基本データ</p>
+      <span class="src-tag src-excel1">ドロップイン調査資料</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>2. 時間帯別チェックイン数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>30分刻みのCI分布。9〜15時がピーク（55%集中） → 時間帯別価格の基本データ</p>
+      <span class="src-tag src-excel1">ドロップイン調査資料</span> <span class="src-tag src-db">ShopUsage</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>3. 日別利用者数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>2024/2以降の全日別データ。月額・ドロップインそれぞれの推移</p>
+      <span class="src-tag src-excel1">日別データ集</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>4. 月別推移（契約数・DL数）</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>月額契約数・ドロップイン数・アプリDL数の月次推移。12月に急増 → 季節料金の根拠</p>
+      <span class="src-tag src-excel1">ユーザーデータ2024〜2026</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>5. 店舗別利用回数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>店舗ごとのドロップイン利用回数ランキング → 人気店プレミアム価格の根拠</p>
+      <span class="src-tag src-excel1">ドロップイン調査資料</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>6. 店舗閲覧数（アプリ）</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>店舗詳細ページの日別・週別閲覧数 = 実際の利用に先行する需要指標</p>
+      <span class="src-tag src-excel1">【アプリ】店舗閲覧数</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>7. 見学予約数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>店舗別の見学申込数。将来の月額契約の先行指標</p>
+      <span class="src-tag src-excel1">見学予約数</span> <span class="src-tag src-db">ShopPreviewReservation</span>
+    </div>
+  </div>
+  <div class="data-card demand">
+    <div class="data-header"><h3>8. 店舗検索・閲覧数</h3><span class="cat-badge cat-demand">需要</span></div>
+    <div class="data-body">
+      <p>月別の店舗検索回数（9,533）・詳細閲覧（3,964）。注目度の定量化</p>
+      <span class="src-tag src-excel2">UDまとめ</span>
+    </div>
+  </div>
+
+  <!-- B. 供給データ -->
+  <h3 style="font-size:16px; font-weight:700; margin:20px 0 12px; color:var(--teal);">B. 供給データ（キャパシティ・店舗特性）</h3>
+
+  <div class="data-card supply">
+    <div class="data-header"><h3>9. 座席数・割当数</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>施設席数と月額割当数 → 空席率の算出。稼働率が低い=割安にして集客</p>
+      <span class="src-tag src-excel1">店舗情報シート</span> <span class="src-tag src-db">Shop</span>
+    </div>
+  </div>
+  <div class="data-card supply">
+    <div class="data-header"><h3>10. 現在の月額契約者数</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>割当数に対する契約数 = 現在の占有率。リアルタイムの空き状況</p>
+      <span class="src-tag src-db">ShopContract</span> <span class="src-tag src-excel1">ダッシュボード</span>
+    </div>
+  </div>
+  <div class="data-card supply">
+    <div class="data-header"><h3>11. 営業時間</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>時間利用の営業時間帯。利用可能時間が限られる店舗は単価で調整</p>
+      <span class="src-tag src-excel1">店舗情報シート</span> <span class="src-tag src-db">ShopBusinessHour</span>
+    </div>
+  </div>
+  <div class="data-card supply">
+    <div class="data-header"><h3>12. 店舗タイプ・立地</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>自習室/コワーキング/カフェ等、駅徒歩、有人/無人 → タイプ別基準価格</p>
+      <span class="src-tag src-excel1">店舗情報シート</span> <span class="src-tag src-db">Shop</span>
+    </div>
+  </div>
+  <div class="data-card supply">
+    <div class="data-header"><h3>13. エリア（都道府県・緯度経度）</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>東京83店/神奈川30店/愛知13店。エリア別の地価・競合状況に基づく価格設定</p>
+      <span class="src-tag src-excel2">全国店舗住所</span> <span class="src-tag src-db">Shop</span>
+    </div>
+  </div>
+  <div class="data-card supply">
+    <div class="data-header"><h3>14. 既存プラン構成</h3><span class="cat-badge cat-supply">供給</span></div>
+    <div class="data-body">
+      <p>習慣化プラン・モーニング・ナイト等の有無と金額。既存プランとの価格バランス</p>
+      <span class="src-tag src-excel1">店舗情報シート</span> <span class="src-tag src-db">ShopPlan</span>
+    </div>
+  </div>
+
+  <!-- C. ユーザーデータ -->
+  <h3 style="font-size:16px; font-weight:700; margin:20px 0 12px; color:var(--blue);">C. ユーザーデータ（誰が使っているか）</h3>
+
+  <div class="data-card user">
+    <div class="data-header"><h3>15. 年齢・性別分布</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>25歳以下が43.8%。年代別の見学・ドロップイン・月額の利用構成</p>
+      <span class="src-tag src-excel1">男女年齢別データ</span> <span class="src-tag src-excel2">ユーザーデータ原本</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>16. 職業・勉強内容</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>学生/社会人/資格試験等。ターゲットセグメント別の価格設計</p>
+      <span class="src-tag src-excel2">ユーザーデータ原本</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>17. 学生データ</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>16〜18歳の男女別人数。学割・テスト期間割の根拠</p>
+      <span class="src-tag src-excel1">学生データ</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>18. 利用回数（リピート率）</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>1回きり vs 複数回利用。リピーター向け割引・ロイヤルティ価格の根拠</p>
+      <span class="src-tag src-excel1">ドロップインユーザー利用回数</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>19. 登録→利用開始日数</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>登録から初回利用までの日数。早期購入割引（アーリーバード）の根拠</p>
+      <span class="src-tag src-excel1">見学予約数 / 月額契約数</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>20. クレカ登録率</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>全体5.5%（745/13,651人）。決済ハードルの指標。初回限定割引でクレカ登録促進</p>
+      <span class="src-tag src-excel1">クレカ登録率</span>
+    </div>
+  </div>
+  <div class="data-card user">
+    <div class="data-header"><h3>21. 居住地（緯度経度）</h3><span class="cat-badge cat-user">ユーザー</span></div>
+    <div class="data-body">
+      <p>ユーザーと店舗の距離 → 近隣ユーザー限定価格、遠方ユーザー向けお試し価格</p>
+      <span class="src-tag src-excel2">ユーザーデータ原本</span>
+    </div>
+  </div>
+
+  <!-- D. 収益データ -->
+  <h3 style="font-size:16px; font-weight:700; margin:20px 0 12px; color:#b45309;">D. 収益データ（売上・契約実績）</h3>
+
+  <div class="data-card revenue">
+    <div class="data-header"><h3>22. 月額契約の継続期間</h3><span class="cat-badge cat-revenue">収益</span></div>
+    <div class="data-body">
+      <p>平均76日で解約。期間パスの最適日数設定（7日/14日/30日）の根拠</p>
+      <span class="src-tag src-excel1">月額契約数継続期間</span> <span class="src-tag src-db">ShopContract</span>
+    </div>
+  </div>
+  <div class="data-card revenue">
+    <div class="data-header"><h3>23. ドロップイン購入プラン</h3><span class="cat-badge cat-revenue">収益</span></div>
+    <div class="data-body">
+      <p>1DAY 47.6% / 1時間 27.2%。平均4.5時間利用。期間パスの価格帯の参考</p>
+      <span class="src-tag src-excel1">ドロップインデータ</span>
+    </div>
+  </div>
+  <div class="data-card revenue">
+    <div class="data-header"><h3>24. 店舗別売上</h3><span class="cat-badge cat-revenue">収益</span></div>
+    <div class="data-body">
+      <p>先月売上。店舗のパフォーマンスに基づく価格ランク分け</p>
+      <span class="src-tag src-db">Shop.lastMonthSales</span>
+    </div>
+  </div>
+  <div class="data-card revenue">
+    <div class="data-header"><h3>25. ドロップイン料金体系</h3><span class="cat-badge cat-revenue">収益</span></div>
+    <div class="data-body">
+      <p>分単価 平均13.8円 / 日最大 平均2,465円。期間パス基準価格の算出ベース</p>
+      <span class="src-tag src-excel1">店舗情報シート</span> <span class="src-tag src-db">Shop</span>
+    </div>
+  </div>
+  <div class="data-card revenue">
+    <div class="data-header"><h3>26. 見学→成約率</h3><span class="cat-badge cat-revenue">収益</span></div>
+    <div class="data-body">
+      <p>見学実施からの成約割合。コンバージョンの定量化</p>
+      <span class="src-tag src-excel1">見学予約数</span>
+    </div>
+  </div>
+
+  <!-- E. 外部データ -->
+  <h3 style="font-size:16px; font-weight:700; margin:20px 0 12px; color:var(--success);">E. 外部・時期データ</h3>
+
+  <div class="data-card external">
+    <div class="data-header"><h3>27. 祝日リスト</h3><span class="cat-badge cat-external">外部</span></div>
+    <div class="data-body">
+      <p>祝日の需要変動パターン。GW・お盆・年末年始の特別料金</p>
+      <span class="src-tag src-excel1">祝日リスト</span>
+    </div>
+  </div>
+  <div class="data-card external">
+    <div class="data-header"><h3>28. 掲載店舗数推移</h3><span class="cat-badge cat-external">外部</span></div>
+    <div class="data-body">
+      <p>月別の新規掲載数。競合増加 = 供給増 = 価格下落圧力</p>
+      <span class="src-tag src-excel1">掲載店舗数</span>
+    </div>
+  </div>
+  <div class="data-card external">
+    <div class="data-header"><h3>29. 新規DL数推移</h3><span class="cat-badge cat-external">外部</span></div>
+    <div class="data-body">
+      <p>iOS/Android別の日別DL数。市場の成長度・認知度の変化</p>
+      <span class="src-tag src-excel1">ユーザーデータ2024〜2026</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション3.5: 判断軸の考え方 -->
+<!-- ============================================ -->
+<div class="section" id="axes">
+  <h2 class="section-title">⚖️ 判断軸の考え方</h2>
+  <p class="section-desc">29項目のデータを「どの軸で価格を変動させるか」に落とし込みます。軸ごとにS/A/B/Cランクで優先度を評価し、価格計算式に組み込みます。</p>
+
+  <!-- 2つのカテゴリ説明 -->
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div class="card" style="border-left:4px solid var(--primary);">
+      <h4 style="color:var(--primary); margin-bottom:8px;">A. 事前決定型の条件</h4>
+      <p style="font-size:13px; color:var(--text-secondary);">パス購入時点で確定する条件。ユーザーが選択し、購入前に価格が分かる。</p>
+      <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">曜日</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">時間帯</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">利用制限</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">期間</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">季節</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">早期購入</span>
+        <span style="background:var(--primary-light); color:var(--primary); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">学割</span>
+      </div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--teal);">
+      <h4 style="color:var(--teal); margin-bottom:8px;">B. リアルタイム変動型の条件</h4>
+      <p style="font-size:13px; color:var(--text-secondary);">日々の状況に応じて価格が変わる条件。管理者側で設定・自動反映。</p>
+      <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:6px;">
+        <span style="background:var(--teal-light); color:var(--teal); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">稼働率</span>
+        <span style="background:var(--teal-light); color:var(--teal); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">リピーター</span>
+        <span style="background:var(--teal-light); color:var(--teal); padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600;">店舗人気度</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 評価基準の説明 -->
+  <div class="summary-box" style="background:#f8f9fa; border:1px solid var(--border); margin-bottom:24px;">
+    <strong>評価基準（3つの観点）</strong>
+    <div class="grid-3" style="margin-top:10px;">
+      <div style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:4px;">📊</div>
+        <strong style="font-size:13px;">データがあるか</strong>
+        <p style="font-size:11px; color:var(--text-secondary);">実際のデータで裏付けが取れるか。感覚ではなく数値で判断できるか。</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:4px;">💬</div>
+        <strong style="font-size:13px;">説明しやすいか</strong>
+        <p style="font-size:11px; color:var(--text-secondary);">ユーザーが価格差に納得できるか。「なぜこの値段？」に答えられるか。</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:4px;">🎯</div>
+        <strong style="font-size:13px;">効果が大きいか</strong>
+        <p style="font-size:11px; color:var(--text-secondary);">売上向上・需要分散に対する影響度。実施したときのインパクト。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- S ランク -->
+  <h3 style="margin:24px 0 14px; display:flex; align-items:center; gap:10px;">
+    <span class="rank-badge rank-s">S</span>
+    <span style="font-size:17px; font-weight:800;">最優先で導入する軸</span>
+    <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">— 3つの基準をすべて満たす</span>
+  </h3>
+
+  <div class="grid-2" style="margin-bottom:20px;">
+    <!-- 曜日 -->
+    <div class="axis-card" style="border-color:#7c3aed;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">① 曜日（平日/休日）</h4>
+          <span class="rank-badge rank-s" style="width:28px; height:28px; font-size:12px;">S</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">土日の利用は平日の約2倍 → 需要差が明確</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>平日限定</td><td class="coeff-low">×0.80</td></tr>
+          <tr><td>全日</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>土日祝含む</td><td class="coeff-high">×1.15</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 時間帯 -->
+    <div class="axis-card" style="border-color:#7c3aed;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">② 時間帯</h4>
+          <span class="rank-badge rank-s" style="width:28px; height:28px; font-size:12px;">S</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">9〜15時に利用の55%が集中 → ピーク分散効果が高い</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>モーニング（〜9時）</td><td class="coeff-low">×0.65</td></tr>
+          <tr><td>デイタイム（9〜17時）</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>ナイト（17時〜）</td><td class="coeff-low">×0.75</td></tr>
+          <tr><td>フルタイム</td><td class="coeff-high">×1.10</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 利用制限 -->
+    <div class="axis-card" style="border-color:#7c3aed;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">③ 利用制限（時間上限）</h4>
+          <span class="rank-badge rank-s" style="width:28px; height:28px; font-size:12px;">S</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">平均利用4.5h・中央値3h → 制限パスの需要根拠あり</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>1日2時間上限</td><td class="coeff-low">×0.40</td></tr>
+          <tr><td>1日4時間上限</td><td class="coeff-low">×0.60</td></tr>
+          <tr><td>期間合計30時間上限</td><td class="coeff-low">×0.70</td></tr>
+          <tr><td>使い放題</td><td class="coeff-mid">×1.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 期間 -->
+    <div class="axis-card" style="border-color:#7c3aed;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">④ 期間（まとめ割引）</h4>
+          <span class="rank-badge rank-s" style="width:28px; height:28px; font-size:12px;">S</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">月額契約の平均76日 → 長期パスへの動線が自然</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>3日間</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>1週間</td><td class="coeff-low">×0.80</td></tr>
+          <tr><td>2週間</td><td class="coeff-low">×0.70</td></tr>
+          <tr><td>1ヶ月</td><td class="coeff-low">×0.60</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- A ランク -->
+  <h3 style="margin:28px 0 14px; display:flex; align-items:center; gap:10px;">
+    <span class="rank-badge rank-a">A</span>
+    <span style="font-size:17px; font-weight:800;">導入推奨の軸</span>
+    <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">— 3つのうち2つ以上を満たす</span>
+  </h3>
+
+  <div class="grid-2" style="margin-bottom:20px;">
+    <!-- 季節 -->
+    <div class="axis-card" style="border-color:#f59e0b;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">⑤ 季節・月</h4>
+          <span class="rank-badge rank-a" style="width:28px; height:28px; font-size:12px;">A</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">12月のチェックイン数が通常月の2〜3倍 → 受験期・試験期の需要増</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot half"></span> 効果中</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>閑散期（4〜5月）</td><td class="coeff-low">×0.85</td></tr>
+          <tr><td>通常期</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>繁忙期（12〜2月, 7月）</td><td class="coeff-high">×1.15</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 早期購入 -->
+    <div class="axis-card" style="border-color:#f59e0b;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:15px; font-weight:700;">⑥ 早期購入</h4>
+          <span class="rank-badge rank-a" style="width:28px; height:28px; font-size:12px;">A</span>
+        </div>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">利用開始日の2ヶ月前まで購入可 → 早期確約で需要予測精度向上</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot half"></span> データ一部</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>30日以上前</td><td class="coeff-low">×0.85</td></tr>
+          <tr><td>14日以上前</td><td class="coeff-low">×0.90</td></tr>
+          <tr><td>7日以上前</td><td class="coeff-mid">×0.95</td></tr>
+          <tr><td>直前購入</td><td class="coeff-mid">×1.00</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- B ランク -->
+  <h3 style="margin:28px 0 14px; display:flex; align-items:center; gap:10px;">
+    <span class="rank-badge rank-b">B</span>
+    <span style="font-size:17px; font-weight:800;">状況に応じて導入を検討する軸</span>
+    <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">— 効果はあるが運用負荷・説明コストに注意</span>
+  </h3>
+
+  <div class="grid-3" style="margin-bottom:20px;">
+    <!-- 学割 -->
+    <div class="axis-card" style="border-color:#3b82f6;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:14px; font-weight:700;">⑦ 学割</h4>
+          <span class="rank-badge rank-b" style="width:26px; height:26px; font-size:11px;">B</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">25歳以下が43.8% → 対象者は多いが学生証確認の運用負荷</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot half"></span> 効果中</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>学生</td><td class="coeff-low">×0.85</td></tr>
+          <tr><td>一般</td><td class="coeff-mid">×1.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- 稼働率 -->
+    <div class="axis-card" style="border-color:#3b82f6;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:14px; font-weight:700;">⑧ 稼働率</h4>
+          <span class="rank-badge rank-b" style="width:26px; height:26px; font-size:11px;">B</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">店舗の空席状況で価格変動。リアルタイム性が必要でシステム負荷高</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot half"></span> データ一部</span>
+          <span class="eval-item"><span class="eval-dot half"></span> 説明しにくい</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 効果大</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>低稼働（〜50%）</td><td class="coeff-low">×0.85</td></tr>
+          <tr><td>中稼働</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>高稼働（80%〜）</td><td class="coeff-high">×1.15</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- リピーター -->
+    <div class="axis-card" style="border-color:#3b82f6;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:14px; font-weight:700;">⑨ リピーター</h4>
+          <span class="rank-badge rank-b" style="width:26px; height:26px; font-size:11px;">B</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">期間パス再購入者への割引。LTV向上効果はあるが短期収益は低下</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot half"></span> データ一部</span>
+          <span class="eval-item"><span class="eval-dot full"></span> 説明しやすい</span>
+          <span class="eval-item"><span class="eval-dot half"></span> 効果中</span>
+        </div>
+        <table class="coeff-table">
+          <tr><td>初回</td><td class="coeff-mid">×1.00</td></tr>
+          <tr><td>2回目</td><td class="coeff-low">×0.95</td></tr>
+          <tr><td>3回目〜</td><td class="coeff-low">×0.90</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- C ランク -->
+  <h3 style="margin:28px 0 14px; display:flex; align-items:center; gap:10px;">
+    <span class="rank-badge rank-c">C</span>
+    <span style="font-size:17px; font-weight:800;">将来的に検討する軸</span>
+    <span style="font-size:12px; color:var(--text-secondary); font-weight:400;">— データ不足 or 説明が難しい</span>
+  </h3>
+
+  <div class="grid-2" style="margin-bottom:28px;">
+    <div class="axis-card" style="border-color:#6b7280;">
+      <div style="padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:14px; font-weight:700;">⑩ 店舗人気度</h4>
+          <span class="rank-badge rank-c" style="width:26px; height:26px; font-size:11px;">C</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">閲覧数・検索数で人気度を測定。「人気だから高い」は反感を買いやすい</p>
+        <div class="eval-row">
+          <span class="eval-item"><span class="eval-dot full"></span> データあり</span>
+          <span class="eval-item"><span class="eval-dot empty"></span> 説明しにくい</span>
+          <span class="eval-item"><span class="eval-dot half"></span> 効果中</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; padding:20px;">
+      <div style="background:#f9fafb; border:2px dashed var(--border); border-radius:12px; padding:16px; width:100%;">
+        <p style="font-size:13px; color:var(--text-secondary);">
+          <strong>C ランクの軸は初期リリースには含めず</strong>、期間パスの利用データが蓄積された段階（リリース後3〜6ヶ月）で再検討します。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 価格計算式 -->
+  <div class="formula-box">
+    <h4 style="font-size:16px; font-weight:800; margin-bottom:8px;">価格計算式</h4>
+    <p style="font-size:12px; opacity:.8; margin-bottom:10px;">すべての軸を乗算で組み合わせて最終価格を算出します</p>
+    <div class="formula">
+      <span class="highlight">最終価格</span> <span class="op">=</span> <span class="highlight">日最大料金</span> <span class="op">×</span> <span class="highlight">日数</span> <span class="op">×</span> <span class="highlight">まとめ割引</span> <span class="op">×</span> <span class="highlight">曜日係数</span> <span class="op">×</span> <span class="highlight">時間帯係数</span> <span class="op">×</span> <span class="highlight">季節係数</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="op">×</span> <span class="highlight">利用制限係数</span> <span class="op">×</span> <span class="highlight">早期購入係数</span> <span class="op">×</span> <span class="highlight">学割係数</span>
+    </div>
+    <p style="font-size:11px; opacity:.7;">各係数が1.00のとき基準価格。1.00未満で割引、1.00超で割増。係数の積で最終的な変動率が決まります。</p>
+  </div>
+
+  <!-- シミュレーション -->
+  <h3 style="margin:28px 0 14px; font-size:17px; font-weight:800;">具体シミュレーション（1週間パス / 日最大料金 2,465円）</h3>
+  <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">同じ1週間パスでも、条件の組み合わせにより <strong>5,765円〜20,328円</strong> まで価格が変わります。</p>
+
+  <div class="grid-2">
+    <!-- シミュレーション1: 最安 -->
+    <div class="sim-card" style="border-color:var(--success);">
+      <h4 style="color:var(--success);">最安パターン — 平日モーニング・閑散期・早期・学生・2h制限</h4>
+      <div class="sim-row"><span class="sim-label">日最大料金</span><span class="sim-value">2,465円</span></div>
+      <div class="sim-row"><span class="sim-label">日数</span><span class="sim-value">7日</span></div>
+      <div class="sim-row"><span class="sim-label">まとめ割引</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">曜日（平日）</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">時間帯（朝）</span><span class="sim-coeff">×0.65</span></div>
+      <div class="sim-row"><span class="sim-label">季節（閑散期）</span><span class="sim-coeff">×0.85</span></div>
+      <div class="sim-row"><span class="sim-label">利用制限（2h）</span><span class="sim-coeff">×0.40</span></div>
+      <div class="sim-row"><span class="sim-label">早期購入（30日前）</span><span class="sim-coeff">×0.85</span></div>
+      <div class="sim-row"><span class="sim-label">学割</span><span class="sim-coeff">×0.85</span></div>
+      <div style="border-top:2px solid var(--success); margin-top:8px; padding-top:8px;">
+        <div class="sim-result" style="color:var(--success);">1,400円<span style="font-size:13px; font-weight:400; color:var(--text-secondary); margin-left:8px;">（基準の10%）</span></div>
+      </div>
+      <p style="font-size:11px; color:var(--text-secondary); margin-top:4px;">全割引が重なる極端な例。実運用では下限フロアを設定して過度な値下げを防止</p>
+    </div>
+
+    <!-- シミュレーション2: お得パターン -->
+    <div class="sim-card" style="border-color:var(--teal);">
+      <h4 style="color:var(--teal);">お得パターン — 平日限定・4h制限・早期購入</h4>
+      <div class="sim-row"><span class="sim-label">日最大料金</span><span class="sim-value">2,465円</span></div>
+      <div class="sim-row"><span class="sim-label">日数</span><span class="sim-value">7日</span></div>
+      <div class="sim-row"><span class="sim-label">まとめ割引</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">曜日（平日）</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">時間帯（全時間）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">季節（通常）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">利用制限（4h）</span><span class="sim-coeff">×0.60</span></div>
+      <div class="sim-row"><span class="sim-label">早期購入（14日前）</span><span class="sim-coeff">×0.90</span></div>
+      <div class="sim-row"><span class="sim-label">学割なし</span><span class="sim-coeff">×1.00</span></div>
+      <div style="border-top:2px solid var(--teal); margin-top:8px; padding-top:8px;">
+        <div class="sim-result" style="color:var(--teal);">5,954円<span style="font-size:13px; font-weight:400; color:var(--text-secondary); margin-left:8px;">（基準の43%）</span></div>
+      </div>
+      <p style="font-size:11px; color:var(--text-secondary); margin-top:4px;">平日×4時間制限×早期購入。ライトな社会人ユーザー向けの現実的なパターン</p>
+    </div>
+
+    <!-- シミュレーション3: 基準パターン -->
+    <div class="sim-card" style="border-color:var(--blue);">
+      <h4 style="color:var(--blue);">基準パターン — 全日・使い放題・通常期</h4>
+      <div class="sim-row"><span class="sim-label">日最大料金</span><span class="sim-value">2,465円</span></div>
+      <div class="sim-row"><span class="sim-label">日数</span><span class="sim-value">7日</span></div>
+      <div class="sim-row"><span class="sim-label">まとめ割引</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">曜日（全日）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">時間帯（全時間）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">季節（通常）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">利用制限（使い放題）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">早期購入なし</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">学割なし</span><span class="sim-coeff">×1.00</span></div>
+      <div style="border-top:2px solid var(--blue); margin-top:8px; padding-top:8px;">
+        <div class="sim-result" style="color:var(--blue);">13,804円<span style="font-size:13px; font-weight:400; color:var(--text-secondary); margin-left:8px;">（基準価格）</span></div>
+      </div>
+      <p style="font-size:11px; color:var(--text-secondary); margin-top:4px;">すべての係数が×1.00の基準価格。ここを起点に各軸で上下に変動</p>
+    </div>
+
+    <!-- シミュレーション4: 最高パターン -->
+    <div class="sim-card" style="border-color:var(--danger);">
+      <h4 style="color:var(--danger);">最高価格パターン — 全日・フルタイム・繁忙期・使い放題</h4>
+      <div class="sim-row"><span class="sim-label">日最大料金</span><span class="sim-value">2,465円</span></div>
+      <div class="sim-row"><span class="sim-label">日数</span><span class="sim-value">7日</span></div>
+      <div class="sim-row"><span class="sim-label">まとめ割引</span><span class="sim-coeff">×0.80</span></div>
+      <div class="sim-row"><span class="sim-label">曜日（土日祝含む）</span><span class="sim-coeff">×1.15</span></div>
+      <div class="sim-row"><span class="sim-label">時間帯（フルタイム）</span><span class="sim-coeff">×1.10</span></div>
+      <div class="sim-row"><span class="sim-label">季節（繁忙期）</span><span class="sim-coeff">×1.15</span></div>
+      <div class="sim-row"><span class="sim-label">利用制限（使い放題）</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">早期購入なし</span><span class="sim-coeff">×1.00</span></div>
+      <div class="sim-row"><span class="sim-label">学割なし</span><span class="sim-coeff">×1.00</span></div>
+      <div style="border-top:2px solid var(--danger); margin-top:8px; padding-top:8px;">
+        <div class="sim-result" style="color:var(--danger);">20,088円<span style="font-size:13px; font-weight:400; color:var(--text-secondary); margin-left:8px;">（基準の146%）</span></div>
+      </div>
+      <p style="font-size:11px; color:var(--text-secondary); margin-top:4px;">繁忙期×土日祝×フルタイムの最大価格。上限キャップで価格の暴走を防止</p>
+    </div>
+  </div>
+
+  <!-- 導入の選択肢 -->
+  <div class="card card-accent" style="margin-top:24px;">
+    <h4 style="margin-bottom:12px;">どこまで導入するか — 4つの選択肢</h4>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">初期リリースですべての軸を導入する必要はありません。段階的に追加できます。</p>
+    <table>
+      <thead>
+        <tr><th>レベル</th><th>含まれる軸</th><th>計算の複雑さ</th><th>推奨ケース</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color:var(--success);">Level 1</strong></td>
+          <td>S のみ（曜日・時間帯・利用制限・期間）</td>
+          <td>低 — 固定テーブル</td>
+          <td>最速でリリースしたい場合</td>
+        </tr>
+        <tr>
+          <td><strong style="color:var(--blue);">Level 2</strong></td>
+          <td>S + 季節</td>
+          <td>低〜中 — 月ごとの係数追加</td>
+          <td>季節変動に対応したい場合</td>
+        </tr>
+        <tr style="background:var(--primary-light);">
+          <td><strong style="color:var(--primary);">Level 3 ★推奨</strong></td>
+          <td>S + 季節 + 早期購入</td>
+          <td>中 — 購入日判定を追加</td>
+          <td>需要予測も改善したい場合</td>
+        </tr>
+        <tr>
+          <td><strong style="color:#92400e;">Level 4</strong></td>
+          <td>S + A + B（学割・稼働率・リピーター）</td>
+          <td>高 — ユーザー属性判定が必要</td>
+          <td>フル機能で差別化したい場合</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px; background:var(--warning-light); padding:8px 12px; border-radius:8px; margin-top:12px;">
+      <strong>推奨:</strong> Level 3（S + 季節 + 早期購入）で初期リリースし、利用データが蓄積されたら Level 4 に拡張。学割・稼働率は後から追加しても影響が少ない。
+    </p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション4: 施策パターン -->
+<!-- ============================================ -->
+<div class="section" id="strategies">
+  <h2 class="section-title">🎯 施策パターン</h2>
+  <p class="section-desc">データを組み合わせて実行可能な9つの価格変動パターンです。</p>
+
+  <div class="grid-3">
+    <div class="strategy-card">
+      <span class="effect effect-high">効果 大</span>
+      <h4>① 時間帯別料金</h4>
+      <p>早朝(6-9時)・夜間(17時〜)は割安、ピーク(9-15時)は通常価格</p>
+      <div class="example">
+        <strong>例:</strong> モーニング期間パス（6-9時限定）→ 通常の60%<br>
+        ナイト期間パス（17時〜閉店）→ 通常の70%
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#2 時間帯CI</span>
+        <span class="src-tag src-db">#11 営業時間</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-high">効果 大</span>
+      <h4>② 曜日別料金</h4>
+      <p>平日限定は割安、週末含むは割増</p>
+      <div class="example">
+        <strong>例:</strong> 平日限定1週間パス → 通常の80%<br>
+        全日1週間パス → 通常の110%
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#1 曜日別利用</span>
+        <span class="src-tag src-excel1">#27 祝日</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-high">効果 大</span>
+      <h4>③ 稼働率連動</h4>
+      <p>空きが多い店舗は安く、満席に近い店舗は高く</p>
+      <div class="example">
+        <strong>例:</strong> 稼働率50%以下 → 基準の80%<br>
+        稼働率80%以上 → 基準の120%
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#9 座席数</span>
+        <span class="src-tag src-db">#10 契約者数</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-mid">効果 中</span>
+      <h4>④ エリア別料金</h4>
+      <p>都心駅近は高く、郊外は安く</p>
+      <div class="example">
+        <strong>例:</strong> 東京23区 → Aランク（基準価格）<br>
+        地方都市 → Cランク（基準の70%）
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel2">#13 エリア</span>
+        <span class="src-tag src-excel1">#12 立地</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-mid">効果 中</span>
+      <h4>⑤ 季節料金</h4>
+      <p>試験シーズン・年末は高め、閑散期は安め</p>
+      <div class="example">
+        <strong>例:</strong> 12〜2月（受験期）→ 基準の110%<br>
+        4〜5月（閑散期）→ 基準の85%
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#4 月別推移</span>
+        <span class="src-tag src-excel1">#29 DL数</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-mid">効果 中</span>
+      <h4>⑥ 早期購入割引</h4>
+      <p>利用開始の14日以上前に購入で割引</p>
+      <div class="example">
+        <strong>例:</strong> 14日以上前 → 10%OFF<br>
+        7日以上前 → 5%OFF<br>
+        直前購入 → 通常価格
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#19 登録→利用日数</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-mid">効果 中</span>
+      <h4>⑦ リピーター割引</h4>
+      <p>2回目以降の期間パス購入は割引</p>
+      <div class="example">
+        <strong>例:</strong> 2回目 → 5%OFF<br>
+        3回目以降 → 10%OFF<br>
+        月額へのアップグレード → さらに割引
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#18 リピート回数</span>
+        <span class="src-tag src-db">#22 継続期間</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-low">効果 小</span>
+      <h4>⑧ 店舗人気度連動</h4>
+      <p>閲覧数・検索数が多い人気店は高め</p>
+      <div class="example">
+        <strong>例:</strong> 閲覧数TOP20% → 基準の105%<br>
+        閲覧数BOTTOM20% → 基準の90%
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#6 閲覧数</span>
+        <span class="src-tag src-excel2">#8 検索数</span>
+      </div>
+    </div>
+
+    <div class="strategy-card">
+      <span class="effect effect-low">効果 小</span>
+      <h4>⑨ 学割・年齢別</h4>
+      <p>25歳以下（利用者の43.8%）に割引</p>
+      <div class="example">
+        <strong>例:</strong> 25歳以下 → 15%OFF<br>
+        テスト期間（7月・1月）→ さらに10%OFF
+      </div>
+      <div class="data-refs">
+        <span class="src-tag src-excel1">#15 年齢分布</span>
+        <span class="src-tag src-excel1">#17 学生</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション5: 期間パス×価格設計 -->
+<!-- ============================================ -->
+<div class="section" id="periodpass">
+  <h2 class="section-title">🏷️ 期間パス × ダイナミックプライシング 価格設計例</h2>
+  <p class="section-desc">日最大料金 平均2,465円を基準に、施策パターンを組み合わせた価格シミュレーションです。</p>
+
+  <div class="summary-box info">
+    <strong>基準価格の算出式</strong>
+    <p>基準価格 = 日最大料金 × 日数 × 基本割引率（まとめ買い割引）<br>
+    → 例: 2,465円 × 7日 × 0.8 = <strong>13,804円</strong>（1週間パス基準）<br>
+    → 例: 2,465円 × 14日 × 0.7 = <strong>24,157円</strong>（2週間パス基準）<br>
+    → 例: 2,465円 × 30日 × 0.6 = <strong>44,370円</strong>（1ヶ月パス基準）
+    </p>
+  </div>
+
+  <!-- 1週間パス -->
+  <div class="pass-card" style="margin-bottom:20px;">
+    <h4>1週間パス — ダイナミック価格シミュレーション</h4>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">基準: 13,800円 / 各施策の変動係数を乗算</p>
+    <div class="price-example">
+      <div class="price-tag discount">
+        <small>平日限定+モーニング</small>
+        <strong>7,700円</strong>
+        <small>-44%</small>
+      </div>
+      <div class="price-tag discount">
+        <small>平日限定+早期購入</small>
+        <strong>9,900円</strong>
+        <small>-28%</small>
+      </div>
+      <div class="price-tag normal">
+        <small>全日・通常</small>
+        <strong>13,800円</strong>
+        <small>基準価格</small>
+      </div>
+      <div class="price-tag premium">
+        <small>週末含む+繁忙期</small>
+        <strong>16,700円</strong>
+        <small>+21%</small>
+      </div>
+      <div class="price-tag premium">
+        <small>人気店+繁忙期+全日</small>
+        <strong>18,200円</strong>
+        <small>+32%</small>
+      </div>
+    </div>
+    <table style="margin-top:12px;">
+      <thead><tr><th>変動要因</th><th>条件</th><th>係数</th></tr></thead>
+      <tbody>
+        <tr><td>曜日</td><td>平日限定 / 全日 / 週末含む</td><td>×0.80 / ×1.00 / ×1.10</td></tr>
+        <tr><td>時間帯</td><td>モーニング / 全時間 / ナイト</td><td>×0.70 / ×1.00 / ×0.75</td></tr>
+        <tr><td>季節</td><td>閑散期 / 通常 / 繁忙期</td><td>×0.85 / ×1.00 / ×1.10</td></tr>
+        <tr><td>稼働率</td><td>低(〜50%) / 中 / 高(80%〜)</td><td>×0.85 / ×1.00 / ×1.15</td></tr>
+        <tr><td>早期購入</td><td>14日前 / 7日前 / 直前</td><td>×0.90 / ×0.95 / ×1.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 利用制限付きパス -->
+  <div class="pass-card" style="margin-bottom:20px;">
+    <h4>利用制限付き期間パス — 価格設計</h4>
+    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">使い放題に加えて、時間上限ありの廉価版も検討</p>
+    <table>
+      <thead><tr><th>パスタイプ</th><th>1週間</th><th>2週間</th><th>1ヶ月</th><th>備考</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>使い放題</strong></td>
+          <td>13,800円</td><td>24,200円</td><td>44,400円</td>
+          <td>基準価格</td>
+        </tr>
+        <tr>
+          <td><strong>期間合計30時間上限</strong></td>
+          <td>9,700円</td><td>16,900円</td><td>31,100円</td>
+          <td>基準の70%。平均利用4.5h/日から逆算</td>
+        </tr>
+        <tr>
+          <td><strong>1日4時間上限</strong></td>
+          <td>8,300円</td><td>14,500円</td><td>26,600円</td>
+          <td>基準の60%。中央値3hに近い制限</td>
+        </tr>
+        <tr>
+          <td><strong>1日2時間上限</strong></td>
+          <td>5,500円</td><td>9,700円</td><td>17,800円</td>
+          <td>基準の40%。ライトユーザー向け</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px; background:#fef7e0; padding:8px 12px; border-radius:8px; margin-top:12px;">
+      <strong>根拠:</strong> ドロップイン利用の平均4.5時間・中央値3時間。1DAY利用が47.6%を占めるが、実際はフル利用しない人も多い。時間上限付きパスはライトユーザーの取り込みに有効。
+    </p>
+  </div>
+
+  <!-- 組み合わせ例 -->
+  <div class="card card-accent">
+    <h4>パッケージ組み合わせ例（店舗が選択）</h4>
+    <div class="grid-2">
+      <div style="padding:12px; background:#f8f9fa; border-radius:8px;">
+        <strong style="color:var(--primary);">パターンA: シンプル</strong>
+        <ul style="font-size:13px; padding-left:20px; margin-top:6px;">
+          <li>1週間パス（使い放題）— 基準価格</li>
+          <li>2週間パス（使い放題）— 基準×0.88</li>
+          <li>1ヶ月パス（使い放題）— 基準×0.75</li>
+        </ul>
+        <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">→ 期間が長いほど日割りが安くなるシンプルな構成</p>
+      </div>
+      <div style="padding:12px; background:#f8f9fa; border-radius:8px;">
+        <strong style="color:var(--primary);">パターンB: 時間帯分け</strong>
+        <ul style="font-size:13px; padding-left:20px; margin-top:6px;">
+          <li>モーニングパス（〜9時）— 基準×0.60</li>
+          <li>デイタイムパス（9-17時）— 基準価格</li>
+          <li>ナイトパス（17時〜）— 基準×0.70</li>
+          <li>フルタイムパス（全時間）— 基準×1.10</li>
+        </ul>
+        <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">→ 時間帯でピーク分散を狙う</p>
+      </div>
+      <div style="padding:12px; background:#f8f9fa; border-radius:8px;">
+        <strong style="color:var(--primary);">パターンC: 制限付き</strong>
+        <ul style="font-size:13px; padding-left:20px; margin-top:6px;">
+          <li>ライトパス（1日2h上限）— 基準×0.40</li>
+          <li>スタンダードパス（1日4h上限）— 基準×0.60</li>
+          <li>プレミアムパス（使い放題）— 基準価格</li>
+        </ul>
+        <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">→ 利用量でセグメント分け</p>
+      </div>
+      <div style="padding:12px; background:#f8f9fa; border-radius:8px;">
+        <strong style="color:var(--primary);">パターンD: フル活用</strong>
+        <ul style="font-size:13px; padding-left:20px; margin-top:6px;">
+          <li>平日モーニング2hパス — 基準×0.25</li>
+          <li>平日デイタイム使い放題 — 基準×0.80</li>
+          <li>全日フルタイム使い放題 — 基準×1.10</li>
+          <li>繁忙期は上記×1.10〜1.20</li>
+        </ul>
+        <p style="font-size:11px; color:var(--text-secondary); margin-top:6px;">→ 曜日×時間帯×制限の組み合わせ</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション6: 検討すべき項目 -->
+<!-- ============================================ -->
+<div class="section" id="nextsteps">
+  <h2 class="section-title">🔍 さらに検討すべき項目</h2>
+  <p class="section-desc">ダイナミックプライシング×期間パスを実行するために、追加で検討・決定が必要な事項です。</p>
+
+  <div class="next-card">
+    <div class="next-header n1">優先度 高 — 価格設計の根幹</div>
+    <div class="next-body">
+      <li><strong>価格変動の頻度と反映タイミング</strong> — リアルタイム変動か、週次/月次の固定変動か。リアルタイムはシステム負荷高、固定変動は運用しやすい</li>
+      <li><strong>価格の上下限（フロア/キャップ）</strong> — どこまで安くするか・高くするかの上下限。安くしすぎると月額契約が減る</li>
+      <li><strong>月額契約とのカニバリゼーション防止</strong> — 期間パスが安すぎると月額契約に移行しなくなる。月額の方がお得になる閾値の設計</li>
+      <li><strong>店舗が設定できる価格の自由度</strong> — 基準価格×係数で自動算出 vs 店舗が自由に金額設定。自由度が高いほど運用は複雑</li>
+      <li><strong>複数施策の組み合わせルール</strong> — 曜日割＋早期購入＋学割は併用可能か？割引の上限（最大30%OFF等）</li>
+      <li><strong>利用制限の技術実装</strong> — 「1日4時間上限」のチェックイン/アウト制御。上限到達時のUX（アラート→強制チェックアウト？）</li>
+      <li><strong>期間全体の時間上限の管理</strong> — 「2週間で30時間」の残時間管理。アプリでの残時間表示</li>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-header n2">優先度 中 — 運用・UX設計</div>
+    <div class="next-body">
+      <li><strong>価格表示のUX</strong> — アプリで「通常13,800円 → 今なら9,900円」のような表示にするか。割引率の見せ方</li>
+      <li><strong>購入から利用開始までの猶予期間</strong> — 購入日から2ヶ月以内で開始日を選べる仕様。開始日が遠いほど割安にする？</li>
+      <li><strong>同一店舗で複数パスの同時保有</strong> — モーニングパスとナイトパスを同時に買えるか。期間の重複ルール</li>
+      <li><strong>全店舗利用可パスの価格設計</strong> — 購入店舗のみが基本だが、全店舗利用可オプションの価格はどうするか</li>
+      <li><strong>期間パス延長（再購入）時の価格</strong> — 連続購入は割引するか。月額への移行インセンティブとのバランス</li>
+      <li><strong>クーポンとの併用ルール</strong> — 既存クーポン利用可だが、ダイナミック割引とクーポンの併用は？二重割引の防止</li>
+      <li><strong>期限通知のタイミングと方法</strong> — 3日前/1日前/当日のプッシュ通知。延長（再購入）の導線設計</li>
+      <li><strong>返金ポリシーの詳細</strong> — 基本は返金なしだが、未使用の場合は？災害・店舗閉鎖時の扱い</li>
+    </div>
+  </div>
+
+  <div class="next-card">
+    <div class="next-header n3">優先度 低 — 将来的な拡張</div>
+    <div class="next-body">
+      <li><strong>AIベースの価格最適化</strong> — 過去データから最適価格を自動算出するモデル。初期は手動ルール、将来的に機械学習</li>
+      <li><strong>サージプライシング（急な需要増への対応）</strong> — 試験直前期・天候変化時のリアルタイム値上げ</li>
+      <li><strong>法人・グループ向けパス</strong> — 企業の福利厚生としての一括購入。ボリュームディスカウント</li>
+      <li><strong>ポイント・スタンプとの連携</strong> — 利用回数に応じたポイント付与。ポイントでの購入</li>
+      <li><strong>他サービスとのバンドル</strong> — カフェドリンク付き・Wi-Fiプレミアム付きパス</li>
+      <li><strong>競合店舗の価格モニタリング</strong> — 近隣の自習室・コワーキングの価格を参照した自動調整</li>
+      <li><strong>価格変動のA/Bテスト</strong> — 異なる価格帯を一部ユーザーに提示し、コンバージョン率を比較</li>
+      <li><strong>ダッシュボード（管理者向け）</strong> — 期間パスの販売数・稼働率・売上のリアルタイム可視化</li>
+    </div>
+  </div>
+
+  <details>
+    <summary>決定済み事項（期間パス基本仕様）</summary>
+    <div class="details-body">
+      <table>
+        <thead><tr><th>項目</th><th>決定内容</th></tr></thead>
+        <tbody>
+          <tr><td>期間パスの種類</td><td>店舗ごと自由設定</td></tr>
+          <tr><td>金額</td><td>店舗別に設定可能</td></tr>
+          <tr><td>営業時間</td><td>カレンダーで自由に設定</td></tr>
+          <tr><td>利用制限</td><td>使い放題 + 期間全体の時間上限あり + 1日の時間上限ありも検討</td></tr>
+          <tr><td>利用開始日</td><td>購入日から2ヶ月以内で設定可能</td></tr>
+          <tr><td>中途解約・返金</td><td>返金なし（買い切り）</td></tr>
+          <tr><td>利用店舗</td><td>購入した店舗のみ（将来的に全店舗利用可も検討）</td></tr>
+          <tr><td>入会金</td><td>なし</td></tr>
+          <tr><td>延長（再購入）</td><td>可能</td></tr>
+          <tr><td>クーポン</td><td>既存クーポン利用可能</td></tr>
+          <tr><td>期限通知</td><td>未定</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+</div>
+
+</div>
+
+<!-- TOC -->
+<button class="toc-btn" onclick="toggleToc()">☰</button>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleToc()">
+  <div class="toc-panel" onclick="event.stopPropagation()">
+    <button class="toc-close" onclick="toggleToc()">✕</button>
+    <h3>目次</h3>
+    <a href="#concept" onclick="toggleToc()">💡 コンセプト</a>
+    <a href="#realdata" onclick="toggleToc()">📊 実データ分析（曜日・時間帯・年代・料金）</a>
+    <a href="#datasources" onclick="toggleToc()">🗂️ 判断データ 29項目</a>
+    <a href="#axes" onclick="toggleToc()">⚖️ 判断軸の考え方（S/A/B/Cランク）</a>
+    <a href="#strategies" onclick="toggleToc()">🎯 施策パターン（9施策）</a>
+    <a href="#periodpass" onclick="toggleToc()">🏷️ 期間パス×価格設計例</a>
+    <a href="#nextsteps" onclick="toggleToc()">🔍 さらに検討すべき項目</a>
+  </div>
+</div>
+
+<script>
+function scrollTo_(id) {
+  document.getElementById(id).scrollIntoView({ behavior:'smooth' });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function toggleToc() {
+  document.getElementById('tocOverlay').classList.toggle('show');
+}
+window.addEventListener('scroll', () => {
+  const sections = ['concept','realdata','datasources','axes','strategies','periodpass','nextsteps'];
+  let current = sections[0];
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 80) current = id;
+  }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+
+</body>
+</html>

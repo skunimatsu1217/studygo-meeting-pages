@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 2026年1月 データ振り返りレポート</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root{--pri:#2563eb;--pri2:#3b82f6;--ok:#16a34a;--ng:#dc2626;--warn:#f59e0b;--bg:#f8fafc;--card:#fff;--tx:#1e293b;--tx2:#64748b;--bd:#e2e8f0;--pur:#7c3aed;--cyan:#06b6d4;--org:#f97316}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Hiragino Kaku Gothic ProN','Meiryo',sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+.hd{background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 50%,#3b82f6 100%);color:#fff;padding:36px 0;text-align:center;position:relative}
+.hd h1{font-size:1.8rem;font-weight:700}.hd .sub{font-size:.95rem;opacity:.9;margin-top:6px}.hd .meta{font-size:.82rem;opacity:.7;margin-top:2px}
+.wrap{max-width:1440px;margin:0 auto;padding:20px}
+.tabs{display:flex;gap:3px;background:#fff;border-radius:10px;padding:5px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.07);flex-wrap:wrap}
+.tab{padding:10px 18px;border:none;background:transparent;border-radius:7px;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--tx2);transition:.2s;white-space:nowrap}
+.tab:hover{background:#f1f5f9;color:var(--tx)}.tab.on{background:var(--pri);color:#fff}
+.tab.cumul{border-left:3px solid var(--pur)}.tab.short{border-left:3px solid var(--org)}.tab.act{border-left:3px solid var(--ok)}
+.sec{display:none}.sec.on{display:block}
+.g{display:grid;gap:16px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:1100px){.g3,.g4{grid-template-columns:1fr 1fr}}@media(max-width:750px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.c{background:var(--card);border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1px solid var(--bd)}
+.ct{font-size:.95rem;font-weight:700;margin-bottom:12px}
+.kc{text-align:center}.kl{font-size:.78rem;color:var(--tx2);margin-bottom:2px}.kv{font-size:1.9rem;font-weight:700}.kd{font-size:.82rem;font-weight:600;margin-top:3px}.ks{font-size:.73rem;color:var(--tx2);margin-top:1px}
+.up{color:var(--ok)}.dn{color:var(--ng)}.nu{color:var(--tx2)}
+.ib{border-left:4px solid var(--pri);border-radius:0 8px 8px 0;padding:14px 18px;margin-top:14px;background:linear-gradient(135deg,#eff6ff,#f0f9ff)}
+.ib.w{border-color:var(--warn);background:linear-gradient(135deg,#fffbeb,#fef3c7)}
+.ib.s{border-color:var(--ok);background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
+.ib.d{border-color:var(--ng);background:linear-gradient(135deg,#fef2f2,#fee2e2)}
+.it{font-weight:700;font-size:.88rem;margin-bottom:4px}.ix{font-size:.83rem;color:#374151;line-height:1.7}
+.ac{background:linear-gradient(135deg,#faf5ff,#ede9fe);border:1px solid #c4b5fd;border-radius:10px;padding:18px}
+.ac h4{color:#5b21b6;font-size:.92rem;margin-bottom:10px}
+.al{list-style:none}.al li{padding:7px 0;border-bottom:1px solid rgba(139,92,246,.13);font-size:.83rem;display:flex;gap:7px}.al li:last-child{border-bottom:0}
+.an{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#7c3aed;color:#fff;border-radius:50%;font-size:.68rem;font-weight:700;flex-shrink:0}
+.fb{display:flex;align-items:center;gap:10px;margin:7px 0}.fl{width:150px;font-size:.8rem;text-align:right;flex-shrink:0}.ft{flex:1;height:30px;background:#f1f5f9;border-radius:5px;overflow:hidden}
+.ff{height:100%;border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;font-size:.76rem;font-weight:600}.fv{font-size:.8rem;font-weight:600;width:70px;flex-shrink:0}
+table.dt{width:100%;border-collapse:collapse;font-size:.83rem}
+.dt th{background:#f8fafc;padding:9px 10px;text-align:left;font-weight:600;border-bottom:2px solid var(--bd);font-size:.78rem;color:var(--tx2)}
+.dt td{padding:9px 10px;border-bottom:1px solid var(--bd)}.dt tr:hover{background:#f8fafc}
+.r{text-align:right}.cen{text-align:center}
+.hl{font-weight:700;color:var(--pri)}.hg{font-weight:700;color:var(--ok)}.hr{font-weight:700;color:var(--ng)}
+.stl{font-size:1.2rem;font-weight:700;margin:28px 0 10px;padding-bottom:6px;display:inline-block}
+.stl.cum{border-bottom:3px solid var(--pur);color:var(--pur)}.stl.sho{border-bottom:3px solid var(--org);color:var(--org)}.stl.act{border-bottom:3px solid var(--ok);color:var(--ok)}
+.sd{font-size:.83rem;color:var(--tx2);margin-bottom:16px}
+.badge{display:inline-block;padding:2px 10px;border-radius:16px;font-size:.72rem;font-weight:600}
+.b-p{background:#ede9fe;color:#6d28d9}.b-o{background:#fff7ed;color:#c2410c}.b-g{background:#dcfce7;color:#15803d}.b-r{background:#fee2e2;color:#b91c1c}
+.sep{border:none;border-top:2px dashed var(--bd);margin:28px 0}
+.comp-grid{display:grid;grid-template-columns:200px 1fr 1fr 1fr;gap:0;font-size:.83rem}
+.comp-grid>div{padding:10px 12px;border-bottom:1px solid var(--bd)}
+.comp-grid .ch{background:#f8fafc;font-weight:600;color:var(--tx2);font-size:.78rem}
+.comp-grid .rl{font-weight:600}
+.mo-label{font-weight:700;text-align:center;padding:8px;border-radius:6px 6px 0 0;font-size:.82rem}
+.mo-nov{background:#fef3c7;color:#92400e}.mo-dec{background:#dbeafe;color:#1d4ed8}.mo-jan{background:#dcfce7;color:#15803d}
+canvas{width:100%!important}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>スタディGO データ振り返りレポート</h1>
+  <div class="sub">2026年1月実績 | 第2回 月初報告会（2026/2/3）</div>
+  <div class="meta">累計データ（2024/2〜）+ 短期比較（11月 / 12月 / 1月）</div>
+  <div style="display:flex;gap:16px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+    <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px 18px;font-size:.82rem">
+      <span style="font-size:1.1rem">&#x1F4C8;</span> ドロップイン <strong>100回/月</strong>突破
+    </div>
+    <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px 18px;font-size:.82rem">
+      <span style="font-size:1.1rem">&#x1F4B3;</span> クレカ登録率 <strong>40.9%</strong>（過去最高）
+    </div>
+    <div style="background:rgba(255,255,255,.15);border-radius:8px;padding:8px 18px;font-size:.82rem">
+      <span style="font-size:1.1rem">&#x26A0;</span> DL数 <strong>1,227</strong>（前月比-35%）
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-s="sum">&#x1F3AF; 全体サマリー</button>
+    <button class="tab cumul" data-s="cum-kpi">&#x1F4CA; 累計 DL・登録</button>
+    <button class="tab cumul" data-s="cum-user">&#x1F464; 累計 誰が使ってる？</button>
+    <button class="tab cumul" data-s="cum-store">&#x1F3EA; 累計 掲載店舗</button>
+    <button class="tab short" data-s="sh-kpi">&#x1F4C9; 月別 認知・獲得</button>
+    <button class="tab short" data-s="sh-funnel">&#x1F50D; 月別 どこで離脱？</button>
+    <button class="tab short" data-s="sh-usage">&#x1F4AA; 月別 実際の利用</button>
+    <button class="tab short" data-s="sh-credit">&#x1F4B3; 月別 クレカ登録</button>
+    <button class="tab short" data-s="sh-time">&#x1F552; 月別 いつ使ってる？</button>
+    <button class="tab act" data-s="action">&#x1F680; 次にやること</button>
+  </div>
+
+  <!-- ========== 全体サマリー ========== -->
+  <div class="sec on" id="sum">
+    <h2 class="stl cum">&#x1F4CA; サービス開始〜現在の累計 <span class="badge b-p">2024/2〜</span></h2>
+    <div class="g g4" style="margin-bottom:20px">
+      <div class="c kc"><div class="kl">&#x1F4F1; アプリを入れた人</div><div class="kv">14,455</div><div class="ks">iOS: 11,613 / GP: 2,842</div></div>
+      <div class="c kc"><div class="kl">&#x1F4DD; 個人情報まで登録した人</div><div class="kv">7,184</div><div class="ks">総ユーザー数: 13,509</div></div>
+      <div class="c kc"><div class="kl">&#x1F3EB; 実際に勉強しに行った回数</div><div class="kv">462回</div><div class="ks">利用者221名（重複なし）</div></div>
+      <div class="c kc"><div class="kl">&#x1F3EA; 掲載店舗数</div><div class="kv">284店舗</div><div class="ks">2024/2 開始時 14店舗</div></div>
+    </div>
+    <div class="g g4" style="margin-bottom:24px">
+      <div class="c kc"><div class="kl">&#x1F4B3; クレカを登録した割合</div><div class="kv" style="color:var(--warn)">5.5%</div><div class="ks">737 / 13,509</div></div>
+      <div class="c kc"><div class="kl">&#x1F440; 見学予約の合計</div><div class="kv">46件</div><div class="ks">そのうち月額契約: 33件</div></div>
+      <div class="c kc"><div class="kl">&#x23F1; 1回あたり平均利用時間</div><div class="kv">264分</div><div class="ks">中央値180分 ≒ 3時間</div></div>
+      <div class="c kc"><div class="kl">&#x1F465; 利用者の平均年齢</div><div class="kv">31.7歳</div><div class="ks">中央値27歳</div></div>
+    </div>
+
+    <hr class="sep">
+    <h2 class="stl sho">&#x1F504; 直近3ヶ月の変化 <span class="badge b-o">11月 → 12月 → 1月</span></h2>
+    <p class="sd">12月は年末特需で急伸。1月はその反動で減少だが、利用回数・クレカ率は成長継続。</p>
+    <div class="c" style="margin-bottom:20px;overflow-x:auto">
+      <div class="comp-grid">
+        <div class="ch">指標</div><div class="ch"><div class="mo-label mo-nov">11月</div></div><div class="ch"><div class="mo-label mo-dec">12月</div></div><div class="ch"><div class="mo-label mo-jan">1月</div></div>
+        <div class="rl">&#x1F4F1; アプリDL数</div><div class="r">1,097</div><div class="r">1,900 <span class="up">(+73.2%)</span></div><div class="r">1,227 <span class="dn">(-35.4%)</span></div>
+        <div class="rl">&#x1F4DD; 個人情報登録した人</div><div class="r">641</div><div class="r">431 <span class="dn">(-32.8%)</span></div><div class="r">242 <span class="dn">(-43.9%)</span></div>
+        <div class="rl">&#x1F4B3; クレカ登録した人</div><div class="r">81</div><div class="r">165 <span class="up">(+103.7%)</span></div><div class="r">107 <span class="dn">(-35.2%)</span></div>
+        <div class="rl">&#x1F4B3; クレカ登録率（新規のみ）</div><div class="r">11.7%</div><div class="r">35.7% <span class="up">(+24.0pt)</span></div><div class="r">40.9% <span class="up">(+5.2pt)</span></div>
+        <div class="rl">&#x1F3EB; 勉強しに行った回数</div><div class="r">47</div><div class="r">81 <span class="up">(+72.3%)</span></div><div class="r">100 <span class="up">(+23.5%)</span></div>
+        <div class="rl">&#x1F4C4; 月額契約した人</div><div class="r">5</div><div class="r">3 <span class="dn">(-40%)</span></div><div class="r">6 <span class="up">(+100%)</span></div>
+        <div class="rl">&#x1F440; 見学予約</div><div class="r">9</div><div class="r">9 <span class="nu">(±0%)</span></div><div class="r">3 <span class="dn">(-66.7%)</span></div>
+        <div class="rl">&#x1F3EA; 新しく掲載された店舗</div><div class="r">26</div><div class="r">12 <span class="dn">(-53.8%)</span></div><div class="r">13 <span class="up">(+8.3%)</span></div>
+        <div class="rl">&#x1F3EA; 掲載店舗の合計</div><div class="r">259</div><div class="r">271</div><div class="r">284</div>
+      </div>
+    </div>
+
+    <div class="g g2">
+      <div class="c"><div class="ct">&#x1F4F1; アプリDL数の推移</div><div style="height:260px"><canvas id="sumDL"></canvas></div></div>
+      <div class="c"><div class="ct">&#x1F3EB; 勉強しに行った回数の推移</div><div style="height:260px"><canvas id="sumDI"></canvas></div></div>
+    </div>
+
+    <div class="ib" style="margin-top:18px">
+      <div class="it">&#x1F4E2; 1月の結論</div>
+      <div class="ix">
+        12月は年末特需で高水準だったため1月は前月比マイナスだが、<span class="hl">ドロップイン利用回数は初の月間100回突破</span>で成長トレンドは継続。
+        クレカ登録率（新規）は<span class="hg">40.9%</span>に改善。一方、DL数・登録数は減少傾向で<span class="hr">ファネル上部の回復が課題</span>。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 累計 KPI ========== -->
+  <div class="sec" id="cum-kpi">
+    <h2 class="stl cum">&#x1F4CA; アプリをDL・登録した人の累計 <span class="badge b-p">2024/2〜現在</span></h2>
+    <p class="sd">サービス開始からこれまでに、何人がアプリを入れて、何人が登録まで進んだか？</p>
+
+    <div class="g g3" style="margin-bottom:20px">
+      <div class="c kc"><div class="kl">&#x1F4F1; アプリDL数の合計</div><div class="kv">14,455</div><div class="ks">iOS: 11,613 (80.3%) / GP: 2,842 (19.7%)</div></div>
+      <div class="c kc"><div class="kl">&#x1F4DD; DLした人のうち個人情報まで登録した割合</div><div class="kv">49.7%</div><div class="ks">7,184 / 14,455</div></div>
+      <div class="c kc"><div class="kl">&#x1F4B3; DLした人のうちクレカまで登録した割合</div><div class="kv">4.1%</div><div class="ks">全期間の平均転換率</div></div>
+    </div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c">
+        <div class="ct">&#x1F4CA; 毎月何人がDLした？</div>
+        <div style="height:300px"><canvas id="cumDLTrend"></canvas></div>
+      </div>
+      <div class="c">
+        <div class="ct">&#x1F4DD; 毎月何人が登録した？</div>
+        <div style="height:300px"><canvas id="cumRegTrend"></canvas></div>
+      </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4F1; App Store / Google Playでの露出（累計）</div>
+      <table class="dt">
+        <thead><tr><th>指標</th><th class="r">累計</th><th class="r">月平均</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr><td>ストア内アプリ表示回数</td><td class="r">96,147</td><td class="r">約4,300/月</td><td>直近3ヶ月は6,600〜8,900に成長</td></tr>
+          <tr><td>アプリ詳細画面表示</td><td class="r">25,420</td><td class="r">約1,150/月</td><td>直近3ヶ月は1,490〜2,390に成長</td></tr>
+          <tr><td>Google Play総訪問者</td><td class="r">6,134</td><td class="r">約280/月</td><td>直近3ヶ月は260〜600</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ib">
+      <div class="it">考察: 累計KPIの成長性</div>
+      <div class="ix">
+        累計DL数14,455のうち<span class="hl">直近3ヶ月(11〜1月)だけで4,224件（29.2%）</span>を占めており、成長が加速中。
+        一方、DL→個人情報登録率は全期間49.7%だが、直近は19.7%まで低下しており、DL増加に登録がついてきていない。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 累計 ユーザー ========== -->
+  <div class="sec" id="cum-user">
+    <h2 class="stl cum">&#x1F464; どんな人が使っている？ <span class="badge b-p">全期間</span></h2>
+    <p class="sd">実際に勉強しに行った221名（のべ462回）の年齢・性別・利用時間の内訳。</p>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F464; 何歳の人が何回使った？</div><div style="height:300px"><canvas id="cumAge"></canvas></div></div>
+      <div class="c"><div class="ct">&#x1F465; 男女の割合は？</div><div style="height:300px"><canvas id="cumGender"></canvas></div></div>
+    </div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F464; 年代別の利用者数</div><div style="height:280px"><canvas id="cumAgePerson"></canvas></div></div>
+      <div class="c"><div class="ct">&#x23F1; 何時間くらい滞在した？</div><div style="height:280px"><canvas id="cumDuration"></canvas></div></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4CB; 利用者のプロフィールまとめ</div>
+      <table class="dt">
+        <thead><tr><th>属性</th><th>値</th><th>補足</th></tr></thead>
+        <tbody>
+          <tr><td>利用回数/人数</td><td>462回 / 221名</td><td>リピート率: 1人あたり平均2.1回</td></tr>
+          <tr><td>平均年齢</td><td>31.7歳（中央値27歳）</td><td>最小16歳 / 最大67歳</td></tr>
+          <tr><td>性別（回数）</td><td>男性63.4% / 女性32.9%</td><td>人数: 男54.8% / 女38.9% / 登録しない6.3%</td></tr>
+          <tr><td>平均利用時間</td><td>264分（4.4時間）</td><td>中央値180分(3h) / 最大891分(14.9h)</td></tr>
+          <tr><td>登録→初回利用</td><td>中央値8日 / 平均30.5日</td><td>人数ベース: 中央値1日</td></tr>
+          <tr><td>人気プラン</td><td>1DAY 47.0% / 1時間 27.9%</td><td>2時間9.3% / 3時間7.4%</td></tr>
+          <tr><td>時間外利用</td><td>18.4%（85/462回）</td><td>30分以内の超過が多数</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="g g2">
+      <div class="c"><div class="ct">&#x1F552; 何時にアプリ登録した？</div><div style="height:260px"><canvas id="cumHour"></canvas></div></div>
+      <div class="c"><div class="ct">&#x1F4C5; 何曜日にアプリ登録した？</div><div style="height:260px"><canvas id="cumWeek"></canvas></div></div>
+    </div>
+
+    <div class="ib">
+      <div class="it">考察: ユーザー像</div>
+      <div class="ix">
+        コアユーザーは<span class="hl">16〜30歳の男性で資格試験・大学受験が中心</span>。回数ベースでは男性が多いが、人数ベースでは26-30歳女性が最多（40名）。
+        登録のピークは<span class="hl">21〜23時（夜間スマホ利用帯）</span>、曜日では<span class="hl">日曜・土曜</span>が多い。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 累計 店舗 ========== -->
+  <div class="sec" id="cum-store">
+    <h2 class="stl cum">&#x1F3EA; 掲載店舗はどれくらい増えた？ <span class="badge b-p">全期間</span></h2>
+    <p class="sd">アプリに掲載されている勉強スペースの数と地域分布。</p>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c kc"><div class="kl">&#x1F3EA; アプリに載っている店舗の合計</div><div class="kv">284</div><div class="ks">開始時14店舗 → 現在284店舗</div><div class="kd up">約20倍に拡大</div></div>
+      <div class="c kc"><div class="kl">&#x1F4C5; サービス開始からの期間</div><div class="kv">23ヶ月</div><div class="ks">毎月平均12.3店舗ずつ増加</div></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px"><div class="ct">&#x1F4C8; 掲載店舗はどう増えてきた？</div><div style="height:300px"><canvas id="cumStore"></canvas></div></div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F5FA; どの地域に多い？</div><div style="height:280px"><canvas id="cumArea"></canvas></div></div>
+      <div class="c">
+        <div class="ct">&#x1F3EA; 掲載店舗の特徴</div>
+        <table class="dt">
+          <thead><tr><th>項目</th><th>値</th></tr></thead>
+          <tbody>
+            <tr><td>有人/一部有人/無人</td><td>有人38% / 一部有人45% / 無人17%</td></tr>
+            <tr><td>1分あたり料金（中央値）</td><td>約10円/分</td></tr>
+            <tr><td>1日最大料金（中央値）</td><td>約2,500円</td></tr>
+            <tr><td>月額プランあり</td><td>約30%の店舗</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="ib">
+      <div class="it">考察: 店舗展開</div>
+      <div class="ix">東京都・神奈川県に集中。<span class="hl">関東圏で口コミの少ない店舗を活用</span>して、口コミ投稿→利用数増加の検証が可能。飲食店の閑散時間帯（特に水曜）の活用提案も有効。</div>
+    </div>
+  </div>
+
+  <!-- ========== 短期 KPI比較 ========== -->
+  <div class="sec" id="sh-kpi">
+    <h2 class="stl sho">&#x1F4C9; アプリの認知・DLはどう変わった？ <span class="badge b-o">11月 / 12月 / 1月</span></h2>
+    <p class="sd">ストアでの表示回数・DL数・流入チャネル別の比較。「どこから来て、どれくらいDLされたか」</p>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F441; ストアでどれくらい見られた？（認知指標）</div>
+      <table class="dt">
+        <thead><tr><th>指標</th><th class="r">11月</th><th class="r">12月</th><th class="r">1月</th><th class="r">12月→1月</th></tr></thead>
+        <tbody>
+          <tr><td>iOS ストア表示回数</td><td class="r">7,355</td><td class="r">8,904</td><td class="r">7,824</td><td class="r dn">-12.1%</td></tr>
+          <tr><td>iOS アプリ詳細画面</td><td class="r">1,733</td><td class="r">2,387</td><td class="r">1,778</td><td class="r dn">-25.5%</td></tr>
+          <tr><td>Google Play 総訪問者</td><td class="r">381</td><td class="r">597</td><td class="r">260</td><td class="r dn">-56.4%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4F1; 何人がDLした？（獲得指標）</div>
+      <div style="height:300px"><canvas id="shDL3"></canvas></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F517; どこ経由でDLされた？（流入チャネル）</div>
+      <table class="dt">
+        <thead><tr><th>チャネル</th><th class="r">11月</th><th class="r">12月</th><th class="r">1月</th><th class="r">12月→1月</th></tr></thead>
+        <tbody>
+          <tr><td>App Store検索</td><td class="r">259</td><td class="r">440</td><td class="r">349</td><td class="r dn">-20.7%</td></tr>
+          <tr><td>App Store閲覧</td><td class="r">20</td><td class="r">36</td><td class="r">33</td><td class="r dn">-8.3%</td></tr>
+          <tr><td>studygo.jp</td><td class="r">338</td><td class="r">568</td><td class="r">349</td><td class="r dn">-38.6%</td></tr>
+          <tr><td>参照アプリ</td><td class="r">226</td><td class="r">437</td><td class="r">252</td><td class="r dn">-42.3%</td></tr>
+          <tr><td>learning-gym.com</td><td class="r">30</td><td class="r">15</td><td class="r">16</td><td class="r up">+6.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4C8; 見た人のうち何%がDLした？（転換率）</div>
+      <table class="dt">
+        <thead><tr><th>指標</th><th class="r">11月</th><th class="r">12月</th><th class="r">1月</th><th>傾向</th></tr></thead>
+        <tbody>
+          <tr><td>iOS DL/ストア表示</td><td class="r">11.9%</td><td class="r">17.1%</td><td class="r">12.9%</td><td class="dn">低下（12月が特需）</td></tr>
+          <tr><td>iOS DL/詳細画面</td><td class="r">50.7%</td><td class="r">63.7%</td><td class="r">56.6%</td><td class="nu">安定的</td></tr>
+          <tr><td>GP DL/総訪問者</td><td class="r">57.2%</td><td class="r">63.7%</td><td class="r">85.0%</td><td class="up">上昇（母数減の影響）</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ib">
+      <div class="it">考察: 短期KPI</div>
+      <div class="ix">
+        12月は全チャネルで急伸したが、1月は<span class="hr">年始の反動で全面的にマイナス</span>。
+        ただし<span class="hl">11月水準は超えているチャネルが多い</span>（App Store検索349 vs 11月259、studygo.jp 349 vs 338）。
+        年末年始の一時的な落ち込みであり、2月以降の回復が期待できる。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 短期 ファネル ========== -->
+  <div class="sec" id="sh-funnel">
+    <h2 class="stl sho">&#x1F50D; DLした人はどこで離脱している？ <span class="badge b-o">11月 / 12月 / 1月</span></h2>
+    <p class="sd">DL → メアド登録 → 個人情報 → クレカ登録、各ステップで何%が脱落するかを可視化。</p>
+
+    <div class="g g3" style="margin-bottom:20px">
+      <div class="c">
+        <div class="mo-label mo-nov" style="margin-bottom:12px">11月</div>
+        <div class="fb"><div class="fl">DL</div><div class="ft"><div class="ff" style="width:100%;background:#eab308">100%</div></div><div class="fv">1,097</div></div>
+        <div class="fb"><div class="fl">アプリ利用</div><div class="ft"><div class="ff" style="width:80.9%;background:#ca8a04">80.9%</div></div><div class="fv">888</div></div>
+        <div class="fb"><div class="fl">メアド登録</div><div class="ft"><div class="ff" style="width:80.9%;background:#a16207">80.9%</div></div><div class="fv">888</div></div>
+        <div class="fb"><div class="fl">個人情報</div><div class="ft"><div class="ff" style="width:58.4%;background:#854d0e">58.4%</div></div><div class="fv">641</div></div>
+        <div class="fb"><div class="fl">クレカ</div><div class="ft"><div class="ff" style="width:6.8%;background:#713f12">6.8%</div></div><div class="fv">75</div></div>
+      </div>
+      <div class="c">
+        <div class="mo-label mo-dec" style="margin-bottom:12px">12月</div>
+        <div class="fb"><div class="fl">DL</div><div class="ft"><div class="ff" style="width:100%;background:#2563eb">100%</div></div><div class="fv">1,900</div></div>
+        <div class="fb"><div class="fl">アプリ利用</div><div class="ft"><div class="ff" style="width:100%;background:#1d4ed8">108.4%</div></div><div class="fv">2,059</div></div>
+        <div class="fb"><div class="fl">メアド登録</div><div class="ft"><div class="ff" style="width:27.8%;background:#1e40af">27.8%</div></div><div class="fv">529</div></div>
+        <div class="fb"><div class="fl">個人情報</div><div class="ft"><div class="ff" style="width:22.7%;background:#1e3a8a">22.7%</div></div><div class="fv">431</div></div>
+        <div class="fb"><div class="fl">クレカ</div><div class="ft"><div class="ff" style="width:8.1%;background:#172554">8.1%</div></div><div class="fv">154</div></div>
+      </div>
+      <div class="c">
+        <div class="mo-label mo-jan" style="margin-bottom:12px">1月</div>
+        <div class="fb"><div class="fl">DL</div><div class="ft"><div class="ff" style="width:100%;background:#16a34a">100%</div></div><div class="fv">1,227</div></div>
+        <div class="fb"><div class="fl">アプリ利用</div><div class="ft"><div class="ff" style="width:100%;background:#15803d">110.2%</div></div><div class="fv">1,352</div></div>
+        <div class="fb"><div class="fl">メアド登録</div><div class="ft"><div class="ff" style="width:23.2%;background:#166534">23.2%</div></div><div class="fv">285</div></div>
+        <div class="fb"><div class="fl">個人情報</div><div class="ft"><div class="ff" style="width:19.7%;background:#14532d">19.7%</div></div><div class="fv">242</div></div>
+        <div class="fb"><div class="fl">クレカ</div><div class="ft"><div class="ff" style="width:8.1%;background:#052e16">8.1%</div></div><div class="fv">99</div></div>
+      </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4C9; 各ステップで何%が残った？（月別比較）</div>
+      <div style="height:300px"><canvas id="shFunnel3"></canvas></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F465; 1月にDLした1,227人はどうなった？</div>
+      <table class="dt">
+        <thead><tr><th>カテゴリ</th><th class="r">人数</th><th class="r">DL比</th><th>意味</th></tr></thead>
+        <tbody>
+          <tr><td>会員IDのみ（未登録離脱）</td><td class="r hr">1,067</td><td class="r">86.9%</td><td>DLしたが何も登録せず離脱</td></tr>
+          <tr><td>メアドのみ</td><td class="r">43</td><td class="r">3.5%</td><td>メアドまで登録、個人情報は未登録</td></tr>
+          <tr><td>個人情報登録→クレカ未登録</td><td class="r">143</td><td class="r">11.7%</td><td>個人情報まで登録したがクレカ未登録</td></tr>
+          <tr><td>個人情報登録→クレカ登録済</td><td class="r hg">99</td><td class="r">8.1%</td><td>最終ステップまで完了</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ib d">
+      <div class="it">最大のボトルネック: DL → メアド登録（76.8%離脱）</div>
+      <div class="ix">1月: DL後にアプリを使ったユーザー1,352名のうち、メアド登録に進んだのはわずか285名(21.1%)。<br>11月は80.9%だったことを考えると、<span class="hr">12月以降DLの「質」が下がっている</span>可能性。DL増 → 登録増に繋がるUI/UX改善・初回体験の改善が急務。</div>
+    </div>
+  </div>
+
+  <!-- ========== 短期 利用状況 ========== -->
+  <div class="sec" id="sh-usage">
+    <h2 class="stl sho">&#x1F4AA; 実際に利用された回数は？ <span class="badge b-o">11月 / 12月 / 1月</span></h2>
+    <p class="sd">ドロップイン（都度利用）・月額契約・見学予約がそれぞれどう推移したか。</p>
+
+    <div class="g g3" style="margin-bottom:20px">
+      <div class="c kc">
+        <div class="kl">&#x1F3EB; 勉強しに行った回数（ドロップイン）</div>
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:8px">
+          <div><div class="ks">11月</div><div style="font-size:1.4rem;font-weight:700">47</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">12月</div><div style="font-size:1.4rem;font-weight:700">81</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">1月</div><div style="font-size:1.4rem;font-weight:700;color:var(--ok)">100</div></div>
+        </div>
+        <div class="kd up" style="margin-top:8px">3ヶ月で2.1倍成長</div>
+      </div>
+      <div class="c kc">
+        <div class="kl">&#x1F4C4; 月額契約した人（新規）</div>
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:8px">
+          <div><div class="ks">11月</div><div style="font-size:1.4rem;font-weight:700">5</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">12月</div><div style="font-size:1.4rem;font-weight:700">3</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">1月</div><div style="font-size:1.4rem;font-weight:700;color:var(--ok)">6</div></div>
+        </div>
+        <div class="kd up" style="margin-top:8px">1月は過去最高水準</div>
+      </div>
+      <div class="c kc">
+        <div class="kl">&#x1F440; 見学を予約した人</div>
+        <div style="display:flex;justify-content:center;gap:16px;margin-top:8px">
+          <div><div class="ks">11月</div><div style="font-size:1.4rem;font-weight:700">9</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">12月</div><div style="font-size:1.4rem;font-weight:700">9</div></div>
+          <div style="font-size:1.2rem;color:var(--tx2);padding-top:14px">→</div>
+          <div><div class="ks">1月</div><div style="font-size:1.4rem;font-weight:700;color:var(--ng)">3</div></div>
+        </div>
+        <div class="kd dn" style="margin-top:8px">大幅減、成約0件</div>
+      </div>
+    </div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F4CA; 利用数の推移（ドロップイン・月額・見学）</div><div style="height:280px"><canvas id="shDI3"></canvas></div></div>
+      <div class="c">
+        <div class="ct">&#x1F4CB; ドロップイン利用の詳細</div>
+        <table class="dt">
+          <thead><tr><th>指標</th><th class="r">11月</th><th class="r">12月</th><th class="r">1月</th></tr></thead>
+          <tbody>
+            <tr><td>利用回数</td><td class="r">47</td><td class="r">81</td><td class="r hg">100</td></tr>
+            <tr><td>利用者数（重複なし）</td><td class="r">-</td><td class="r">49</td><td class="r">53</td></tr>
+            <tr><td>2回以上利用者</td><td class="r">-</td><td class="r">18</td><td class="r">19</td></tr>
+            <tr><td>再利用インターバル平均</td><td class="r">-</td><td class="r">2.3日</td><td class="r">3.9日</td></tr>
+            <tr><td>再利用インターバル中央値</td><td class="r">-</td><td class="r">1.0日</td><td class="r">3.0日</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F440; 見学予約はどう変わった？</div>
+      <table class="dt">
+        <thead><tr><th>指標</th><th class="r">11月</th><th class="r">12月</th><th class="r">1月</th></tr></thead>
+        <tbody>
+          <tr><td>見学カレンダー閲覧ユーザー</td><td class="r">29</td><td class="r">53</td><td class="r">38</td></tr>
+          <tr><td>見学予約数</td><td class="r">9</td><td class="r">9</td><td class="r hr">3</td></tr>
+          <tr><td>見学→契約数</td><td class="r">2</td><td class="r">2</td><td class="r hr">0</td></tr>
+          <tr><td>見学→契約率</td><td class="r">22.2%</td><td class="r">22.2%</td><td class="r hr">0%</td></tr>
+          <tr><td>カレンダー閲覧→予約率</td><td class="r">31.0%</td><td class="r">17.0%</td><td class="r">13.2%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4F1; アプリをどこまで使った？（アクティブユーザー）</div>
+      <div style="height:280px"><canvas id="shActive3"></canvas></div>
+    </div>
+
+    <div class="ib s">
+      <div class="it">考察: 利用状況</div>
+      <div class="ix">
+        ドロップインは<span class="hg">3ヶ月連続成長で100回/月を突破</span>。しかし再利用インターバルが2.3日→3.9日に悪化し、<span class="hr">リピート頻度が下がっている</span>。
+        見学予約は3ヶ月で大幅低下。カレンダー閲覧→予約率が31%→13%に低下しており、<strong>予約フローの改善</strong>が必要。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 短期 クレカ ========== -->
+  <div class="sec" id="sh-credit">
+    <h2 class="stl sho">&#x1F4B3; クレカ登録すると使われる？ <span class="badge b-o">11月 / 12月 / 1月</span></h2>
+    <p class="sd">クレカ登録率の推移と、実際の利用回数との相関を分析。「クレカ登録 = 利用のカギ」</p>
+
+    <div class="g g3" style="margin-bottom:20px">
+      <div class="c kc" style="border-top:4px solid #eab308"><div class="ks">11月</div><div class="kl">クレカ登録率（新規）</div><div class="kv">11.7%</div><div class="ks">75 / 641</div></div>
+      <div class="c kc" style="border-top:4px solid #2563eb"><div class="ks">12月</div><div class="kl">クレカ登録率（新規）</div><div class="kv">35.7%</div><div class="ks">154 / 431</div><div class="kd up">+24.0pt</div></div>
+      <div class="c kc" style="border-top:4px solid #16a34a"><div class="ks">1月</div><div class="kl">クレカ登録率（新規）</div><div class="kv">40.9%</div><div class="ks">99 / 242</div><div class="kd up">+5.2pt</div></div>
+    </div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F4C8; クレカ登録率が上がると利用も増える？</div><div style="height:300px"><canvas id="shCreditCorr"></canvas></div></div>
+      <div class="c"><div class="ct">&#x1F465; 登録者のうちクレカ済み vs 未登録</div><div style="height:300px"><canvas id="shCreditStatus"></canvas></div></div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4CB; クレカ登録率と利用回数の推移（月別）</div>
+      <table class="dt">
+        <thead><tr><th>月</th><th class="r">個人情報登録</th><th class="r">クレカ登録</th><th class="r">クレカ率</th><th class="r">ドロップイン回数</th><th>傾向</th></tr></thead>
+        <tbody>
+          <tr><td>10月</td><td class="r">569</td><td class="r">83</td><td class="r">14.6%</td><td class="r">57</td><td class="nu">ベースライン</td></tr>
+          <tr><td>11月</td><td class="r">641</td><td class="r">75</td><td class="r">11.7%</td><td class="r">47</td><td class="dn">登録低下 → 利用も低下</td></tr>
+          <tr><td>12月</td><td class="r">431</td><td class="r">154</td><td class="r">35.7%</td><td class="r">81</td><td class="up">登録率急伸 → 利用増</td></tr>
+          <tr><td style="font-weight:700">1月</td><td class="r" style="font-weight:700">242</td><td class="r" style="font-weight:700">99</td><td class="r" style="font-weight:700">40.9%</td><td class="r" style="font-weight:700">100</td><td class="up" style="font-weight:700">登録率最高 → 利用最高</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ib w">
+      <div class="it">考察: クレカ登録率と利用回数は正の相関</div>
+      <div class="ix">
+        クレカ登録率が11.7%→40.9%に改善する過程で、ドロップイン利用は47→100回に増加。<span class="hl">登録率が高い月は利用も多い</span>。<br>
+        しかし全体のクレカ登録率はいまだ5.5%。<span class="hr">既存ユーザー13,509名中、クレカ未登録が12,772名</span>。<br>
+        現在実施中のAmazonギフト券キャンペーン（2月）の効果検証が重要。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 短期 時間帯・曜日 ========== -->
+  <div class="sec" id="sh-time">
+    <h2 class="stl sho">&#x1F552; いつ使われている？ <span class="badge b-o">時間帯・曜日パターン</span></h2>
+    <p class="sd">何時にチェックインして何時に帰るか、どの曜日に登録が多いかを分析。</p>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c"><div class="ct">&#x1F6AA; 何時に来る？（チェックイン時間帯）</div><div style="height:280px"><canvas id="shCheckin"></canvas></div></div>
+      <div class="c"><div class="ct">&#x1F3E0; 何時に帰る？（チェックアウト時間帯）</div><div style="height:280px"><canvas id="shCheckout"></canvas></div></div>
+    </div>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="c">
+        <div class="ct">&#x23F0; 利用パターンまとめ</div>
+        <table class="dt">
+          <thead><tr><th>項目</th><th>値</th></tr></thead>
+          <tbody>
+            <tr><td>チェックインのピーク</td><td>9:00〜15:00（全体の48%）</td></tr>
+            <tr><td>チェックアウトのピーク</td><td>17:00〜19:00（全体の25%）</td></tr>
+            <tr><td>平均滞在時間</td><td>264分（4.4時間）</td></tr>
+            <tr><td>1DAYプラン利用率</td><td>47.0%（最多）</td></tr>
+            <tr><td>時間外利用率</td><td>18.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="c">
+        <div class="ct">&#x1F4C5; 何曜日に登録が多い？</div>
+        <div style="height:250px"><canvas id="shWeekday"></canvas></div>
+      </div>
+    </div>
+
+    <div class="ib">
+      <div class="it">考察: 飲食店の水曜日と連動した施策</div>
+      <div class="ix">
+        飲食業界では水曜日は一般的に閑散日。登録データでも<span class="hl">水曜は他の平日より低め</span>。
+        <strong>水曜日限定のキャンペーン</strong>（料金割引やポイント2倍等）を実施することで、飲食店側にもメリットを提供できる。
+        数ヶ月単位でのデータ蓄積により、曜日別の利用傾向がより明確になる。
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 考察・アクション ========== -->
+  <div class="sec" id="action">
+    <h2 class="stl act">&#x1F680; データから見えた課題と、次にやること <span class="badge b-g">Next Steps</span></h2>
+
+    <div class="g g2" style="margin-bottom:20px">
+      <div class="ac">
+        <h4>短期アクション（2〜3月）</h4>
+        <ul class="al">
+          <li><span class="an">1</span>Amazonギフト券キャンペーンの効果測定 → クレカ登録率の変化追跡</li>
+          <li><span class="an">2</span>登録後1週間以内のプッシュ通知の実装・テスト</li>
+          <li><span class="an">3</span>見学予約フローの簡素化（個人情報入力の最小化）</li>
+          <li><span class="an">4</span>口コミが少ない関東圏店舗でのレビュー促進施策</li>
+          <li><span class="an">5</span>見学予約画面閲覧者への電話フォロー体制構築</li>
+        </ul>
+      </div>
+      <div class="ac">
+        <h4>中期アクション（4〜6月）</h4>
+        <ul class="al">
+          <li><span class="an">1</span>個人情報登録を促すインセンティブ設計（初回クーポン等）</li>
+          <li><span class="an">2</span>クレカ登録→利用への導線改善（UI/UX見直し）</li>
+          <li><span class="an">3</span>水曜日限定キャンペーンの企画（飲食店閑散日活用）</li>
+          <li><span class="an">4</span>前年度実績ベースの営業提案資料作成</li>
+          <li><span class="an">5</span>アプリ継続利用のための機能追加（学習記録・ポイント等）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="c" style="margin-bottom:20px">
+      <div class="ct">&#x1F4A1; データから見えた6つのポイント</div>
+
+      <div class="ib" style="margin-top:8px">
+        <div class="it">1. クレカ登録率と利用者数は相関する</div>
+        <div class="ix">登録率11.7%→40.9%で利用47→100回。<strong>クレカ登録 → 心理的ハードル低下 → 実利用増</strong>の因果関係が推測される。クレカ登録をKPI化すべき。</div>
+      </div>
+
+      <div class="ib w" style="margin-top:12px">
+        <div class="it">2.「登録したが使わない」問題</div>
+        <div class="ix">
+          全体クレカ登録率5.5%（737名）に対し、実利用は月100回（53名）。<strong>クレカ登録済みでも利用していないユーザーが多数</strong>。<br>
+          原因候補: UI/UXの煩雑さ / 温度感の低下 / プッシュ通知の未活用。<br>
+          <strong>アクション:</strong> 近隣店舗の空き情報をプッシュ通知で配信し、利用を促す。
+        </div>
+      </div>
+
+      <div class="ib s" style="margin-top:12px">
+        <div class="it">3. 口コミ効果の検証チャンス</div>
+        <div class="ix">Amazonギフト券キャンペーンと組み合わせ、<strong>口コミ0件の店舗</strong>を優先対象として口コミ数と利用者数の相関を測定。</div>
+      </div>
+
+      <div class="ib d" style="margin-top:12px">
+        <div class="it">4. 見学予約の心理的ハードル</div>
+        <div class="ix">カレンダー閲覧38名→予約5名（13.2%）。個人情報登録がネック。<br><strong>施策:</strong> 見学予約閲覧者への電話フォロー / 見学予約の代行サービス / 個人情報不要の簡易予約。</div>
+      </div>
+
+      <div class="ib" style="margin-top:12px">
+        <div class="it">5. 来年度の加盟店営業戦略</div>
+        <div class="ix">前年度の実績データが揃った。「<strong>この時間帯だけを解放しませんか？</strong>」というデータドリブンな営業提案が可能に。加盟法人への店舗対応サポートも強化が必要。</div>
+      </div>
+
+      <div class="ib w" style="margin-top:12px">
+        <div class="it">6. アプリを定期的に開いてもらうための施策</div>
+        <div class="ix">勉強場所を見つけた後アプリを開く理由がなくなる。<br><strong>施策:</strong> 空席リアルタイム通知 / 学習記録・ログ機能 / ポイントプログラム / 周辺店舗のキャンペーン情報配信。</div>
+      </div>
+    </div>
+
+    <div class="c">
+      <div class="ct">&#x1F3AF; 3月報告会で確認すべき数値</div>
+      <table class="dt">
+        <thead><tr><th>追跡指標</th><th class="r">1月実績</th><th class="r">2月目標</th><th>確認ポイント</th></tr></thead>
+        <tbody>
+          <tr><td>ドロップイン利用回数</td><td class="r">100回</td><td class="r hg">110回以上</td><td>成長トレンド維持</td></tr>
+          <tr><td>クレカ登録率（新規）</td><td class="r">40.9%</td><td class="r hg">45%以上</td><td>キャンペーン効果</td></tr>
+          <tr><td>全体クレカ登録率</td><td class="r">5.5%</td><td class="r hg">6.0%以上</td><td>既存ユーザーへの訴求</td></tr>
+          <tr><td>見学予約数</td><td class="r">3件</td><td class="r hg">5件以上</td><td>フロー改善効果</td></tr>
+          <tr><td>合計DL数</td><td class="r">1,227</td><td class="r hg">1,300以上</td><td>12月水準への回復</td></tr>
+          <tr><td>再利用インターバル</td><td class="r">3.9日</td><td class="r hg">3.5日以下</td><td>リピート率改善</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');document.getElementById(t.dataset.s).classList.add('on');
+})});
+
+const C={b:'#2563eb',bl:'#93c5fd',g:'#16a34a',gl:'#86efac',r:'#dc2626',o:'#f97316',ol:'#fdba74',p:'#7c3aed',pl:'#c4b5fd',c:'#06b6d4',y:'#eab308',gr:'#6b7280',grl:'#d1d5db'};
+Chart.defaults.font.family="'Segoe UI','Hiragino Kaku Gothic ProN','Meiryo',sans-serif";
+Chart.defaults.font.size=11;Chart.defaults.plugins.legend.labels.usePointStyle=true;
+
+// サマリー DL
+new Chart(document.getElementById('sumDL'),{type:'line',data:{
+  labels:['24/5','24/7','24/9','24/11','25/1','25/3','25/5','25/7','25/9','25/11','26/1'],
+  datasets:[{label:'合計DL（月）',data:[null,null,null,null,376,null,null,null,null,1097,1227],borderColor:C.b,backgroundColor:'rgba(37,99,235,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:4}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+new Chart(document.getElementById('sumDI'),{type:'line',data:{
+  labels:['24/5','24/8','24/10','24/12','25/2','25/4','25/6','25/8','25/10','25/12','26/1'],
+  datasets:[{label:'ドロップイン回数',data:[1,1,2,1,3,2,12,28,57,81,100],borderColor:C.g,backgroundColor:'rgba(22,163,74,.1)',fill:true,tension:.3,pointRadius:4}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+// 累計 DLトレンド
+new Chart(document.getElementById('cumDLTrend'),{type:'bar',data:{
+  labels:['25/1','25/5','25/7','25/8','25/9','25/10','25/11','25/12','26/1'],
+  datasets:[
+    {label:'iOS',data:[341,null,null,null,null,789,879,1520,1006],backgroundColor:C.b},
+    {label:'Google Play',data:[35,null,null,null,null,192,218,380,221],backgroundColor:C.c}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
+
+// 累計 登録者推移
+new Chart(document.getElementById('cumRegTrend'),{type:'bar',data:{
+  labels:['25/7','25/8','25/9','25/10','25/11','25/12','26/1'],
+  datasets:[
+    {label:'個人情報登録',data:[null,null,null,569,641,431,242],backgroundColor:C.p},
+    {label:'メアドのみ',data:[null,null,null,null,247,98,43],backgroundColor:C.pl}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+// 累計 年代
+new Chart(document.getElementById('cumAge'),{type:'bar',data:{
+  labels:['16-20','21-25','26-30','31-35','36-40','41-45','46-50','51-55','56-60','61+'],
+  datasets:[{label:'回数',data:[107,94,60,33,49,23,32,36,24,4],backgroundColor:C.b,borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 累計 性別
+new Chart(document.getElementById('cumGender'),{type:'doughnut',data:{
+  labels:['男性 63.4%','女性 32.9%','登録しない 3.7%'],
+  datasets:[{data:[293,152,17],backgroundColor:[C.b,C.r,C.grl]}]
+},options:{responsive:true,maintainAspectRatio:false}});
+
+// 累計 年代人数
+new Chart(document.getElementById('cumAgePerson'),{type:'bar',data:{
+  labels:['16-20','21-25','26-30','31-35','36-40','41-45','46-50','51-55','56-60','61+'],
+  datasets:[{label:'人数',data:[38,39,40,25,22,15,14,14,11,3],backgroundColor:C.p,borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 累計 利用時間
+new Chart(document.getElementById('cumDuration'),{type:'bar',data:{
+  labels:['0-1h','1-2h','2-3h','3-4h','4-5h','5-7h','7h+'],
+  datasets:[{label:'件数',data:[39,51,41,25,15,23,67],backgroundColor:[C.c,C.b,C.p,C.o,C.y,C.r,C.g],borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 累計 時間帯
+new Chart(document.getElementById('cumHour'),{type:'bar',data:{
+  labels:Array.from({length:24},(_,i)=>`${i}時`),
+  datasets:[{label:'登録数',data:[350,196,106,70,44,64,103,185,251,292,324,344,372,359,365,360,368,359,361,317,364,434,487,453],
+    backgroundColor:Array.from({length:24},(_,i)=>i>=21||i<=0?C.b:C.bl),borderRadius:1}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 累計 曜日
+new Chart(document.getElementById('cumWeek'),{type:'bar',data:{
+  labels:['月','火','水','木','金','土','日'],
+  datasets:[{data:[1484,1339,1313,1283,1261,1611,1645],backgroundColor:[C.bl,C.bl,C.y,C.bl,C.bl,C.b,C.b],borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,min:1000}},plugins:{legend:{display:false}}}});
+
+// 累計 店舗
+new Chart(document.getElementById('cumStore'),{type:'line',data:{
+  labels:['24/2','24/4','24/6','24/8','24/10','24/12','25/2','25/4','25/6','25/8','25/10','25/12','26/1'],
+  datasets:[{label:'累計店舗数',data:[14,null,null,null,null,null,null,null,null,196,null,271,284],borderColor:C.p,backgroundColor:'rgba(124,58,237,.1)',fill:true,tension:.3,spanGaps:true,pointRadius:5}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+new Chart(document.getElementById('cumArea'),{type:'bar',data:{
+  labels:['東京都','神奈川県','愛知県','その他'],
+  datasets:[{data:[38,12,2,8],backgroundColor:[C.b,C.c,C.o,C.grl],borderRadius:4}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 短期 DL3ヶ月
+new Chart(document.getElementById('shDL3'),{type:'bar',data:{
+  labels:['iOS DL','Google Play DL','合計DL'],
+  datasets:[
+    {label:'11月',data:[879,218,1097],backgroundColor:C.y},
+    {label:'12月',data:[1520,380,1900],backgroundColor:C.b},
+    {label:'1月',data:[1006,221,1227],backgroundColor:C.g}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+// 短期 ファネル3ヶ月
+new Chart(document.getElementById('shFunnel3'),{type:'bar',data:{
+  labels:['DL(=100%)','アプリ利用','メアド登録','個人情報','クレカ'],
+  datasets:[
+    {label:'11月',data:[100,80.9,80.9,58.4,6.8],backgroundColor:C.y},
+    {label:'12月',data:[100,108.4,27.8,22.7,8.1],backgroundColor:C.b},
+    {label:'1月',data:[100,110.2,23.2,19.7,8.1],backgroundColor:C.g}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:120}}}});
+
+// 短期 DI3ヶ月
+new Chart(document.getElementById('shDI3'),{type:'bar',data:{
+  labels:['ドロップイン回数','月額契約','見学予約'],
+  datasets:[
+    {label:'11月',data:[47,5,9],backgroundColor:C.y},
+    {label:'12月',data:[81,3,9],backgroundColor:C.b},
+    {label:'1月',data:[100,6,3],backgroundColor:C.g}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+// 短期 アクティブ
+new Chart(document.getElementById('shActive3'),{type:'bar',data:{
+  labels:['アプリ利用(ID)','店舗検索','店舗詳細','見学カレンダー'],
+  datasets:[
+    {label:'11月',data:[822,661,468,29],backgroundColor:C.y},
+    {label:'12月',data:[730,536,461,53],backgroundColor:C.b},
+    {label:'1月',data:[576,406,358,38],backgroundColor:C.g}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}}}});
+
+// 短期 クレカ相関
+new Chart(document.getElementById('shCreditCorr'),{type:'bar',data:{
+  labels:['10月','11月','12月','1月'],
+  datasets:[
+    {label:'クレカ登録率(%)',data:[14.6,11.7,35.7,40.9],backgroundColor:C.o,yAxisID:'y',borderRadius:3},
+    {label:'ドロップイン回数',data:[57,47,81,100],type:'line',borderColor:C.g,borderWidth:3,pointRadius:5,yAxisID:'y1',fill:false}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{
+  y:{beginAtZero:true,max:50,position:'left',ticks:{callback:v=>v+'%'}},
+  y1:{beginAtZero:true,max:120,position:'right',grid:{display:false}}
+}}});
+
+// 短期 クレカ状況
+new Chart(document.getElementById('shCreditStatus'),{type:'bar',data:{
+  labels:['11月','12月','1月'],
+  datasets:[
+    {label:'クレカ登録済',data:[75,154,99],backgroundColor:C.g},
+    {label:'クレカ未登録',data:[566,277,143],backgroundColor:C.grl}
+  ]
+},options:{responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}});
+
+// チェックイン
+new Chart(document.getElementById('shCheckin'),{type:'bar',data:{
+  labels:['6:00','7:00','8:00','9:00','9:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','17:00','18:00'],
+  datasets:[{data:[3,3,3,26,27,27,23,14,19,23,31,25,21,28,27,21,13,13,13,16],backgroundColor:C.g,borderRadius:1}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// チェックアウト
+new Chart(document.getElementById('shCheckout'),{type:'bar',data:{
+  labels:['10:00','12:00','13:00','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','21:00','22:00'],
+  datasets:[{data:[2,10,5,12,8,16,20,18,24,30,23,35,22,30,18,23,19,14],backgroundColor:C.o,borderRadius:1}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true}},plugins:{legend:{display:false}}}});
+
+// 曜日
+new Chart(document.getElementById('shWeekday'),{type:'bar',data:{
+  labels:['月','火','水','木','金','土','日'],
+  datasets:[{data:[1484,1339,1313,1283,1261,1611,1645],backgroundColor:[C.bl,C.bl,C.y,C.bl,C.bl,C.b,C.b],borderRadius:3}]
+},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,min:1000}},plugins:{legend:{display:false}}}});
+</script>
+</body>
+</html>

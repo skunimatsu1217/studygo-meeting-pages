@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-4 会員エクスポート - 仕様モック</title>
+<style>
+  :root { --blue:#1a73e8; --green:#4CAF50; --orange:#FF9800; --purple:#7C3AED; --red:#F44336; --text:#333; --text-sub:#757575; --border:#E0E0E0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Hiragino Sans','Meiryo',sans-serif; background:#2c2c2c; display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:20px; }
+  .page-header { color:white; text-align:center; margin-bottom:24px; max-width:1400px; width:100%; }
+  .page-header h1 { font-size:24px; margin-bottom:8px; }
+  .page-header p { font-size:13px; opacity:0.7; }
+  .tab-nav { display:flex; gap:4px; justify-content:center; margin-bottom:24px; flex-wrap:wrap; }
+  .tab-nav button { padding:10px 24px; border:2px solid rgba(255,255,255,0.3); background:rgba(255,255,255,0.1); color:white; border-radius:8px 8px 0 0; cursor:pointer; font-size:13px; font-weight:600; transition:all 0.2s; }
+  .tab-nav button:hover { background:rgba(255,255,255,0.2); }
+  .tab-nav button.active { background:var(--green); border-color:var(--green); }
+  .tab-nav button[data-tab="impl"].active { background:var(--blue); border-color:var(--blue); }
+  .tab-content { display:none; width:100%; max-width:1400px; }
+  .tab-content.active { display:block; }
+  .admin-container { background:#f8f9fa; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+  .admin-header { background:linear-gradient(135deg,#4CAF50,#388E3C); color:white; padding:16px 24px; display:flex; align-items:center; gap:12px; }
+  .admin-header h2 { font-size:18px; }
+  .admin-header .badge { background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:12px; font-size:11px; }
+  .admin-body { padding:24px; }
+  .search-form { background:white; border-radius:8px; border:1px solid var(--border); padding:16px; margin-bottom:20px; }
+  .search-row { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; }
+  .search-field { display:flex; flex-direction:column; gap:4px; }
+  .search-field label { font-size:12px; font-weight:600; color:var(--text); }
+  .search-field select, .search-field input { padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-size:13px; min-width:160px; font-family:inherit; }
+  .new-badge { display:inline-block; background:var(--red); color:white; font-size:9px; font-weight:700; padding:2px 6px; border-radius:8px; margin-left:6px; }
+  .data-table-wrapper { background:white; border-radius:8px; border:1px solid var(--border); overflow:hidden; }
+  .data-table-toolbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); }
+  table.data-table { width:100%; border-collapse:collapse; font-size:12px; }
+  table.data-table th { background:#f8f9fa; padding:8px 10px; text-align:left; font-weight:600; color:var(--text-sub); border-bottom:2px solid var(--border); font-size:11px; white-space:nowrap; }
+  table.data-table td { padding:8px 10px; border-bottom:1px solid #eee; color:var(--text); }
+  table.data-table tr:hover { background:#fafafa; }
+  .plan-badge { display:inline-block; padding:1px 6px; border-radius:8px; font-size:9px; font-weight:600; }
+  .plan-badge.monthly { background:#E3F2FD; color:#1565C0; }
+  .plan-badge.period { background:#F3E8FF; color:#7C3AED; }
+  .plan-badge.dropin { background:#FFF3E0; color:#E65100; }
+  .export-panel { background:white; border-radius:8px; border:2px solid var(--green); overflow:hidden; margin-bottom:20px; }
+  .export-panel-header { background:var(--green); color:white; padding:12px 16px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .export-panel-body { padding:16px; }
+  .export-columns { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+  @media(max-width:800px){.export-columns{grid-template-columns:repeat(2,1fr);}}
+  .col-check { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; cursor:pointer; transition:all 0.15s; }
+  .col-check:hover { background:#f5f5f5; }
+  .col-check.checked { background:#E8F5E9; border-color:var(--green); }
+  .col-check input[type="checkbox"] { accent-color:var(--green); }
+  .export-options { display:flex; gap:16px; align-items:center; padding:12px 0; border-top:1px solid #eee; margin-top:8px; }
+  .export-options label { font-size:12px; font-weight:600; color:var(--text); }
+  .export-options select { padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:12px; }
+  .export-btn { padding:10px 28px; background:var(--green); color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .export-btn:hover { opacity:0.9; }
+  .impl-section { background:white; border-radius:8px; border:1px solid var(--border); overflow:hidden; margin-bottom:16px; }
+  .impl-header { background:#f1f3f4; padding:12px 16px; font-size:14px; font-weight:600; border-bottom:1px solid var(--border); }
+  .impl-body { padding:16px; }
+  .impl-body table { width:100%; border-collapse:collapse; font-size:13px; }
+  .impl-body th,.impl-body td { padding:8px 12px; text-align:left; border-bottom:1px solid #eee; }
+  .impl-body th { background:#f8f9fa; font-weight:600; color:var(--text-sub); width:200px; }
+  .impl-body code { background:#f1f3f4; padding:2px 6px; border-radius:4px; font-size:12px; color:#d63384; }
+  .help-text { font-size:12px; color:#666; line-height:1.5; padding:8px 12px; background:#f8f9fa; border-radius:6px; border-left:3px solid var(--blue); margin-bottom:12px; }
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>3-4 加盟法人管理画面 会員エクスポート</h1>
+  <p>会員一覧をCSVでエクスポート。列選択・フィルター付き。</p>
+</div>
+<div class="tab-nav">
+  <button class="active" data-tab="screen" onclick="showTab('screen')">エクスポート画面</button>
+  <button data-tab="impl" onclick="showTab('impl')">実装概要</button>
+</div>
+
+<div class="tab-content active" id="tab-screen">
+  <div class="admin-container">
+    <div class="admin-header">
+      <span style="font-size:24px">🏪</span>
+      <div><h2>会員一覧</h2><div style="font-size:11px;opacity:0.8">加盟法人管理画面</div></div>
+      <div class="badge">Company</div>
+    </div>
+    <div class="admin-body">
+
+      <!-- 検索フォーム -->
+      <div class="search-form">
+        <div style="font-size:13px; font-weight:600; color:var(--text-sub); margin-bottom:12px;">検索条件</div>
+        <div class="search-row">
+          <div class="search-field">
+            <label>対象店舗</label>
+            <select><option>すべての店舗</option><option>スタディGO 渋谷店</option></select>
+          </div>
+          <div class="search-field">
+            <label>プランタイプ<span class="new-badge">NEW</span></label>
+            <select><option>すべて</option><option>月額プラン</option><option>期間パス</option><option>ドロップイン</option></select>
+          </div>
+          <div class="search-field">
+            <label>契約状況</label>
+            <select><option>契約中のみ</option><option>解約済み含む</option></select>
+          </div>
+          <div class="search-field">
+            <label>&nbsp;</label>
+            <button style="padding:8px 24px; background:var(--green); color:white; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">検索</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- エクスポートパネル -->
+      <div class="export-panel">
+        <div class="export-panel-header">
+          <span>📥</span> CSVエクスポート設定<span class="new-badge">NEW</span>
+        </div>
+        <div class="export-panel-body">
+          <div style="font-size:12px; color:var(--text-sub); margin-bottom:12px;">エクスポートする列を選択してください（検索結果のデータが対象）</div>
+
+          <div class="export-columns">
+            <label class="col-check checked"><input type="checkbox" checked> 会員ID</label>
+            <label class="col-check checked"><input type="checkbox" checked> 氏名</label>
+            <label class="col-check checked"><input type="checkbox" checked> 氏名（カナ）</label>
+            <label class="col-check checked"><input type="checkbox" checked> メールアドレス</label>
+            <label class="col-check checked"><input type="checkbox" checked> 電話番号</label>
+            <label class="col-check checked"><input type="checkbox" checked> 生年月日</label>
+            <label class="col-check checked"><input type="checkbox" checked> プラン名</label>
+            <label class="col-check checked"><input type="checkbox" checked> 契約日</label>
+            <label class="col-check"><input type="checkbox"> 性別</label>
+            <label class="col-check"><input type="checkbox"> 郵便番号</label>
+            <label class="col-check"><input type="checkbox"> 住所</label>
+            <label class="col-check"><input type="checkbox"> 職業</label>
+            <label class="col-check checked"><input type="checkbox" checked> 勉強内容</label>
+            <label class="col-check checked"><input type="checkbox" checked> 最終利用日</label>
+            <label class="col-check checked"><input type="checkbox" checked> 今月チェックイン回数</label>
+            <label class="col-check"><input type="checkbox"> 最終連絡日</label>
+            <label class="col-check checked"><input type="checkbox" checked> メモ</label>
+            <label class="col-check"><input type="checkbox"> 継続月数</label>
+          </div>
+
+          <div class="export-options">
+            <div>
+              <label>文字コード:</label>
+              <select><option>UTF-8 (BOM付き)</option><option>Shift-JIS</option></select>
+            </div>
+            <div style="margin-left:auto;">
+              <button class="export-btn"><span>📥</span> 127名をCSVダウンロード</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- テーブル -->
+      <div class="data-table-wrapper">
+        <div class="data-table-toolbar">
+          <span style="font-size:13px; color:var(--text-sub);">127件の会員</span>
+        </div>
+        <table class="data-table">
+          <thead><tr>
+            <th>会員ID</th><th>氏名</th><th>プラン</th><th>契約日</th><th>最終利用</th><th>今月回数</th><th>勉強内容</th><th>メモ</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>U00123</td><td>田中 太郎</td><td><span class="plan-badge monthly">月額</span> スタンダード</td><td>2025/08/01</td><td>2026/03/01</td><td>12回</td><td>英語学習</td><td>常連さん</td></tr>
+            <tr><td>U00456</td><td>佐藤 花子</td><td><span class="plan-badge period">期間パス</span> 14日</td><td>2026/02/20</td><td>2026/03/02</td><td>8回</td><td>資格試験</td><td></td></tr>
+            <tr><td>U00789</td><td>鈴木 一郎</td><td><span class="plan-badge dropin">ドロップイン</span></td><td>—</td><td>2026/02/28</td><td>2回</td><td>プログラミング</td><td>新規会員</td></tr>
+            <tr><td>U00234</td><td>高橋 美咲</td><td><span class="plan-badge monthly">月額</span> プレミアム</td><td>2025/04/15</td><td>2026/03/02</td><td>18回</td><td>大学受験</td><td>毎日来店</td></tr>
+            <tr><td>U00567</td><td>山田 健一</td><td><span class="plan-badge period">期間パス</span> 7日</td><td>2026/02/25</td><td>2026/03/01</td><td>5回</td><td>TOEIC</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tab-content" id="tab-impl">
+  <div style="background:#f8f9fa; border-radius:12px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+    <h2 style="text-align:center; font-size:20px; color:var(--text); margin-bottom:20px;">実装概要</h2>
+    <div class="help-text">
+      既存の GenericTable.csvDownload() を拡張し、列選択UI + フィルター連動を追加。<br>
+      <strong>CSVはフロント側で生成</strong>（既存パターン踏襲）。APIの追加は最小限。
+    </div>
+    <div class="impl-section" style="margin-top:0;">
+      <div class="impl-header">変更ファイル</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>alliance/appUsers/<br>index.tsx</th><td>エクスポートパネルUI追加（列チェックボックス + ダウンロードボタン）<br>プランタイプフィルター追加</td></tr>
+          <tr><th>alliance/appUsers/<br>config.tsx</th><td>テーブル列に <code>csvFormatValue</code> を追加（メール、カナ、住所等）<br>プランタイプバッジ列追加</td></tr>
+          <tr><th>GenericTable.tsx<br>（共通）</th><td><code>csvDownload()</code> に列選択パラメータ対応を追加<br>※既存の全画面に影響なし（オプション引数）</td></tr>
+          <tr><th>CompanyAppUserResolver</th><td>プランタイプフィルター対応（<code>planType?</code> パラメータ追加）<br>期間パスユーザーも取得可能に（現在は月額のみ）</td></tr>
+          <tr><th>definition.ts</th><td><code>companyAppUsers</code> の Input に <code>planType?</code> 追加</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="impl-section">
+      <div class="impl-header">ポイント</div>
+      <div class="impl-body">
+        <table>
+          <tr><th>DB変更</th><td><strong style="color:var(--green)">なし</strong></td></tr>
+          <tr><th>Flutter変更</th><td><strong style="color:var(--green)">なし</strong></td></tr>
+          <tr><th>文字コード</th><td>デフォルト: UTF-8 BOM付き（既存実装と同じ）。Shift-JIS対応は要望次第で追加</td></tr>
+          <tr><th>個人情報</th><td>password, カード情報は AppUserService.formatter() で除去済み。安全にエクスポート可能</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(t){document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-nav button').forEach(e=>e.classList.remove('active'));document.getElementById('tab-'+t).classList.add('active');document.querySelector('[data-tab="'+t+'"]').classList.add('active');}
+</script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-1. チェックイン時メッセージ分離 - 画面モックアップ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI','Hiragino Sans','Meiryo',sans-serif; background: #f0f2f5; color: var(--gray-800); line-height: 1.6; }
+
+  .page-header { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: white; padding: 32px 24px; text-align: center; }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .tab-nav { display: flex; gap: 4px; background: white; border-radius: 12px; padding: 4px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .tab-btn { flex: 1; padding: 12px 16px; border: none; background: transparent; color: var(--gray-500); font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+  .tab-btn.active { background: var(--primary); color: white; }
+  .tab-btn:hover:not(.active) { background: var(--gray-100); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: var(--gray-900); display: flex; align-items: center; gap: 8px; }
+  .section-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 16px; }
+  .badge-app { background: #dcfce7; color: #15803d; font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 600; }
+  .badge-web { background: #dbeafe; color: #1d4ed8; font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 600; }
+
+  .mockup-row { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .mockup-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .mockup-label { font-size: 14px; font-weight: 700; color: var(--gray-700); text-align: center; background: white; padding: 6px 16px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .mockup-note { font-size: 12px; color: var(--gray-500); max-width: 320px; text-align: center; line-height: 1.5; }
+
+  /* Phone */
+  .phone-frame { width: 320px; min-height: 580px; background: white; border-radius: 32px; border: 3px solid var(--gray-300); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+  .phone-notch { width: 120px; height: 24px; background: var(--gray-800); border-radius: 0 0 16px 16px; margin: 0 auto; }
+  .phone-status-bar { display: flex; justify-content: space-between; padding: 4px 20px; font-size: 11px; font-weight: 600; }
+  .phone-nav-bar { background: var(--primary); color: white; padding: 12px 16px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  .phone-nav-bar .back-arrow { font-size: 20px; }
+
+  /* Filter tabs in app */
+  .app-filter-tabs { display: flex; background: white; border-bottom: 2px solid var(--gray-100); }
+  .app-filter-tab { flex: 1; text-align: center; padding: 10px; font-size: 13px; font-weight: 600; color: var(--gray-400); border-bottom: 2px solid transparent; cursor: pointer; }
+  .app-filter-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* Notification card in app */
+  .notif-card { margin: 8px 12px; background: white; border-radius: 12px; border: 1px solid var(--gray-200); overflow: hidden; }
+  .notif-card-header { padding: 10px 14px; background: #eef4ff; display: flex; justify-content: space-between; align-items: center; }
+  .notif-card-header .shop-name { font-size: 13px; font-weight: 700; color: var(--primary-dark); }
+  .notif-card-header .notif-time { font-size: 11px; color: var(--gray-400); }
+  .notif-card-body { padding: 12px 14px; font-size: 13px; line-height: 1.6; color: var(--gray-700); }
+  .notif-type-badge { display: inline-block; font-size: 10px; padding: 1px 8px; border-radius: 8px; font-weight: 600; margin-bottom: 6px; }
+  .type-checkin { background: #dcfce7; color: #15803d; }
+  .type-notice { background: #fef3c7; color: #b45309; }
+  .type-info { background: #dbeafe; color: #1d4ed8; }
+
+  /* Web frame */
+  .web-frame { background: white; border-radius: 12px; border: 1px solid var(--gray-200); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+  .web-titlebar { background: var(--gray-100); padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--gray-200); }
+  .web-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .web-dot.red { background: #ef4444; } .web-dot.yellow { background: #f59e0b; } .web-dot.green { background: #22c55e; }
+  .web-url { flex: 1; background: white; border-radius: 6px; padding: 4px 12px; font-size: 12px; color: var(--gray-500); margin-left: 8px; }
+  .web-sidebar { width: 200px; background: var(--gray-900); color: white; min-height: 500px; padding: 16px 0; float: left; }
+  .web-sidebar .sidebar-title { font-size: 14px; font-weight: 700; padding: 0 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; }
+  .web-sidebar .sidebar-item { padding: 8px 16px; font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; }
+  .web-sidebar .sidebar-item.active { background: rgba(37,99,235,0.3); color: white; border-left: 3px solid var(--primary); }
+  .web-sidebar .sidebar-group { font-size: 11px; color: rgba(255,255,255,0.3); padding: 12px 16px 4px; text-transform: uppercase; letter-spacing: 1px; }
+  .web-main { margin-left: 200px; padding: 24px; min-height: 500px; }
+  .web-page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .web-page-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+  .clearfix::after { content: ''; display: table; clear: both; }
+
+  /* Form elements */
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; display: block; }
+  .form-input, .form-textarea, .form-select { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+  .form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+  .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+  .btn-danger { background: var(--danger); color: white; }
+
+  /* Tag chips */
+  .tag-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tag-chip { font-size: 12px; padding: 4px 12px; border-radius: 16px; border: 1px solid var(--gray-300); color: var(--gray-600); cursor: pointer; }
+  .tag-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* Message preview */
+  .msg-preview { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .msg-preview-label { font-size: 11px; color: var(--gray-400); margin-bottom: 8px; }
+  .msg-preview-content { font-size: 13px; line-height: 1.6; color: var(--gray-700); white-space: pre-line; }
+
+  /* Data table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { background: var(--gray-50); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); }
+  .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); color: var(--gray-700); }
+  .status-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .status-active { background: #dcfce7; color: #15803d; }
+  .status-default { background: #dbeafe; color: #1d4ed8; }
+
+  @media (max-width: 768px) { .mockup-row { flex-direction: column; align-items: center; } .web-sidebar { display: none; } .web-main { margin-left: 0; } }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>3-1. チェックイン時メッセージ分離</h1>
+  <p>チェックイン確認・注意事項を通常チャットから分離し、店舗ごとにカスタマイズ可能にする</p>
+</div>
+
+<div class="container">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('app')">アプリ画面</button>
+    <button class="tab-btn" onclick="showTab('company')">法人管理画面</button>
+    <button class="tab-btn" onclick="showTab('admin')">管理画面</button>
+  </div>
+
+  <!-- ===== APP TAB ===== -->
+  <div class="tab-content active" id="tab-app">
+    <div class="section">
+      <div class="section-title"><span class="badge-app">APP</span> メッセージ画面（フィルタ切替）</div>
+      <div class="section-desc">同一画面で「すべて」「チャット」「通知」をフィルタ切替。チェックイン通知は通知タブに分類される。</div>
+
+      <div class="mockup-row">
+        <!-- All messages -->
+        <div class="mockup-item">
+          <div class="mockup-label">すべて表示</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar"><span>18:42</span><span>90%</span></div>
+            <div class="phone-nav-bar">渋谷スタディラウンジ</div>
+            <div class="app-filter-tabs">
+              <div class="app-filter-tab active">すべて</div>
+              <div class="app-filter-tab">チャット</div>
+              <div class="app-filter-tab">通知</div>
+            </div>
+            <div style="padding:8px 0; background:#fafafa; min-height:380px;">
+              <div class="notif-card">
+                <div class="notif-card-header">
+                  <span class="shop-name">渋谷スタディラウンジ</span>
+                  <span class="notif-time">18:40</span>
+                </div>
+                <div class="notif-card-body">
+                  <div class="notif-type-badge type-checkin">チェックイン確認</div>
+                  <div>チェックインが完了しました。<br>プラン: ドロップイン<br>チェックイン: 18:40<br>閉店時刻: 22:00</div>
+                </div>
+              </div>
+              <div class="notif-card">
+                <div class="notif-card-header">
+                  <span class="shop-name">渋谷スタディラウンジ</span>
+                  <span class="notif-time">18:40</span>
+                </div>
+                <div class="notif-card-body">
+                  <div class="notif-type-badge type-notice">注意事項</div>
+                  <div>【ご利用にあたって】<br>・通話は通話ブースをご利用ください<br>・飲食は指定エリアのみ可能です<br>・22:00閉店です。お忘れ物にご注意ください</div>
+                </div>
+              </div>
+              <div style="margin:8px 12px; padding:12px; background:var(--gray-100); border-radius:12px;">
+                <div style="font-size:12px; color:var(--gray-400); margin-bottom:4px;">渋谷スタディラウンジ（昨日）</div>
+                <div style="font-size:13px; color:var(--gray-600);">本日は臨時休業となります。ご迷惑をおかけします。</div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">すべてのメッセージが時系列で表示される。チェックイン通知にはタイプバッジが付く。</div>
+        </div>
+
+        <!-- Notifications only -->
+        <div class="mockup-item">
+          <div class="mockup-label">通知のみ表示</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar"><span>18:42</span><span>90%</span></div>
+            <div class="phone-nav-bar">渋谷スタディラウンジ</div>
+            <div class="app-filter-tabs">
+              <div class="app-filter-tab">すべて</div>
+              <div class="app-filter-tab">チャット</div>
+              <div class="app-filter-tab active">通知</div>
+            </div>
+            <div style="padding:8px 0; background:#fafafa; min-height:380px;">
+              <div class="notif-card">
+                <div class="notif-card-header">
+                  <span class="shop-name">渋谷スタディラウンジ</span>
+                  <span class="notif-time">18:40</span>
+                </div>
+                <div class="notif-card-body">
+                  <div class="notif-type-badge type-checkin">チェックイン確認</div>
+                  <div>チェックインが完了しました。<br>プラン: ドロップイン<br>チェックイン: 18:40<br>閉店時刻: 22:00</div>
+                </div>
+              </div>
+              <div class="notif-card">
+                <div class="notif-card-header">
+                  <span class="shop-name">渋谷スタディラウンジ</span>
+                  <span class="notif-time">18:40</span>
+                </div>
+                <div class="notif-card-body">
+                  <div class="notif-type-badge type-notice">注意事項</div>
+                  <div>【ご利用にあたって】<br>・通話は通話ブースをご利用ください<br>・飲食は指定エリアのみ可能です<br>・22:00閉店です。お忘れ物にご注意ください</div>
+                </div>
+              </div>
+              <div class="notif-card" style="opacity:0.6;">
+                <div class="notif-card-header">
+                  <span class="shop-name">渋谷スタディラウンジ</span>
+                  <span class="notif-time">3/1 14:20</span>
+                </div>
+                <div class="notif-card-body">
+                  <div class="notif-type-badge type-checkin">チェックイン確認</div>
+                  <div>チェックインが完了しました。<br>プラン: ドロップイン<br>チェックイン: 14:20</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">「通知」フィルタではチェックイン確認・注意事項のみ表示。チャットメッセージは非表示。</div>
+        </div>
+
+        <!-- Chat only -->
+        <div class="mockup-item">
+          <div class="mockup-label">チャットのみ表示</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar"><span>18:42</span><span>90%</span></div>
+            <div class="phone-nav-bar">渋谷スタディラウンジ</div>
+            <div class="app-filter-tabs">
+              <div class="app-filter-tab">すべて</div>
+              <div class="app-filter-tab active">チャット</div>
+              <div class="app-filter-tab">通知</div>
+            </div>
+            <div style="padding:8px 0; background:#fafafa; min-height:380px;">
+              <div style="margin:8px 12px; max-width: 240px;">
+                <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;padding-left:4px;">渋谷スタディラウンジ</div>
+                <div style="background:var(--gray-100);border-radius:0 16px 16px 16px;padding:12px 14px;font-size:13px;line-height:1.6;">本日は臨時休業となります。ご迷惑をおかけします。</div>
+                <div style="font-size:10px;color:var(--gray-400);margin-top:4px;padding-left:4px;">昨日 10:30</div>
+              </div>
+              <div style="margin:16px 12px; max-width: 240px; margin-left: auto;">
+                <div style="background:#2563eb;color:white;border-radius:16px 0 16px 16px;padding:12px 14px;font-size:13px;line-height:1.6;">承知しました。ありがとうございます。</div>
+                <div style="font-size:10px;color:var(--gray-400);margin-top:4px;text-align:right;padding-right:4px;">昨日 10:35</div>
+              </div>
+              <div style="text-align:center;margin-top:60px;color:var(--gray-300);font-size:13px;">
+                チャットメッセージのみ表示中
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">「チャット」フィルタでは店舗とのやりとりのみ。チェックイン通知はフィルタされて非表示。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPANY TAB ===== -->
+  <div class="tab-content" id="tab-company">
+    <div class="section">
+      <div class="section-title"><span class="badge-web">WEB</span> 法人管理画面 — チェックインメッセージ設定</div>
+      <div class="section-desc">店舗ごとにチェックイン時のメッセージをカスタマイズ</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div><div class="web-dot yellow"></div><div class="web-dot green"></div>
+          <div class="web-url">company.studygo.jp/shop/1/checkin-message</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">渋谷スタディラウンジ</div>
+            <div class="sidebar-group">店舗設定</div>
+            <div class="sidebar-item">基本情報</div>
+            <div class="sidebar-item">営業時間</div>
+            <div class="sidebar-item">プラン設定</div>
+            <div class="sidebar-item active">チェックインメッセージ</div>
+            <div class="sidebar-group">会員</div>
+            <div class="sidebar-item">会員一覧</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">チェックインメッセージ設定</div>
+            <div class="web-page-desc">チェックイン時にユーザーに自動送信されるメッセージを設定します</div>
+
+            <div style="display:flex; gap:24px;">
+              <div style="flex:1;">
+                <!-- Checkin confirmation -->
+                <div class="form-group">
+                  <label class="form-label">チェックイン確認メッセージ</label>
+                  <div style="display:flex;gap:8px;margin-bottom:8px;">
+                    <span class="tag-chip active">有効</span>
+                    <span class="tag-chip">無効</span>
+                  </div>
+                  <textarea class="form-textarea">チェックインが完了しました。
+プラン: {{plan_name}}
+チェックイン: {{checkin_time}}
+閉店時刻: {{close_time}}
+
+ご不明点がございましたらお気軽にメッセージください。</textarea>
+                  <div class="form-hint">利用可能な変数: {{plan_name}}, {{checkin_time}}, {{close_time}}, {{shop_name}}, {{user_name}}</div>
+                </div>
+
+                <!-- Notice -->
+                <div class="form-group">
+                  <label class="form-label">注意事項メッセージ</label>
+                  <div style="display:flex;gap:8px;margin-bottom:8px;">
+                    <span class="tag-chip active">有効</span>
+                    <span class="tag-chip">無効</span>
+                  </div>
+                  <textarea class="form-textarea">【ご利用にあたって】
+・通話は通話ブースをご利用ください
+・飲食は指定エリアのみ可能です
+・{{close_time}}閉店です。お忘れ物にご注意ください
+・困ったことがあればスタッフにお声がけください</textarea>
+                  <div class="form-hint">店舗のルールや注意点を記載してください</div>
+                </div>
+
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary">保存</button>
+                  <button class="btn btn-secondary">デフォルトに戻す</button>
+                </div>
+              </div>
+
+              <!-- Preview -->
+              <div style="width:300px;">
+                <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:8px;">プレビュー</div>
+                <div style="background:#fafafa;border-radius:12px;padding:12px;border:1px solid var(--gray-200);">
+                  <div class="notif-card" style="margin:0 0 8px 0;">
+                    <div class="notif-card-header">
+                      <span class="shop-name" style="font-size:12px;">渋谷スタディラウンジ</span>
+                      <span class="notif-time">18:40</span>
+                    </div>
+                    <div class="notif-card-body" style="font-size:12px;">
+                      <div class="notif-type-badge type-checkin">チェックイン確認</div>
+                      <div>チェックインが完了しました。<br>プラン: ドロップイン<br>チェックイン: 18:40<br>閉店時刻: 22:00<br><br>ご不明点がございましたらお気軽にメッセージください。</div>
+                    </div>
+                  </div>
+                  <div class="notif-card" style="margin:0;">
+                    <div class="notif-card-header">
+                      <span class="shop-name" style="font-size:12px;">渋谷スタディラウンジ</span>
+                      <span class="notif-time">18:40</span>
+                    </div>
+                    <div class="notif-card-body" style="font-size:12px;">
+                      <div class="notif-type-badge type-notice">注意事項</div>
+                      <div>【ご利用にあたって】<br>・通話は通話ブースをご利用ください<br>・飲食は指定エリアのみ可能です<br>・22:00閉店です。お忘れ物にご注意ください<br>・困ったことがあればスタッフにお声がけください</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN TAB ===== -->
+  <div class="tab-content" id="tab-admin">
+    <div class="section">
+      <div class="section-title"><span class="badge-web">WEB</span> 管理画面 — チェックインメッセージ一覧</div>
+      <div class="section-desc">全店舗のチェックインメッセージ設定状況を確認・デフォルトテンプレート管理</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div><div class="web-dot yellow"></div><div class="web-dot green"></div>
+          <div class="web-url">admin.studygo.jp/checkin-messages</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">StudyGO Admin</div>
+            <div class="sidebar-group">店舗管理</div>
+            <div class="sidebar-item">店舗一覧</div>
+            <div class="sidebar-item active">チェックインメッセージ</div>
+            <div class="sidebar-group">設定</div>
+            <div class="sidebar-item">デフォルトテンプレート</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">チェックインメッセージ管理</div>
+            <div class="web-page-desc">店舗ごとのチェックインメッセージ設定状況</div>
+
+            <div style="margin-bottom:20px;padding:16px;background:#f0f9ff;border-radius:8px;border:1px solid #bae6fd;">
+              <div style="font-size:13px;font-weight:600;color:#0369a1;margin-bottom:4px;">デフォルトテンプレート</div>
+              <div style="font-size:12px;color:#0c4a6e;">カスタムメッセージが未設定の店舗にはデフォルトテンプレートが適用されます。<button class="btn btn-secondary" style="margin-left:12px;padding:4px 12px;font-size:12px;">テンプレートを編集</button></div>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>店舗名</th>
+                  <th>チェックイン確認</th>
+                  <th>注意事項</th>
+                  <th>ステータス</th>
+                  <th>最終更新</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>渋谷スタディラウンジ</td>
+                  <td><span class="status-tag status-active">カスタム</span></td>
+                  <td><span class="status-tag status-active">カスタム</span></td>
+                  <td>有効</td>
+                  <td>2026/3/1</td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">編集</button></td>
+                </tr>
+                <tr>
+                  <td>新宿ワークスペース</td>
+                  <td><span class="status-tag status-default">デフォルト</span></td>
+                  <td><span class="status-tag status-active">カスタム</span></td>
+                  <td>有効</td>
+                  <td>2026/2/28</td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">編集</button></td>
+                </tr>
+                <tr>
+                  <td>池袋スタディルーム</td>
+                  <td><span class="status-tag status-default">デフォルト</span></td>
+                  <td><span class="status-tag status-default">デフォルト</span></td>
+                  <td>有効</td>
+                  <td>—</td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">編集</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

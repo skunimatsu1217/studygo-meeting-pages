@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クーポン利用履歴機能 画面設計イメージ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      color: #333; background: #f0f2f5; line-height: 1.7;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #016F0C 0%, #004d08 100%);
+      color: #fff; padding: 40px 24px; text-align: center;
+    }
+    .header-badge {
+      display: inline-block; background: rgba(255,255,255,0.2);
+      padding: 4px 16px; border-radius: 20px; font-size: 12px;
+      margin-bottom: 12px; letter-spacing: 1px;
+    }
+    .header h1 { font-size: 26px; margin-bottom: 6px; }
+    .header p { font-size: 14px; opacity: 0.85; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px 64px; }
+
+    .print-area { text-align: center; margin-bottom: 28px; }
+    .print-btn {
+      padding: 12px 36px; background: #016F0C; color: #fff; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .print-btn:hover { background: #005a0a; }
+
+    /* セクション */
+    .section {
+      background: #fff; border-radius: 14px; padding: 32px;
+      margin-bottom: 28px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    }
+    .section h2 {
+      font-size: 20px; color: #016F0C; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tag {
+      display: inline-block; font-size: 11px; padding: 2px 10px;
+      border-radius: 12px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .tag-new { background: #fff3e0; color: #e65100; }
+    .tag-alliance { background: #e8f5e9; color: #2e7d32; }
+    .tag-admin { background: #e3f2fd; color: #1565c0; }
+    .subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+
+    /* 画面モック */
+    .screen-wrap {
+      border: 1px solid #ddd; border-radius: 12px; overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.07); margin: 20px 0;
+    }
+    .screen-bar {
+      background: #f5f5f5; padding: 7px 14px; font-size: 12px; color: #999;
+      border-bottom: 1px solid #ddd; display: flex; align-items: center; gap: 6px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .dot-r { background: #ff5f57; } .dot-y { background: #ffbd2e; } .dot-g { background: #28c940; }
+
+    /* レイアウト */
+    .app-layout { display: flex; min-height: 480px; }
+    .app-side {
+      width: 210px; background: #1b2a4a; color: #b0bec5; padding: 16px 0;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .app-side .side-title {
+      color: #fff; font-weight: 700; font-size: 15px; padding: 0 16px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px;
+    }
+    .side-item { padding: 9px 20px; cursor: default; }
+    .side-item:hover { background: rgba(255,255,255,0.05); }
+    .side-item.active { background: rgba(1,111,12,0.3); color: #fff; font-weight: 600; border-left: 3px solid #4caf50; }
+    .side-item .new-badge {
+      display: inline-block; background: #ff5722; color: #fff; font-size: 9px;
+      padding: 1px 6px; border-radius: 8px; margin-left: 6px; font-weight: 700;
+    }
+    .app-main { flex: 1; padding: 24px; overflow-x: auto; background: #fafafa; }
+    .app-main h3 { font-size: 18px; margin-bottom: 4px; color: #333; }
+    .app-main .page-desc { font-size: 13px; color: #888; margin-bottom: 18px; }
+
+    /* テーブル */
+    .m-table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 8px; overflow: hidden; }
+    .m-table th {
+      background: #f1f8e9; padding: 10px 12px; text-align: left; font-weight: 600;
+      border-bottom: 2px solid #c5e1a5; color: #33691e; white-space: nowrap;
+    }
+    .m-table td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .m-table tr:hover td { background: #f9fdf5; }
+
+    /* チップ */
+    .chip { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+    .chip-green { background: #e8f5e9; color: #2e7d32; }
+    .chip-gray  { background: #eee; color: #888; }
+    .chip-blue  { background: #e3f2fd; color: #1565c0; }
+    .chip-orange { background: #fff3e0; color: #e65100; }
+    .chip-red   { background: #fce4ec; color: #c62828; }
+
+    /* ボタン */
+    .btn {
+      display: inline-block; padding: 7px 18px; border-radius: 6px;
+      font-size: 13px; font-weight: 600; cursor: default; border: none;
+    }
+    .btn-green  { background: #016F0C; color: #fff; }
+    .btn-outline { background: #fff; border: 1px solid #ccc; color: #555; }
+    .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+    /* フォーム */
+    .form-label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 600; }
+    .form-select {
+      padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: 13px; background: #fff; min-width: 150px;
+    }
+    .form-input {
+      padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: 13px; background: #fff;
+    }
+    .form-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; }
+
+    /* フィルターバー */
+    .filter-bar {
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+      padding: 16px 20px; margin-bottom: 16px;
+    }
+    .filter-bar .filter-title {
+      font-size: 12px; font-weight: 700; color: #888; margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* 統計カード */
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+      padding: 16px; text-align: center;
+    }
+    .stat-card .stat-num { font-size: 28px; font-weight: 700; color: #016F0C; }
+    .stat-card .stat-label { font-size: 12px; color: #888; margin-top: 2px; }
+    .stat-card.highlight { border-color: #4caf50; background: #f1f8e9; }
+
+    /* 詳細パネル */
+    .detail-panel {
+      background: #fff; border: 1px solid #e0e0e0; border-radius: 10px;
+      padding: 20px; margin: 16px 0;
+    }
+    .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { width: 160px; color: #888; font-weight: 600; flex-shrink: 0; }
+    .detail-value { flex: 1; color: #333; }
+
+    /* アラート */
+    .alert {
+      padding: 10px 16px; border-radius: 8px; font-size: 13px; margin: 12px 0;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .alert-info { background: #e3f2fd; border: 1px solid #90caf9; color: #0d47a1; }
+    .alert-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+
+    /* ノートボックス */
+    .note-box {
+      background: #fafafa; border-left: 4px solid #016F0C; padding: 12px 16px;
+      margin: 16px 0; font-size: 13px; color: #555;
+    }
+
+    /* セクション仕切り */
+    .divider { text-align: center; padding: 20px 0; }
+    .divider-line {
+      display: inline-flex; align-items: center; gap: 12px;
+      color: #aaa; font-size: 13px;
+    }
+    .divider-line::before, .divider-line::after { content: ''; width: 60px; height: 1px; background: #ddd; }
+
+    /* エクスポートアイコン */
+    .export-icon { font-size: 14px; cursor: default; }
+
+    /* ページネーション */
+    .pagination { display: flex; gap: 4px; justify-content: center; margin-top: 16px; }
+    .page-btn {
+      width: 32px; height: 32px; border: 1px solid #ddd; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; background: #fff; cursor: default;
+    }
+    .page-btn.active { background: #016F0C; color: #fff; border-color: #016F0C; }
+
+    /* 2カラム */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) {
+      .two-col { grid-template-columns: 1fr; }
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
+      .app-layout { flex-direction: column; }
+      .app-side { width: 100%; }
+    }
+
+    /* アノテーション */
+    .anno {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #fff3e0; border: 1px solid #ffcc80; color: #e65100;
+      padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    }
+
+    .footer { text-align: center; padding: 32px 24px; color: #999; font-size: 12px; }
+
+    @media print {
+      body { background: #fff; }
+      .section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+      .print-area { display: none; }
+      .app-side { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .stat-card.highlight { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">新機能 画面設計イメージ</div>
+  <h1>クーポン利用履歴機能</h1>
+  <p>加盟法人（会社管理画面）からクーポンの利用実績を確認できる機能</p>
+</div>
+
+<div class="container">
+
+  <div class="print-area">
+    <button class="print-btn" onclick="window.print()">PDF として保存 / 印刷する</button>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 現状の課題 -->
+  <!-- ========================================= -->
+  <div class="section">
+    <h2><span class="tag tag-new">背景</span> 現状の課題と新機能の目的</h2>
+    <p class="subtitle">加盟法人がクーポンの利用状況を把握できない問題を解決</p>
+
+    <div class="two-col">
+      <div>
+        <h3 style="font-size: 15px; color: #c62828; margin-bottom: 10px;">現状（Before）</h3>
+        <div style="background: #fce4ec; border-radius: 10px; padding: 16px; font-size: 13px; color: #555;">
+          <ul style="padding-left: 18px; margin: 0;">
+            <li>店舗一覧に「先月のクーポン利用枚数」の<strong>数字のみ</strong>表示</li>
+            <li>どのクーポンが使われたか分からない</li>
+            <li>誰が使ったか分からない</li>
+            <li>いつ使われたか分からない</li>
+            <li>割引額の合計が把握できない</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size: 15px; color: #2e7d32; margin-bottom: 10px;">新機能（After）</h3>
+        <div style="background: #e8f5e9; border-radius: 10px; padding: 16px; font-size: 13px; color: #555;">
+          <ul style="padding-left: 18px; margin: 0;">
+            <li><strong>クーポン利用履歴一覧</strong>で全利用記録を確認</li>
+            <li>クーポン名・コード・割引率を表示</li>
+            <li>利用者（会員名）を表示</li>
+            <li>利用日時・契約店舗を表示</li>
+            <li>統計サマリーで割引額の合計を把握</li>
+            <li>店舗別・期間別のフィルタリング</li>
+            <li>CSV エクスポート対応</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"><span class="divider-line">新規画面の設計</span></div>
+
+  <!-- ========================================= -->
+  <!-- 画面1: クーポン利用履歴一覧 -->
+  <!-- ========================================= -->
+  <div class="section">
+    <h2><span class="tag tag-alliance">会社管理画面</span> クーポン利用履歴 一覧画面</h2>
+    <p class="subtitle">パス: /alliance/coupon-history — 自社店舗のクーポン利用実績を一覧で確認</p>
+
+    <div class="screen-wrap">
+      <div class="screen-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        会社管理画面 — クーポン利用履歴
+      </div>
+      <div style="background: #fff;">
+        <div class="app-layout">
+          <div class="app-side">
+            <div class="side-title">スタディGO</div>
+            <div class="side-item">ダッシュボード</div>
+            <div class="side-item">店舗管理</div>
+            <div class="side-item">会員管理</div>
+            <div class="side-item">契約申請</div>
+            <div class="side-item active">クーポン利用履歴 <span class="new-badge">NEW</span></div>
+            <div class="side-item">売上管理</div>
+            <div class="side-item">設定</div>
+          </div>
+          <div class="app-main">
+            <h3>クーポン利用履歴</h3>
+            <p class="page-desc">自社店舗で利用されたクーポンの一覧です</p>
+
+            <!-- 統計カード -->
+            <div class="stat-cards">
+              <div class="stat-card highlight">
+                <div class="stat-num">27</div>
+                <div class="stat-label">今月の利用数</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num">89</div>
+                <div class="stat-label">累計利用数</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num" style="font-size: 22px;">¥156,000</div>
+                <div class="stat-label">今月の割引合計</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-num" style="font-size: 22px;">¥534,000</div>
+                <div class="stat-label">累計割引合計</div>
+              </div>
+            </div>
+
+            <!-- フィルター -->
+            <div class="filter-bar">
+              <div class="filter-title">絞り込み</div>
+              <div class="form-row">
+                <div>
+                  <label class="form-label">店舗</label>
+                  <select class="form-select">
+                    <option>すべての店舗</option>
+                    <option>渋谷店</option>
+                    <option>新宿店</option>
+                    <option>池袋店</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">クーポン</label>
+                  <select class="form-select">
+                    <option>すべてのクーポン</option>
+                    <option>春の入会キャンペーン</option>
+                    <option>友達紹介割引</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="form-label">期間（開始）</label>
+                  <input class="form-input" type="text" value="2025/01/01" readonly style="width: 130px;">
+                </div>
+                <div>
+                  <label class="form-label">期間（終了）</label>
+                  <input class="form-input" type="text" value="2025/06/30" readonly style="width: 130px;">
+                </div>
+                <div>
+                  <span class="btn btn-green btn-sm">検索</span>
+                  <span class="btn btn-outline btn-sm">リセット</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- エクスポート -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+              <span class="btn btn-outline btn-sm"><span class="export-icon">📥</span> CSV エクスポート</span>
+            </div>
+
+            <!-- テーブル -->
+            <table class="m-table">
+              <thead>
+                <tr>
+                  <th>利用日</th>
+                  <th>店舗</th>
+                  <th>会員名</th>
+                  <th>クーポン名</th>
+                  <th>コード</th>
+                  <th>割引率</th>
+                  <th>入会金</th>
+                  <th>割引額</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2025/04/15</td>
+                  <td>渋谷店</td>
+                  <td>山田 太郎</td>
+                  <td>春の入会キャンペーン</td>
+                  <td><code>SPR025</code></td>
+                  <td><span class="chip chip-orange">20%</span></td>
+                  <td>¥10,000</td>
+                  <td style="color: #d32f2f; font-weight: 600;">-¥2,000</td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/12</td>
+                  <td>渋谷店</td>
+                  <td>鈴木 花子</td>
+                  <td>春の入会キャンペーン</td>
+                  <td><code>SPR025</code></td>
+                  <td><span class="chip chip-orange">20%</span></td>
+                  <td>¥10,000</td>
+                  <td style="color: #d32f2f; font-weight: 600;">-¥2,000</td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/10</td>
+                  <td>新宿店</td>
+                  <td>佐藤 一郎</td>
+                  <td>友達紹介割引</td>
+                  <td><code>FRD010</code></td>
+                  <td><span class="chip chip-orange">10%</span></td>
+                  <td>¥15,000</td>
+                  <td style="color: #d32f2f; font-weight: 600;">-¥1,500</td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/08</td>
+                  <td>池袋店</td>
+                  <td>田中 美咲</td>
+                  <td>オープン記念割引</td>
+                  <td><code>OPN001</code></td>
+                  <td><span class="chip chip-orange">30%</span></td>
+                  <td>¥10,000</td>
+                  <td style="color: #d32f2f; font-weight: 600;">-¥3,000</td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/05</td>
+                  <td>渋谷店</td>
+                  <td>高橋 健太</td>
+                  <td>春の入会キャンペーン</td>
+                  <td><code>SPR025</code></td>
+                  <td><span class="chip chip-orange">20%</span></td>
+                  <td>¥10,000</td>
+                  <td style="color: #d32f2f; font-weight: 600;">-¥2,000</td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr style="background: #fafafa;">
+                  <td colspan="6"></td>
+                  <td style="font-weight: 600; text-align: right;">合計</td>
+                  <td style="color: #d32f2f; font-weight: 700; font-size: 15px;">-¥10,500</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- ページネーション -->
+            <div class="pagination">
+              <div class="page-btn">&lt;</div>
+              <div class="page-btn active">1</div>
+              <div class="page-btn">2</div>
+              <div class="page-btn">3</div>
+              <div class="page-btn">&gt;</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>画面の構成:</strong><br>
+      ・統計サマリーカード（今月利用数 / 累計利用数 / 今月割引合計 / 累計割引合計）<br>
+      ・フィルター（店舗 / クーポン名 / 期間で絞り込み）<br>
+      ・CSVエクスポートボタン<br>
+      ・利用履歴テーブル（利用日 / 店舗 / 会員名 / クーポン名 / コード / 割引率 / 入会金 / 割引額）<br>
+      ・ページネーション
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 画面2: 利用詳細 -->
+  <!-- ========================================= -->
+  <div class="section">
+    <h2><span class="tag tag-alliance">会社管理画面</span> クーポン利用 詳細画面</h2>
+    <p class="subtitle">一覧の「詳細」ボタンから遷移。契約情報とクーポン適用内容を確認</p>
+
+    <div class="screen-wrap">
+      <div class="screen-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        会社管理画面 — クーポン利用詳細
+      </div>
+      <div style="background: #fff;">
+        <div class="app-layout">
+          <div class="app-side">
+            <div class="side-title">スタディGO</div>
+            <div class="side-item">ダッシュボード</div>
+            <div class="side-item">店舗管理</div>
+            <div class="side-item">会員管理</div>
+            <div class="side-item">契約申請</div>
+            <div class="side-item active">クーポン利用履歴</div>
+            <div class="side-item">売上管理</div>
+          </div>
+          <div class="app-main">
+            <div style="margin-bottom: 16px;">
+              <span style="color: #016F0C; font-size: 13px; cursor: default;">← クーポン利用履歴に戻る</span>
+            </div>
+            <h3>クーポン利用詳細</h3>
+
+            <div class="two-col" style="margin-top: 16px;">
+              <!-- 左: クーポン情報 -->
+              <div class="detail-panel">
+                <div style="font-size: 14px; font-weight: 700; color: #016F0C; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #e8f5e9;">クーポン情報</div>
+                <div class="detail-row">
+                  <div class="detail-label">クーポン名</div>
+                  <div class="detail-value"><strong>春の入会キャンペーン</strong></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">クーポンコード</div>
+                  <div class="detail-value"><code style="background: #f0f0f0; padding: 2px 8px; border-radius: 4px;">SPR025</code></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">割引率</div>
+                  <div class="detail-value"><span class="chip chip-orange">20% OFF</span></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">クーポン有効期間</div>
+                  <div class="detail-value">2025/04/01 〜 2025/06/30</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">利用日</div>
+                  <div class="detail-value"><strong>2025/04/15</strong></div>
+                </div>
+              </div>
+
+              <!-- 右: 契約・会員情報 -->
+              <div class="detail-panel">
+                <div style="font-size: 14px; font-weight: 700; color: #016F0C; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #e8f5e9;">契約・会員情報</div>
+                <div class="detail-row">
+                  <div class="detail-label">会員名</div>
+                  <div class="detail-value"><strong>山田 太郎</strong></div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">店舗</div>
+                  <div class="detail-value">渋谷店</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">契約プラン</div>
+                  <div class="detail-value">月額レギュラープラン</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">契約開始日</div>
+                  <div class="detail-value">2025/04/15</div>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">契約ステータス</div>
+                  <div class="detail-value"><span class="chip chip-green">契約中</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 料金内訳 -->
+            <div class="detail-panel" style="margin-top: 16px;">
+              <div style="font-size: 14px; font-weight: 700; color: #016F0C; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid #e8f5e9;">料金内訳（契約時）</div>
+              <div style="max-width: 500px;">
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                  <span>入会金（定価）</span><span>¥10,000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                  <span>クーポン割引（20%OFF）</span><span style="color: #d32f2f; font-weight: 600;">-¥2,000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                  <span>入会金（割引後）</span><span style="font-weight: 600;">¥8,000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                  <span>月額料金</span><span>¥5,000</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px 0 8px; font-size: 16px; font-weight: 700; color: #016F0C; border-top: 2px solid #016F0C; margin-top: 4px;">
+                  <span>初月合計（税込）</span><span>¥13,000</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="margin-top: 16px;">
+              <span>ℹ️</span>
+              <div>この情報は契約時点のスナップショットです。クーポンが後から編集・削除されても、ここに表示される情報は変わりません。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>表示情報:</strong><br>
+      ・クーポン情報（名称 / コード / 割引率 / 有効期間 / 利用日）<br>
+      ・契約・会員情報（会員名 / 店舗 / プラン / 開始日 / ステータス）<br>
+      ・料金内訳（定価 / 割引額 / 割引後金額 / 月額 / 合計）<br>
+      ※ ShopContractHasCoupon のスナップショットデータを使用
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 画面3: 既存画面の改修 -->
+  <!-- ========================================= -->
+  <div class="divider"><span class="divider-line">既存画面の改修</span></div>
+
+  <div class="section">
+    <h2><span class="tag tag-alliance">会社管理画面</span> 契約申請一覧にクーポン情報を追加</h2>
+    <p class="subtitle">パス: /alliance/contractApplications — 既存の契約申請一覧にクーポンコード列を追加表示</p>
+
+    <div class="screen-wrap">
+      <div class="screen-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        会社管理画面 — 契約申請一覧（改修後）
+      </div>
+      <div style="background: #fff;">
+        <div class="app-layout" style="min-height: 300px;">
+          <div class="app-side">
+            <div class="side-title">スタディGO</div>
+            <div class="side-item">ダッシュボード</div>
+            <div class="side-item">店舗管理</div>
+            <div class="side-item">会員管理</div>
+            <div class="side-item active">契約申請</div>
+            <div class="side-item">クーポン利用履歴</div>
+          </div>
+          <div class="app-main">
+            <h3>契約申請一覧</h3>
+            <p class="page-desc">ユーザーからの契約申請を管理</p>
+
+            <table class="m-table">
+              <thead>
+                <tr>
+                  <th>申請日</th>
+                  <th>会員名</th>
+                  <th>店舗</th>
+                  <th>プラン</th>
+                  <th>開始希望日</th>
+                  <th style="background: #fff8e1; color: #e65100;">クーポン <span class="chip chip-orange" style="font-size: 9px;">追加</span></th>
+                  <th>ステータス</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2025/04/14</td>
+                  <td>山田 太郎</td>
+                  <td>渋谷店</td>
+                  <td>月額レギュラー</td>
+                  <td>2025/04/15</td>
+                  <td style="background: #fffde7;"><code>SPR025</code> <span class="chip chip-orange" style="font-size: 10px;">20%</span></td>
+                  <td><span class="chip chip-blue">申請中</span></td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/10</td>
+                  <td>鈴木 花子</td>
+                  <td>新宿店</td>
+                  <td>月額プレミアム</td>
+                  <td>2025/04/12</td>
+                  <td style="background: #fffde7;"><span style="color: #bbb;">—</span></td>
+                  <td><span class="chip chip-green">承認済</span></td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+                <tr>
+                  <td>2025/04/08</td>
+                  <td>佐藤 一郎</td>
+                  <td>池袋店</td>
+                  <td>月額レギュラー</td>
+                  <td>2025/04/10</td>
+                  <td style="background: #fffde7;"><code>OPN001</code> <span class="chip chip-orange" style="font-size: 10px;">30%</span></td>
+                  <td><span class="chip chip-green">承認済</span></td>
+                  <td><span class="btn btn-outline btn-sm">詳細</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>改修内容:</strong> 既存の契約申請一覧テーブルに「クーポン」列を追加。クーポンコードと割引率を表示。<br>
+      <strong>データソース:</strong> ContractApplication.couponCode（既にAPIレスポンスに含まれているが画面未表示）
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 画面4: 店舗管理に利用履歴リンク -->
+  <!-- ========================================= -->
+  <div class="section">
+    <h2><span class="tag tag-alliance">会社管理画面</span> 店舗一覧のクーポン統計を強化</h2>
+    <p class="subtitle">パス: /alliance/shops — 既存の店舗一覧にクーポン利用数と履歴リンクを追加</p>
+
+    <div class="screen-wrap">
+      <div class="screen-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        会社管理画面 — 店舗一覧（改修後）
+      </div>
+      <div style="background: #fff;">
+        <div class="app-layout" style="min-height: 280px;">
+          <div class="app-side">
+            <div class="side-title">スタディGO</div>
+            <div class="side-item">ダッシュボード</div>
+            <div class="side-item active">店舗管理</div>
+            <div class="side-item">会員管理</div>
+            <div class="side-item">契約申請</div>
+            <div class="side-item">クーポン利用履歴</div>
+          </div>
+          <div class="app-main">
+            <h3>店舗一覧</h3>
+
+            <table class="m-table">
+              <thead>
+                <tr>
+                  <th>店舗名</th>
+                  <th>会員数</th>
+                  <th>先月クーポン利用</th>
+                  <th style="background: #fff8e1; color: #e65100;">累計クーポン利用 <span class="chip chip-orange" style="font-size: 9px;">追加</span></th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>渋谷店</strong></td>
+                  <td>156人</td>
+                  <td>8件</td>
+                  <td style="background: #fffde7;">42件</td>
+                  <td><span class="btn btn-outline btn-sm" style="color: #016F0C; border-color: #016F0C;">利用履歴を見る →</span></td>
+                </tr>
+                <tr>
+                  <td><strong>新宿店</strong></td>
+                  <td>203人</td>
+                  <td>12件</td>
+                  <td style="background: #fffde7;">31件</td>
+                  <td><span class="btn btn-outline btn-sm" style="color: #016F0C; border-color: #016F0C;">利用履歴を見る →</span></td>
+                </tr>
+                <tr>
+                  <td><strong>池袋店</strong></td>
+                  <td>89人</td>
+                  <td>7件</td>
+                  <td style="background: #fffde7;">16件</td>
+                  <td><span class="btn btn-outline btn-sm" style="color: #016F0C; border-color: #016F0C;">利用履歴を見る →</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>改修内容:</strong><br>
+      ・「累計クーポン利用」列を追加<br>
+      ・「利用履歴を見る →」リンクを追加（クリックでクーポン利用履歴ページへ遷移、店舗フィルター適用済み）
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 画面遷移図 -->
+  <!-- ========================================= -->
+  <div class="divider"><span class="divider-line">全体の画面遷移</span></div>
+
+  <div class="section">
+    <h2>画面遷移フロー</h2>
+    <p class="subtitle">新規画面と既存画面の関連図</p>
+
+    <div style="overflow-x: auto;">
+      <div style="min-width: 700px; padding: 20px 0;">
+
+        <div style="display: flex; gap: 20px; justify-content: center; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <span style="display: inline-block; width: 16px; height: 16px; background: #e8f5e9; border: 2px solid #4caf50; border-radius: 4px;"></span> 新規画面
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <span style="display: inline-block; width: 16px; height: 16px; background: #fff; border: 2px solid #ccc; border-radius: 4px;"></span> 既存画面（改修）
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+
+          <!-- 既存: 店舗一覧 -->
+          <div style="border: 2px solid #ccc; border-radius: 12px; padding: 16px; width: 200px; text-align: center;">
+            <div style="font-size: 13px; font-weight: 700;">店舗一覧</div>
+            <div style="font-size: 11px; color: #888;">/alliance/shops</div>
+            <div style="font-size: 11px; color: #e65100; margin-top: 6px;">＋累計利用数<br>＋履歴リンク</div>
+          </div>
+
+          <div style="display: flex; align-items: center; font-size: 20px; color: #aaa;">→</div>
+
+          <!-- 新規: クーポン利用履歴 -->
+          <div style="border: 2px solid #4caf50; border-radius: 12px; padding: 16px; width: 200px; text-align: center; background: #e8f5e9;">
+            <div style="font-size: 13px; font-weight: 700; color: #2e7d32;">クーポン利用履歴</div>
+            <div style="font-size: 11px; color: #888;">/alliance/coupon-history</div>
+            <div style="font-size: 11px; color: #016F0C; margin-top: 6px;">統計 + 一覧<br>フィルター + CSV</div>
+          </div>
+
+          <div style="display: flex; align-items: center; font-size: 20px; color: #aaa;">→</div>
+
+          <!-- 新規: 利用詳細 -->
+          <div style="border: 2px solid #4caf50; border-radius: 12px; padding: 16px; width: 200px; text-align: center; background: #e8f5e9;">
+            <div style="font-size: 13px; font-weight: 700; color: #2e7d32;">利用詳細</div>
+            <div style="font-size: 11px; color: #888;">/alliance/coupon-history/[id]</div>
+            <div style="font-size: 11px; color: #016F0C; margin-top: 6px;">クーポン情報<br>契約・料金内訳</div>
+          </div>
+
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; font-size: 20px; color: #aaa;">↑</div>
+
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 8px;">
+          <!-- 既存: 契約申請 -->
+          <div style="border: 2px solid #ccc; border-radius: 12px; padding: 16px; width: 200px; text-align: center;">
+            <div style="font-size: 13px; font-weight: 700;">契約申請一覧</div>
+            <div style="font-size: 11px; color: #888;">/alliance/contractApplications</div>
+            <div style="font-size: 11px; color: #e65100; margin-top: 6px;">＋クーポン列追加</div>
+          </div>
+
+          <!-- サイドメニュー -->
+          <div style="border: 2px dashed #aaa; border-radius: 12px; padding: 16px; width: 200px; text-align: center; background: #f5f5f5;">
+            <div style="font-size: 13px; font-weight: 700; color: #555;">サイドメニュー</div>
+            <div style="font-size: 11px; color: #e65100; margin-top: 6px;">＋「クーポン利用履歴」<br>メニュー項目追加</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- 実装に必要な作業 -->
+  <!-- ========================================= -->
+  <div class="section">
+    <h2>実装に必要な作業一覧</h2>
+    <p class="subtitle">この画面設計を実現するために必要なバックエンド・フロントエンドの開発項目</p>
+
+    <table class="m-table">
+      <thead>
+        <tr>
+          <th style="width: 40px;">#</th>
+          <th>作業項目</th>
+          <th>レイヤー</th>
+          <th>種別</th>
+          <th>概要</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>クーポン利用履歴 API</strong></td>
+          <td><span class="chip chip-blue">API</span></td>
+          <td><span class="chip chip-orange">新規</span></td>
+          <td>companyCouponHistory リゾルバーの作成。ShopContractHasCoupon を店舗・期間で検索</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>クーポン利用詳細 API</strong></td>
+          <td><span class="chip chip-blue">API</span></td>
+          <td><span class="chip chip-orange">新規</span></td>
+          <td>companyCouponHistoryDetail リゾルバーの作成。契約・料金情報を含む</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>統計サマリー API</strong></td>
+          <td><span class="chip chip-blue">API</span></td>
+          <td><span class="chip chip-orange">新規</span></td>
+          <td>利用数・割引合計の集計エンドポイント</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>クーポン利用履歴ページ</strong></td>
+          <td><span class="chip chip-green">フロント</span></td>
+          <td><span class="chip chip-orange">新規</span></td>
+          <td>/alliance/coupon-history ページ作成（一覧 + フィルタ + 統計）</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>クーポン利用詳細ページ</strong></td>
+          <td><span class="chip chip-green">フロント</span></td>
+          <td><span class="chip chip-orange">新規</span></td>
+          <td>/alliance/coupon-history/[id] ページ作成</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td><strong>サイドメニュー追加</strong></td>
+          <td><span class="chip chip-green">フロント</span></td>
+          <td><span class="chip chip-gray">改修</span></td>
+          <td>サイドナビに「クーポン利用履歴」メニュー追加</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td><strong>契約申請一覧にクーポン列</strong></td>
+          <td><span class="chip chip-green">フロント</span></td>
+          <td><span class="chip chip-gray">改修</span></td>
+          <td>contractApplications の config にクーポン列追加</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td><strong>店舗一覧に累計・リンク</strong></td>
+          <td><span class="chip chip-green">フロント</span></td>
+          <td><span class="chip chip-gray">改修</span></td>
+          <td>shops の config に累計列・履歴リンク追加</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>スタディGO クーポン利用履歴機能 画面設計イメージ | 作成日: 2026年3月2日</p>
+</div>
+
+</body>
+</html>

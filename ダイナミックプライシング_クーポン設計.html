@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ダイナミックプライシング × クーポン設計</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', sans-serif; background: #0f0f1a; color: #e0e0e0; }
+  .container { max-width: 1300px; margin: 0 auto; padding: 24px; }
+  h1 { text-align: center; margin-bottom: 8px; font-size: 28px; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 32px; font-size: 14px; }
+  h2 { font-size: 18px; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  h2 .icon { font-size: 22px; }
+  h3 { font-size: 15px; color: #aaa; margin-bottom: 10px; }
+  .section { background: #1a1a2e; border-radius: 12px; padding: 24px; margin-bottom: 20px; border: 1px solid #2a2a4a; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 900px) { .grid2, .grid3, .grid4 { grid-template-columns: 1fr; } }
+
+  /* KPI Cards */
+  .kpi { background: #16213e; border-radius: 10px; padding: 16px; text-align: center; border: 1px solid #2a2a4a; }
+  .kpi .value { font-size: 36px; font-weight: bold; margin: 8px 0 4px; }
+  .kpi .label { font-size: 12px; color: #888; }
+  .kpi .unit { font-size: 14px; color: #888; }
+  .kpi.danger .value { color: #ef5350; }
+  .kpi.warning .value { color: #ffa726; }
+  .kpi.info .value { color: #42a5f5; }
+  .kpi.success .value { color: #66bb6a; }
+
+  /* Charts (CSS only) */
+  .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 160px; padding: 0 8px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+  .bar { width: 100%; border-radius: 4px 4px 0 0; min-height: 2px; transition: all 0.3s; position: relative; }
+  .bar:hover { opacity: 0.8; }
+  .bar .tooltip { display: none; position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; white-space: nowrap; }
+  .bar:hover .tooltip { display: block; }
+  .bar-label { font-size: 10px; color: #888; margin-top: 4px; text-align: center; }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+  .funnel-step { display: flex; align-items: center; gap: 12px; width: 100%; }
+  .funnel-bar { height: 36px; border-radius: 6px; display: flex; align-items: center; padding: 0 12px; font-size: 13px; font-weight: bold; color: white; transition: all 0.3s; }
+  .funnel-pct { font-size: 12px; color: #888; min-width: 40px; text-align: right; }
+  .funnel-drop { font-size: 11px; color: #ef5350; text-align: center; padding: 2px 0; }
+
+  /* Pricing Table */
+  .price-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .price-table th { background: #0f3460; color: white; padding: 10px 12px; text-align: center; }
+  .price-table td { padding: 10px 12px; border-bottom: 1px solid #2a2a4a; text-align: center; }
+  .price-table tr:hover { background: #16213e; }
+  .price-table .free { color: #ef5350; font-weight: bold; }
+  .price-table .discount { color: #ffa726; font-weight: bold; }
+  .price-table .normal { color: #888; }
+  .price-table .savings { color: #66bb6a; font-weight: bold; font-size: 14px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding: 16px 0; }
+  .timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #2a2a4a; }
+  .tl-month { display: flex; align-items: center; margin-bottom: 12px; }
+  .tl-left { flex: 1; text-align: right; padding-right: 24px; }
+  .tl-dot { width: 16px; height: 16px; border-radius: 50%; border: 3px solid; position: relative; z-index: 1; flex-shrink: 0; }
+  .tl-right { flex: 1; padding-left: 24px; }
+  .tl-price { font-size: 18px; font-weight: bold; }
+  .tl-orig { text-decoration: line-through; color: #666; font-size: 13px; }
+  .tl-tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+
+  /* Strategy cards */
+  .strategy-card { background: #16213e; border-radius: 10px; padding: 16px; border-left: 4px solid; }
+  .strategy-card.red { border-color: #ef5350; }
+  .strategy-card.orange { border-color: #ffa726; }
+  .strategy-card.green { border-color: #66bb6a; }
+  .strategy-card.blue { border-color: #42a5f5; }
+  .strategy-card h4 { font-size: 14px; margin-bottom: 6px; }
+  .strategy-card p { font-size: 12px; color: #aaa; line-height: 1.6; }
+
+  .note { background: #1e1e3a; border-left: 4px solid #ffa726; padding: 12px 16px; font-size: 13px; margin: 12px 0; border-radius: 0 8px 8px 0; color: #ccc; line-height: 1.6; }
+  .note strong { color: #ffa726; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .tag.red { background: #3e1a1a; color: #ef5350; }
+  .tag.orange { background: #3e2a1a; color: #ffa726; }
+  .tag.green { background: #1a3e1a; color: #66bb6a; }
+  .tag.blue { background: #1a2a3e; color: #42a5f5; }
+  .tag.purple { background: #2a1a3e; color: #ab47bc; }
+
+  .formula { background: #0d0d1a; border: 1px solid #2a2a4a; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; color: #42a5f5; margin: 12px 0; line-height: 1.8; }
+
+  .divider { border: none; border-top: 1px solid #2a2a4a; margin: 20px 0; }
+
+  /* Phone mock */
+  .phone { width: 280px; margin: 0 auto; background: #111; border-radius: 28px; border: 2px solid #444; padding: 40px 12px 24px; position: relative; }
+  .phone::before { content: ''; position: absolute; top: 14px; left: 50%; transform: translateX(-50%); width: 60px; height: 5px; background: #444; border-radius: 3px; }
+  .phone-content { background: #fff; border-radius: 12px; padding: 12px; color: #333; font-size: 12px; }
+  .phone-header { background: linear-gradient(135deg, #1a73e8, #4285f4); color: white; padding: 10px; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 13px; text-align: center; margin: -12px -12px 12px; }
+  .phone .price-line { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+  .phone .price-line.total { border-top: 2px solid #333; border-bottom: none; font-weight: bold; padding-top: 10px; margin-top: 4px; }
+  .phone .strike { text-decoration: line-through; color: #999; font-size: 11px; }
+  .phone .disc { color: #e53935; font-size: 10px; }
+  .phone .info-box { background: #e3f2fd; padding: 8px; border-radius: 6px; font-size: 11px; color: #1565c0; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>&#128202; ダイナミックプライシング × クーポン設計</h1>
+  <p class="subtitle">データドリブンで3ヶ月以上の継続利用を促進するクーポン戦略</p>
+
+  <!-- ==================== 現状データ分析 ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#128200;</span> 現状データ分析</h2>
+    <div class="grid3">
+      <div class="kpi warning">
+        <div class="label">平均継続期間</div>
+        <div class="value">76<span class="unit">日</span></div>
+        <div class="label">約2.5ヶ月</div>
+      </div>
+      <div class="kpi info">
+        <div class="label">最長継続</div>
+        <div class="value">145<span class="unit">日</span></div>
+        <div class="label">約4.8ヶ月</div>
+      </div>
+      <div class="kpi success">
+        <div class="label">目標</div>
+        <div class="value">90<span class="unit">日+</span></div>
+        <div class="label">3ヶ月以上の継続</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 課題の可視化 ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#9888;&#65039;</span> 課題：ユーザー離脱ポイント</h2>
+    <div class="grid2">
+      <div>
+        <h3>継続期間の分布（推定）</h3>
+        <div class="bar-chart">
+          <div class="bar-col">
+            <div class="bar" style="height:95%;background:linear-gradient(#ef5350,#c62828);"><span class="tooltip">~7日: 50%</span></div>
+            <div class="bar-label">~7日</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:30%;background:linear-gradient(#ff7043,#e64a19);"><span class="tooltip">~14日: 15%</span></div>
+            <div class="bar-label">~14日</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:20%;background:linear-gradient(#ffa726,#f57c00);"><span class="tooltip">~30日: 10%</span></div>
+            <div class="bar-label">~1M</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:15%;background:linear-gradient(#ffca28,#f9a825);"><span class="tooltip">~60日: 8%</span></div>
+            <div class="bar-label">~2M</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:18%;background:linear-gradient(#66bb6a,#43a047);"><span class="tooltip">~90日: 9%</span></div>
+            <div class="bar-label">~3M</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:12%;background:linear-gradient(#42a5f5,#1e88e5);"><span class="tooltip">~120日: 5%</span></div>
+            <div class="bar-label">~4M</div>
+          </div>
+          <div class="bar-col">
+            <div class="bar" style="height:6%;background:linear-gradient(#ab47bc,#7b1fa2);"><span class="tooltip">120日+: 3%</span></div>
+            <div class="bar-label">4M+</div>
+          </div>
+        </div>
+        <div class="note" style="margin-top:16px;">
+          <strong>&#128308; 最大の課題：</strong> 平均76日 = <strong>3ヶ月未満で離脱が多い</strong><br>
+          「3ヶ月の壁」を超えられず、短期で解約してしまうユーザーが多い。
+        </div>
+      </div>
+      <div>
+        <h3>離脱ファネル</h3>
+        <div class="funnel">
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:100%;background:linear-gradient(90deg,#1a73e8,#4285f4);">入会 100%</div>
+            <div class="funnel-pct">100%</div>
+          </div>
+          <div class="funnel-drop">&#11015; -50% が1週間以内に離脱</div>
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:50%;background:linear-gradient(90deg,#ef5350,#ff7043);">1週間後 50%</div>
+            <div class="funnel-pct">50%</div>
+          </div>
+          <div class="funnel-drop">&#11015; -15%</div>
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:35%;background:linear-gradient(90deg,#ffa726,#ffca28);">1ヶ月後 35%</div>
+            <div class="funnel-pct">35%</div>
+          </div>
+          <div class="funnel-drop">&#11015; -10%</div>
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:25%;background:linear-gradient(90deg,#66bb6a,#81c784);">2ヶ月後 25%</div>
+            <div class="funnel-pct">25%</div>
+          </div>
+          <div class="funnel-drop">&#11015; -8%</div>
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:17%;background:linear-gradient(90deg,#42a5f5,#64b5f6);">3ヶ月後 17%</div>
+            <div class="funnel-pct">17%</div>
+          </div>
+          <div class="funnel-drop">&#11015; 3ヶ月超えると定着しやすい</div>
+          <div class="funnel-step">
+            <div class="funnel-bar" style="width:14%;background:linear-gradient(90deg,#ab47bc,#ce93d8);">4ヶ月後 14%</div>
+            <div class="funnel-pct">14%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 戦略 ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#127919;</span> ダイナミックプライシング戦略</h2>
+    <div class="note">
+      <strong>基本方針：</strong>「3ヶ月の壁」を超えさせるために、<strong>初期コストを下げて入会ハードルを下げ</strong>、段階的に通常料金に戻す。<br>
+      早く申し込むほどお得 = <strong>「早期申込インセンティブ」</strong>で申込を前倒しさせる。
+    </div>
+
+    <h3 style="margin-top:16px;">割引率の決定ロジック</h3>
+    <div class="formula">
+      &#128161; 考え方<br><br>
+      月額料金 = ¥9,900（税込）の場合<br>
+      <br>
+      &#9312; <strong>早期申込ボーナス</strong>: 開業の何ヶ月前に契約したか<br>
+      &emsp; 3ヶ月前 → 最大割引 / 2ヶ月前 → 中割引 / 1ヶ月前 → 小割引 / 当月 → 通常<br>
+      <br>
+      &#9313; <strong>段階的回復</strong>: 割引は月ごとに減少（徐々に通常料金へ）<br>
+      &emsp; 初月: 最大割引 → 翌月: 中割引 → 翌々月: 小割引 → 4ヶ月目: 通常料金<br>
+      <br>
+      &#9314; <strong>損益分岐</strong>: 3ヶ月利用で会社側の獲得コストを回収<br>
+      &emsp; 割引総額 &lt; 3ヶ月分通常料金 × 粗利率<br>
+      &emsp; 割引総額 &lt; ¥29,700 × 0.6 = ¥17,820 以内に収める
+    </div>
+
+    <div class="grid4" style="margin-top:16px;">
+      <div class="strategy-card red">
+        <h4>&#127937; 第一弾</h4>
+        <p><strong>開業3ヶ月前</strong>に申込<br>最もお得。入会金も無料にして確実にキャッチ。3ヶ月拘束で十分回収可能。</p>
+      </div>
+      <div class="strategy-card orange">
+        <h4>&#127942; 第二弾</h4>
+        <p><strong>開業2ヶ月前</strong>に申込<br>まだお得感あり。初月無料で「お試し」感覚を演出。</p>
+      </div>
+      <div class="strategy-card green">
+        <h4>&#127941; 第三弾</h4>
+        <p><strong>開業1ヶ月前</strong>に申込<br>開業直前の駆け込み。初月無料のみで十分な訴求力。</p>
+      </div>
+      <div class="strategy-card blue">
+        <h4>&#128640; 第四弾</h4>
+        <p><strong>開業当月</strong>に申込<br>通常入会。入会数に応じて動的に割引率決定。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 具体的な料金テーブル ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#128176;</span> 具体的な料金シミュレーション（月額¥9,900の場合）</h2>
+
+    <table class="price-table">
+      <tr>
+        <th>弾</th>
+        <th>申込タイミング</th>
+        <th>入会金<br>¥5,500</th>
+        <th>初月（日割り含む）<br>¥9,900</th>
+        <th>2ヶ月目<br>¥9,900</th>
+        <th>3ヶ月目<br>¥9,900</th>
+        <th>4ヶ月目〜</th>
+        <th>3ヶ月の<br>割引総額</th>
+        <th>3ヶ月の<br>支払総額</th>
+      </tr>
+      <tr>
+        <td><span class="tag red">第一弾</span></td>
+        <td>3ヶ月前</td>
+        <td class="free">¥0 (100%OFF)</td>
+        <td class="free">¥0 (100%OFF)</td>
+        <td class="discount">¥4,950 (50%OFF)</td>
+        <td class="discount">¥5,940 (40%OFF)</td>
+        <td class="normal">通常料金</td>
+        <td class="savings">-¥20,410</td>
+        <td><strong>¥10,890</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag orange">第二弾</span></td>
+        <td>2ヶ月前</td>
+        <td class="free">¥0 (100%OFF)</td>
+        <td class="free">¥0 (100%OFF)</td>
+        <td class="discount">¥5,940 (40%OFF)</td>
+        <td class="discount">¥5,940 (40%OFF)</td>
+        <td class="normal">通常料金</td>
+        <td class="savings">-¥19,420</td>
+        <td><strong>¥11,880</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag green">第三弾</span></td>
+        <td>1ヶ月前</td>
+        <td>¥5,500</td>
+        <td class="free">¥0 (100%OFF)</td>
+        <td class="discount">¥5,940 (40%OFF)</td>
+        <td class="normal">¥9,900</td>
+        <td class="normal">通常料金</td>
+        <td class="savings">-¥13,860</td>
+        <td><strong>¥21,340</strong></td>
+      </tr>
+      <tr>
+        <td><span class="tag blue">第四弾</span></td>
+        <td>当月</td>
+        <td>¥5,500</td>
+        <td>¥9,900</td>
+        <td class="discount">¥5,940 (40%OFF)</td>
+        <td class="normal">¥9,900</td>
+        <td class="normal">通常料金</td>
+        <td class="savings">-¥3,960</td>
+        <td><strong>¥31,240</strong></td>
+      </tr>
+      <tr style="background:#0d0d1a;">
+        <td colspan="2"><strong>割引なし（通常入会）</strong></td>
+        <td>¥5,500</td>
+        <td>¥9,900</td>
+        <td>¥9,900</td>
+        <td>¥9,900</td>
+        <td class="normal">通常料金</td>
+        <td>-</td>
+        <td><strong>¥35,200</strong></td>
+      </tr>
+    </table>
+
+    <div class="grid2" style="margin-top:20px;">
+      <div>
+        <h3>&#128178; 損益分析</h3>
+        <div class="formula">
+          <strong>&#9733; 第一弾の場合（最大割引）</strong><br><br>
+          割引額合計: ¥20,410<br>
+          3ヶ月支払額: ¥10,890<br>
+          <br>
+          &#128308; もし1ヶ月で解約 → 会社損失: -¥5,500（入会金分）<br>
+          &#128992; もし3ヶ月継続 → 会社収益: ¥10,890<br>
+          &#128994; もし6ヶ月継続 → 会社収益: ¥40,590<br>
+          &#128994; もし12ヶ月継続 → 会社収益: ¥99,990<br>
+          <br>
+          <strong>&#10132; 3ヶ月超えれば通常料金に戻るため、
+          長期利用者ほど割引コストを回収できる</strong>
+        </div>
+      </div>
+      <div>
+        <h3>&#128202; 期待値シミュレーション</h3>
+        <div class="formula">
+          <strong>&#9733; クーポン無し（現状）</strong><br>
+          平均76日で解約 → 平均LTV: ¥15,400<br>
+          （入会金¥5,500 + 月額約2.5ヶ月分）<br>
+          3ヶ月未満で離脱するケースが多い<br>
+          <br>
+          <strong>&#9733; 第一弾クーポンあり</strong><br>
+          3ヶ月継続率が 17% → 40% に改善した場合<br>
+          平均LTV: ¥15,400 → <strong style="color:#66bb6a;">¥28,600</strong> (+85%)<br>
+          <br>
+          <strong>&#10132; 入会ハードルを下げて3ヶ月定着させれば
+          割引以上のリターンが得られる</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== タイムライン ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#128197;</span> ユーザー体験タイムライン（第一弾の場合）</h2>
+    <div class="grid2">
+      <div>
+        <div style="padding:8px 0;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ef5350,#ff7043);display:flex;align-items:center;justify-content:center;font-size:20px;">&#128176;</div>
+            <div>
+              <div style="font-weight:bold;">契約時（初回決済）</div>
+              <div style="font-size:12px;color:#888;">入会金¥0 + 初月¥0 + 翌月¥4,950</div>
+            </div>
+            <div style="margin-left:auto;font-size:24px;font-weight:bold;color:#66bb6a;">¥4,950</div>
+          </div>
+
+          <div style="border-left:3px solid #2a2a4a;margin-left:24px;padding-left:24px;">
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span class="tag red">1ヶ月目</span>
+                <span style="font-weight:bold;">無料</span>
+              </div>
+              <div style="font-size:12px;color:#888;">「まずは気軽に試してください」</div>
+              <div style="background:#1a3e1a;border-radius:6px;padding:6px 10px;margin-top:4px;font-size:11px;color:#66bb6a;">
+                &#10003; 施設を知る期間。利用習慣を作る。
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span class="tag orange">2ヶ月目</span>
+                <span style="font-weight:bold;">¥4,950</span> <span style="color:#888;font-size:12px;">(50%OFF)</span>
+              </div>
+              <div style="font-size:12px;color:#888;">「お得な料金で続けてみませんか」</div>
+              <div style="background:#1a3e1a;border-radius:6px;padding:6px 10px;margin-top:4px;font-size:11px;color:#66bb6a;">
+                &#10003; 利用が習慣化。半額なのでお得感継続。
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span class="tag green">3ヶ月目</span>
+                <span style="font-weight:bold;">¥5,940</span> <span style="color:#888;font-size:12px;">(40%OFF)</span>
+              </div>
+              <div style="font-size:12px;color:#888;">「まだまだお得です」</div>
+              <div style="background:#1a3e1a;border-radius:6px;padding:6px 10px;margin-top:4px;font-size:11px;color:#66bb6a;">
+                &#10003; 完全に習慣化。徐々に通常料金へ。
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span class="tag blue">4ヶ月目〜</span>
+                <span style="font-weight:bold;">¥9,900</span> <span style="color:#888;font-size:12px;">(通常料金)</span>
+              </div>
+              <div style="font-size:12px;color:#888;">「習慣になっているので継続」</div>
+              <div style="background:#16213e;border-radius:6px;padding:6px 10px;margin-top:4px;font-size:11px;color:#42a5f5;">
+                &#128974; この時点で習慣化済み → 解約率低下
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3>アプリ画面イメージ（第一弾適用時）</h3>
+        <div class="phone">
+          <div class="phone-content">
+            <div class="phone-header">&#127991; 第一弾キャンペーン適用中</div>
+            <div style="background:#fff3e0;padding:8px;border-radius:6px;margin-bottom:8px;font-size:11px;color:#e65100;font-weight:bold;">
+              &#127881; 3ヶ月前のお申込で最大割引が適用されています！
+            </div>
+            <div style="font-weight:bold;margin-bottom:6px;">初回お支払い</div>
+            <div class="price-line">
+              <span>入会金</span>
+              <span><span class="strike">¥5,500</span> <strong style="color:#e53935;">¥0</strong></span>
+            </div>
+            <div class="price-line">
+              <span>3月分</span>
+              <span><span class="strike">¥9,900</span> <strong style="color:#e53935;">¥0</strong><br><span class="disc">100% OFF</span></span>
+            </div>
+            <div class="price-line">
+              <span>4月分</span>
+              <span><span class="strike">¥9,900</span> ¥4,950<br><span class="disc">50% OFF</span></span>
+            </div>
+            <div class="price-line total">
+              <span>初回合計</span>
+              <span style="color:#e53935;font-size:16px;">¥4,950</span>
+            </div>
+            <div class="info-box">
+              &#128197; 今後のお支払い予定<br>
+              ・5月分: ¥5,940 (40%OFF)<br>
+              ・6月分〜: ¥9,900 (通常料金)
+            </div>
+            <div style="background:#e8f5e9;padding:8px;border-radius:6px;margin-top:8px;font-size:11px;color:#2e7d32;text-align:center;font-weight:bold;">
+              &#128178; 通常より ¥20,410 おトク！
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 実装設計 ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#9881;&#65039;</span> 実装設計：DBテーブルとロジック</h2>
+    <div class="grid2">
+      <div>
+        <h3>CouponDiscountRule テーブル</h3>
+        <table class="price-table" style="text-align:left;">
+          <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+          <tr><td style="color:#ff9800;">id</td><td>Int (PK)</td><td>主キー</td></tr>
+          <tr><td style="color:#42a5f5;">couponId</td><td>Int (FK)</td><td>→ Coupon.id</td></tr>
+          <tr style="background:#1a2a1a;"><td><strong>monthOffset</strong></td><td>Int</td><td>0=初月, 1=翌月, 2=翌々月</td></tr>
+          <tr style="background:#1a2a1a;"><td><strong>discountRate</strong></td><td>Int</td><td>割引率(%) 100=無料</td></tr>
+          <tr style="background:#1a2a1a;"><td><strong>targetType</strong></td><td>String</td><td>monthly / dropin / period_pass / initial_fee</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>料金計算ロジック（変更箇所）</h3>
+        <div class="formula" style="font-size:12px;">
+          <span style="color:#888;">// ShopContractPriceService.ts</span><br><br>
+          <span style="color:#888;">// 1. クーポンにルールがあるか確認</span><br>
+          rules = CouponDiscountRule.findBy(couponId)<br><br>
+          <span style="color:#888;">// 2. 各月の料金に割引適用</span><br>
+          <span style="color:#ef5350;">for</span> (month <span style="color:#ef5350;">in</span> [初月, 翌月, 翌々月]) {<br>
+          &emsp;rule = rules.find(monthOffset == month)<br>
+          &emsp;<span style="color:#ef5350;">if</span> (rule) {<br>
+          &emsp;&emsp;price = price * (1 - rule.discountRate / 100)<br>
+          &emsp;}<br>
+          }<br><br>
+          <span style="color:#888;">// 3. 月次課金バッチでも同様に参照</span><br>
+          monthsSinceStart = diff(now, contract.startDate)<br>
+          rule = rules.find(monthOffset == monthsSinceStart)<br>
+          chargeAmount = rule ? price * (1 - rate/100) : price
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <h3>管理画面でのクーポン作成フロー</h3>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0;">
+      <div style="background:#16213e;border:2px solid #42a5f5;border-radius:8px;padding:12px 16px;text-align:center;font-size:12px;">
+        <div style="font-weight:bold;margin-bottom:4px;">&#9312; クーポン基本情報</div>
+        名前・コード・有効期間
+      </div>
+      <div style="font-size:20px;color:#555;">&#10132;</div>
+      <div style="background:#16213e;border:2px solid #ff9800;border-radius:8px;padding:12px 16px;text-align:center;font-size:12px;">
+        <div style="font-weight:bold;margin-bottom:4px;">&#9313; 月別割引ルール設定</div>
+        初月:100% / 翌月:50% / 翌々月:40%
+      </div>
+      <div style="font-size:20px;color:#555;">&#10132;</div>
+      <div style="background:#16213e;border:2px solid #66bb6a;border-radius:8px;padding:12px 16px;text-align:center;font-size:12px;">
+        <div style="font-weight:bold;margin-bottom:4px;">&#9314; 対象店舗選択</div>
+        ShopHasCouponで紐付
+      </div>
+      <div style="font-size:20px;color:#555;">&#10132;</div>
+      <div style="background:#16213e;border:2px solid #ab47bc;border-radius:8px;padding:12px 16px;text-align:center;font-size:12px;">
+        <div style="font-weight:bold;margin-bottom:4px;">&#9315; プレビューで確認</div>
+        クーポンプレビュー画面
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== まとめ ==================== -->
+  <div class="section">
+    <h2><span class="icon">&#128221;</span> まとめ：なぜこの設計が有効か</h2>
+    <div class="grid3">
+      <div class="strategy-card red">
+        <h4>&#128308; 課題（現状）</h4>
+        <p>
+          ・平均76日（3ヶ月未満）で解約<br>
+          ・短期で離脱するユーザーが多い<br>
+          ・クーポンは入会金にしか効かない<br>
+          ・「3ヶ月の壁」を超えられない
+        </p>
+      </div>
+      <div class="strategy-card orange">
+        <h4>&#128992; 解決策</h4>
+        <p>
+          ・初期コスト¥0で入会ハードル撤廃<br>
+          ・3ヶ月かけて段階的に通常料金へ<br>
+          ・早期申込ほどお得（焦燥感）<br>
+          ・「無料だから試してみよう」を促進
+        </p>
+      </div>
+      <div class="strategy-card green">
+        <h4>&#128994; 期待効果</h4>
+        <p>
+          ・3ヶ月継続率: 17% → 40%+<br>
+          ・平均LTV: ¥15,400 → ¥28,600<br>
+          ・利用習慣の定着<br>
+          ・口コミ・紹介の増加
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

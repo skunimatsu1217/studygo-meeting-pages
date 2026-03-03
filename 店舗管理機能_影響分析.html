@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 店舗管理機能 改善検討</title>
+<style>
+:root {
+  --primary: #1a73e8;
+  --primary-light: #e8f0fe;
+  --danger: #d93025;
+  --danger-light: #fce8e6;
+  --warning: #f9ab00;
+  --warning-light: #fef7e0;
+  --success: #1e8e3e;
+  --success-light: #e6f4ea;
+  --bg: #f8f9fa;
+  --card: #ffffff;
+  --border: #dadce0;
+  --text: #202124;
+  --text-secondary: #5f6368;
+  --purple: #7c3aed;
+  --purple-light: #f3e8ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif; background: var(--bg); color: var(--text); line-height: 1.8; font-size: 14px; }
+
+.header { background: linear-gradient(135deg, #0d9488 0%, #065f46 100%); color: white; padding: 48px 24px 32px; text-align: center; }
+.header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.header p { font-size: 14px; opacity: .85; }
+
+.nav { position: sticky; top: 0; z-index: 100; background: white; border-bottom: 1px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.nav-inner { max-width: 1100px; margin: 0 auto; display: flex; overflow-x: auto; gap: 0; }
+.nav-item { padding: 12px 18px; font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; cursor: pointer; border-bottom: 3px solid transparent; transition: all .2s; text-decoration: none; }
+.nav-item:hover { color: #0d9488; background: #f0fdfa; }
+.nav-item.active { color: #0d9488; border-bottom-color: #0d9488; background: #f0fdfa; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; }
+.section { padding: 32px 0; scroll-margin-top: 56px; }
+.section-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 10px; }
+.section-desc { color: var(--text-secondary); margin-bottom: 24px; font-size: 13px; }
+
+.stat-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
+.stat-item { flex: 1; min-width: 140px; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 18px 16px; text-align: center; }
+.stat-item .num { font-size: 32px; font-weight: 800; }
+.stat-item .label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.stat-item.red .num { color: var(--danger); }
+.stat-item.orange .num { color: #b45309; }
+.stat-item.teal .num { color: #0d9488; }
+.stat-item.green .num { color: var(--success); }
+.stat-item.purple .num { color: var(--purple); }
+
+.decision-card { background: white; border: 2px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 16px; transition: box-shadow .2s; }
+.decision-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+.decision-card.must { border-left: 5px solid var(--danger); }
+.decision-card.should { border-left: 5px solid var(--warning); }
+.decision-card.nice { border-left: 5px solid var(--primary); }
+.decision-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+.decision-header h3 { font-size: 16px; font-weight: 700; }
+.decision-body { padding: 0 20px 18px; }
+.decision-body > p { color: var(--text-secondary); font-size: 13px; margin-bottom: 14px; }
+
+.priority { display: inline-flex; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.priority-must { background: var(--danger-light); color: var(--danger); }
+.priority-should { background: var(--warning-light); color: #b45309; }
+.priority-nice { background: var(--primary-light); color: var(--primary); }
+
+.options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+.option-item { position: relative; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; background: var(--bg); transition: all .2s; }
+.option-item:hover { border-color: #0d9488; background: #f0fdfa; }
+.option-item.recommended { border-color: #0d9488; background: #f0fdfa; }
+.option-item.recommended::after { content: 'おすすめ'; position: absolute; top: -8px; right: 10px; background: #0d9488; color: white; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+.option-item strong { display: block; font-size: 13px; margin-bottom: 4px; }
+.option-item span { font-size: 12px; color: var(--text-secondary); }
+
+.card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.card h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+
+.summary-box { padding: 20px; border-radius: 12px; margin-bottom: 16px; }
+.summary-box.info { background: #f0fdfa; border: 1px solid #99f6e4; }
+.summary-box.warn { background: var(--warning-light); border: 1px solid #ffe082; }
+.summary-box.danger { background: var(--danger-light); border: 1px solid #ef9a9a; }
+.summary-box.success { background: var(--success-light); border: 1px solid #a5d6a7; }
+.summary-box strong { display: block; margin-bottom: 6px; }
+.summary-box p { font-size: 13px; color: var(--text-secondary); }
+
+.impact-list { display: flex; flex-direction: column; gap: 2px; }
+.impact-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: white; border: 1px solid var(--border); border-radius: 10px; }
+.impact-badge { min-width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: white; }
+.impact-badge.high { background: var(--danger); }
+.impact-badge.mid { background: var(--warning); }
+.impact-badge.low { background: var(--success); }
+.impact-content { flex: 1; }
+.impact-content strong { font-size: 14px; display: block; margin-bottom: 2px; }
+.impact-content p { font-size: 12px; color: var(--text-secondary); margin: 0; }
+.impact-tags { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+.tag-db { background: #ede7f6; color: #4527a0; }
+.tag-api { background: #e3f2fd; color: #1565c0; }
+.tag-app { background: #e8f5e9; color: #2e7d32; }
+.tag-front { background: #fff3e0; color: #e65100; }
+.tag-stripe { background: #fce4ec; color: #c62828; }
+.tag-batch { background: #e0f2f1; color: #00695c; }
+.tag-alliance { background: #f3e8ff; color: #7c3aed; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+.phase-card { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; background: white; }
+.phase-header { padding: 14px 20px; font-weight: 700; font-size: 15px; }
+.phase-header.p1 { background: var(--danger-light); color: var(--danger); }
+.phase-header.p2 { background: var(--warning-light); color: #92400e; }
+.phase-header.p3 { background: #f0fdfa; color: #0d9488; }
+.phase-header.p4 { background: var(--success-light); color: var(--success); }
+.phase-body { padding: 16px 20px; }
+.phase-body li { padding: 6px 0; border-bottom: 1px solid #f1f1f1; font-size: 13px; list-style: none; }
+.phase-body li:last-child { border-bottom: none; }
+.phase-body li::before { content: '☐ '; color: var(--text-secondary); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+table th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 700; border-bottom: 2px solid var(--border); }
+table td { padding: 10px 12px; border-bottom: 1px solid #f1f1f1; }
+table tr:hover { background: #fafafa; }
+
+.flow-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+.flow-step { background: white; border: 2px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; text-align: center; min-width: 120px; }
+.flow-step.current { border-color: var(--danger); background: var(--danger-light); color: var(--danger); }
+.flow-step.new { border-color: #0d9488; background: #f0fdfa; color: #0d9488; }
+.flow-arrow { font-size: 18px; color: var(--text-secondary); }
+
+details { background: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+details summary { padding: 14px 20px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+details summary::marker { content: ''; }
+details summary::before { content: '▶'; font-size: 10px; transition: transform .2s; color: var(--text-secondary); }
+details[open] summary::before { transform: rotate(90deg); }
+details .details-body { padding: 0 20px 16px; }
+
+.perm-table td:first-child { font-weight: 600; white-space: nowrap; }
+.status-yes { color: var(--success); font-weight: 700; }
+.status-no { color: var(--danger); font-weight: 700; }
+.status-new { color: #0d9488; font-weight: 700; }
+.status-review { color: var(--warning); font-weight: 700; }
+
+.toc-btn { position: fixed; bottom: 24px; right: 24px; width: 48px; height: 48px; border-radius: 50%; background: #0d9488; color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.2); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.toc-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.3); z-index: 300; display: none; }
+.toc-overlay.show { display: block; }
+.toc-panel { position: fixed; top: 0; right: 0; width: 320px; height: 100%; background: white; z-index: 301; padding: 24px; overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,.1); }
+.toc-panel h3 { font-size: 16px; margin-bottom: 16px; }
+.toc-panel a { display: block; padding: 8px 0; color: var(--text); text-decoration: none; font-size: 13px; border-bottom: 1px solid #f1f1f1; }
+.toc-panel a:hover { color: #0d9488; }
+.toc-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-secondary); }
+
+.field-group { margin-bottom: 16px; }
+.field-group h5 { font-size: 13px; font-weight: 700; color: #0d9488; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #99f6e4; }
+.field-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.field-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 8px; font-size: 12px; background: #f1f5f9; border: 1px solid var(--border); }
+.field-chip.excel { background: #e8f5e9; border-color: #a5d6a7; }
+.field-chip.admin { background: #e3f2fd; border-color: #90caf9; }
+.field-chip.readonly { background: #fafafa; border-color: #e0e0e0; color: var(--text-secondary); }
+.field-chip.new-field { background: #f0fdfa; border-color: #5eead4; color: #0d9488; font-weight: 600; }
+
+@media (max-width: 768px) {
+  .header h1 { font-size: 22px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+  .stat-row { gap: 8px; }
+  .stat-item { min-width: 100px; padding: 12px; }
+  .stat-item .num { font-size: 24px; }
+  .flow-row { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>店舗管理機能 改善検討</h1>
+  <p>Excel運用 → 管理画面化 / データ項目拡充 / 店舗による自主編集</p>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="nav-item active" href="#decisions" onclick="scrollTo_('decisions')">まず決めること</a>
+    <a class="nav-item" href="#current" onclick="scrollTo_('current')">現状の課題</a>
+    <a class="nav-item" href="#scope" onclick="scrollTo_('scope')">編集項目の整理</a>
+    <a class="nav-item" href="#permission" onclick="scrollTo_('permission')">権限設計</a>
+    <a class="nav-item" href="#impact" onclick="scrollTo_('impact')">影響範囲</a>
+    <a class="nav-item" href="#approval" onclick="scrollTo_('approval')">承認フロー</a>
+    <a class="nav-item" href="#roadmap" onclick="scrollTo_('roadmap')">実装ロードマップ</a>
+    <a class="nav-item" href="#reference" onclick="scrollTo_('reference')">現行システム参考</a>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============================================ -->
+<!-- セクション1: まず決めること -->
+<!-- ============================================ -->
+<div class="section" id="decisions">
+  <h2 class="section-title">📋 まず決めること</h2>
+  <p class="section-desc">店舗管理機能の改善にあたり、先に決めておくべき項目を優先度順にまとめています。</p>
+
+  <div class="stat-row">
+    <div class="stat-item red"><div class="num">4</div><div class="label">必須で決めること</div></div>
+    <div class="stat-item orange"><div class="num">3</div><div class="label">推奨</div></div>
+    <div class="stat-item teal"><div class="num">2</div><div class="label">後から決めてOK</div></div>
+  </div>
+
+  <!-- 必須1: 店舗編集の範囲 -->
+  <div class="decision-card must">
+    <div class="decision-header">
+      <h3>店舗が自分で編集できる範囲</h3>
+      <span class="priority priority-must">必須</span>
+    </div>
+    <div class="decision-body">
+      <p>加盟法人（店舗オーナー）が管理画面から直接編集できるデータの範囲を決める必要があります。範囲が広いほど運用は楽になりますが、不適切な変更リスクも上がります。</p>
+      <div class="options-grid">
+        <div class="option-item">
+          <strong>最小限（テキストのみ）</strong>
+          <span>紹介文・アクセス情報・営業時間テキストなど、表示系のテキストだけ編集可能</span>
+        </div>
+        <div class="option-item recommended">
+          <strong>標準（テキスト＋画像＋設定）</strong>
+          <span>紹介文・画像・営業時間・各種フラグ（見学予約可否等）を編集可能。金額はスタディGO側で管理</span>
+        </div>
+        <div class="option-item">
+          <strong>フル（金額含む）</strong>
+          <span>上記に加え、プラン金額・ドロップイン料金も店舗が変更可能。Stripe連携の考慮が必要</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 必須2: 金額変更時の既存契約 -->
+  <div class="decision-card must">
+    <div class="decision-header">
+      <h3>プラン金額変更時の既存契約への影響</h3>
+      <span class="priority priority-must">必須</span>
+    </div>
+    <div class="decision-body">
+      <p>月額プランの金額を変更した場合、既に契約中のユーザーにどう影響するかを決める必要があります。Stripeのサブスクリプション金額にも関わります。</p>
+      <div class="options-grid">
+        <div class="option-item recommended">
+          <strong>新規契約のみ適用</strong>
+          <span>既存ユーザーは変更前の金額で継続。最も安全でトラブルが少ない</span>
+        </div>
+        <div class="option-item">
+          <strong>次回更新時から適用</strong>
+          <span>既存ユーザーも次の更新タイミングで新金額に。事前通知が必要</span>
+        </div>
+        <div class="option-item">
+          <strong>即時反映</strong>
+          <span>全ユーザーに即座に反映。Stripeサブスクリプションの一括変更が必要。トラブルリスク高</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 必須3: 承認フロー -->
+  <div class="decision-card must">
+    <div class="decision-header">
+      <h3>変更時の承認フローの有無</h3>
+      <span class="priority priority-must">必須</span>
+    </div>
+    <div class="decision-body">
+      <p>店舗が編集した内容を即座に反映するか、スタディGO運営側の承認を挟むかを決めます。</p>
+      <div class="options-grid">
+        <div class="option-item">
+          <strong>承認なし（即時反映）</strong>
+          <span>店舗が保存した瞬間にアプリ・Web に反映。運用負荷ゼロだが不適切な変更リスクあり</span>
+        </div>
+        <div class="option-item recommended">
+          <strong>項目別の承認</strong>
+          <span>テキスト・画像は即時反映、金額・プランは承認必要。バランスが良い</span>
+        </div>
+        <div class="option-item">
+          <strong>全て承認必要</strong>
+          <span>全変更をスタディGO運営が確認してから反映。安全だが運用負荷が高い</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 必須4: Excel運用の廃止タイミング -->
+  <div class="decision-card must">
+    <div class="decision-header">
+      <h3>Excel取り込み機能の扱い</h3>
+      <span class="priority priority-must">必須</span>
+    </div>
+    <div class="decision-body">
+      <p>管理画面で登録できるようにした後、既存のExcel取り込み機能をどうするかを決めます。</p>
+      <div class="options-grid">
+        <div class="option-item">
+          <strong>即時廃止</strong>
+          <span>管理画面リリースと同時にExcel取り込みを無効化。移行コスト小だが一括変更ができなくなる</span>
+        </div>
+        <div class="option-item recommended">
+          <strong>並行運用 → 段階廃止</strong>
+          <span>しばらく両方使えるようにし、管理画面が安定してからExcelを廃止</span>
+        </div>
+        <div class="option-item">
+          <strong>永続的に両方維持</strong>
+          <span>大量一括変更用にExcelも残す。メンテナンスコストが倍になる</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 推奨1: 新規データ項目 -->
+  <div class="decision-card should">
+    <div class="decision-header">
+      <h3>追加するデータ項目</h3>
+      <span class="priority priority-should">推奨</span>
+    </div>
+    <div class="decision-body">
+      <p>現在のShopモデルには109フィールドがありますが、ユーザー体験向上のために追加すべき項目があります。</p>
+      <div class="options-grid">
+        <div class="option-item recommended">
+          <strong>設備・サービス詳細</strong>
+          <span>WiFi速度、電源口数、飲食可否、個室有無、モニター有無などの詳細フィールド</span>
+        </div>
+        <div class="option-item">
+          <strong>SNS・外部リンク</strong>
+          <span>店舗のSNSアカウント、Googleマップリンク、公式サイトURLなど</span>
+        </div>
+        <div class="option-item">
+          <strong>混雑状況</strong>
+          <span>リアルタイム混雑度表示、曜日別混雑傾向データ</span>
+        </div>
+        <div class="option-item">
+          <strong>イベント・キャンペーン</strong>
+          <span>店舗独自のイベント情報、キャンペーン告知エリア</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 推奨2: 画像管理 -->
+  <div class="decision-card should">
+    <div class="decision-header">
+      <h3>画像アップロードの方式</h3>
+      <span class="priority priority-should">推奨</span>
+    </div>
+    <div class="decision-body">
+      <p>現在は画像をZIPファイルで一括取り込みしています。管理画面から個別にアップロードできるようにする方式を決めます。</p>
+      <div class="options-grid">
+        <div class="option-item recommended">
+          <strong>ドラッグ&ドロップ個別アップ</strong>
+          <span>画像を1枚ずつまたは複数まとめてアップロード。並び替え・削除も可能。最も直感的</span>
+        </div>
+        <div class="option-item">
+          <strong>ZIP＋個別アップ併用</strong>
+          <span>初回は一括ZIP、追加・差し替えは個別アップロード</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 推奨3: 営業時間の管理方式 -->
+  <div class="decision-card should">
+    <div class="decision-header">
+      <h3>営業時間の管理方式</h3>
+      <span class="priority priority-should">推奨</span>
+    </div>
+    <div class="decision-body">
+      <p>現在の営業時間管理はShopBusinessHourRule（期間ルール）とShopBusinessHour（曜日別）の2層構造です。店舗が自分で変更できるUIの複雑さを決めます。</p>
+      <div class="options-grid">
+        <div class="option-item">
+          <strong>テキスト表示のみ</strong>
+          <span>openHourフィールド（テキスト）だけ編集。実際のシステム営業時間はスタディGO側で変更</span>
+        </div>
+        <div class="option-item recommended">
+          <strong>カレンダーUI</strong>
+          <span>曜日別の営業時間をカレンダー形式で設定。臨時休業・特別営業日も登録可能</span>
+        </div>
+        <div class="option-item">
+          <strong>テンプレート選択式</strong>
+          <span>よくある営業パターン（平日9-22 / 全日24H等）から選択。カスタマイズも可</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 後から可1: 変更履歴 -->
+  <div class="decision-card nice">
+    <div class="decision-header">
+      <h3>変更履歴の保持</h3>
+      <span class="priority priority-nice">後から可</span>
+    </div>
+    <div class="decision-body">
+      <p>誰がいつ何を変更したかの履歴を保持するかどうか。トラブル時の原因調査に役立ちます。</p>
+      <div class="options-grid">
+        <div class="option-item recommended">
+          <strong>主要項目のみ記録</strong>
+          <span>金額・ステータス・プラン変更のみ履歴を残す。ストレージ効率が良い</span>
+        </div>
+        <div class="option-item">
+          <strong>全変更を記録</strong>
+          <span>全フィールドの変更を差分で記録。監査ログとして完全だがデータ量が多い</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 後から可2: 多言語対応 -->
+  <div class="decision-card nice">
+    <div class="decision-header">
+      <h3>多言語対応の必要性</h3>
+      <span class="priority priority-nice">後から可</span>
+    </div>
+    <div class="decision-body">
+      <p>店舗紹介文やプラン名を多言語で登録できるようにするかどうか。</p>
+      <div class="options-grid">
+        <div class="option-item recommended">
+          <strong>日本語のみ</strong>
+          <span>当面は日本語のみ。将来的にフィールド追加で対応可能な設計にしておく</span>
+        </div>
+        <div class="option-item">
+          <strong>日英対応</strong>
+          <span>全テキストフィールドに英語版を追加。インバウンド需要に対応</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション2: 現状の課題 -->
+<!-- ============================================ -->
+<div class="section" id="current">
+  <h2 class="section-title">⚠️ 現状の課題</h2>
+  <p class="section-desc">店舗情報管理における現在の運用上の問題点です。</p>
+
+  <div class="summary-box danger">
+    <strong>現在の運用フロー</strong>
+    <p>店舗情報の登録・変更はすべてExcelシートで行い、スタディGO運営がバッチ取り込みを実行しています。店舗側からの変更依頼は、メール・電話で連絡 → スタディGO側がExcelを修正 → バッチ実行、という手順が必要です。</p>
+  </div>
+
+  <div class="flow-row">
+    <div class="flow-step current">店舗から<br>変更依頼</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step current">スタディGO<br>Excel修正</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step current">バッチ<br>取り込み実行</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step current">反映確認</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>🔴 Excel運用の問題点</h4>
+      <ul style="font-size:13px; padding-left:20px;">
+        <li><strong>リアルタイム性がない</strong> — 変更依頼からアプリ反映まで時間がかかる</li>
+        <li><strong>運用負荷が高い</strong> — スタディGO側で毎回Excelを編集・取り込みする必要がある</li>
+        <li><strong>ミスが起きやすい</strong> — 手作業でのデータ入力、シート間の整合性チェックが困難</li>
+        <li><strong>スケールしない</strong> — 店舗数が増えると運用が追いつかなくなる</li>
+        <li><strong>バージョン管理が難しい</strong> — 誰がいつ何を変えたか追跡できない</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>🔴 管理画面の制約</h4>
+      <ul style="font-size:13px; padding-left:20px;">
+        <li><strong>編集できる項目が少ない</strong> — 紹介文・チェックイン方法・各種フラグ程度</li>
+        <li><strong>店舗基本情報は読み取り専用</strong> — 名称・住所・座席数・料金は変更不可</li>
+        <li><strong>画像管理がZIP一括のみ</strong> — 1枚だけ差し替えたくてもZIPで再アップが必要</li>
+        <li><strong>プラン金額の変更ができない</strong> — Excel取り込みでしか変更不可</li>
+        <li><strong>店舗（加盟法人）用の管理画面がない</strong> — 全てスタディGO運営が操作</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="summary-box info">
+    <strong>改善後のフロー（目標）</strong>
+    <p>店舗オーナーが自分の管理画面から直接データを編集し、即座に（または承認後に）アプリ・Webに反映されるようにします。</p>
+  </div>
+
+  <div class="flow-row">
+    <div class="flow-step new">店舗が<br>管理画面で編集</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step new">承認<br>（必要な項目のみ）</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step new">即時反映</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション3: 編集項目の整理 -->
+<!-- ============================================ -->
+<div class="section" id="scope">
+  <h2 class="section-title">📝 編集項目の整理</h2>
+  <p class="section-desc">現在のShopモデル（109フィールド）を元に、管理画面で扱うべき項目を整理します。</p>
+
+  <div class="summary-box info">
+    <strong>凡例</strong>
+    <p>
+      <span class="field-chip excel">Excel取込</span> = 現在Excelで取り込んでいる項目
+      <span class="field-chip admin">管理画面</span> = 現在管理画面で編集できる項目
+      <span class="field-chip readonly">読取専用</span> = システムが自動計算する項目
+      <span class="field-chip new-field">追加候補</span> = 新規追加を検討すべき項目
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="field-group">
+      <h5>基本情報（店舗の識別）</h5>
+      <div class="field-list">
+        <span class="field-chip excel">店舗コード (code)</span>
+        <span class="field-chip excel">店舗名 (name)</span>
+        <span class="field-chip excel">サブ店舗名 (subName)</span>
+        <span class="field-chip readonly">QRコード (qrCode)</span>
+        <span class="field-chip excel">メールアドレス (email)</span>
+        <span class="field-chip excel">電話番号 (phone)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>所在地・アクセス</h5>
+      <div class="field-list">
+        <span class="field-chip excel">都道府県 (prefecture)</span>
+        <span class="field-chip excel">市区町村 (city)</span>
+        <span class="field-chip excel">住所 (address)</span>
+        <span class="field-chip excel">ビル名 (address2)</span>
+        <span class="field-chip excel">緯度 (latitude)</span>
+        <span class="field-chip excel">経度 (longitude)</span>
+        <span class="field-chip excel">アクセス (accessWay)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>紹介文・説明テキスト ← 店舗編集のメイン対象</h5>
+      <div class="field-list">
+        <span class="field-chip excel">キャッチコピー (catchCopy)</span>
+        <span class="field-chip admin">紹介文 (description)</span>
+        <span class="field-chip excel">座席案内 (seatDescription)</span>
+        <span class="field-chip excel">利用ルール (ruleDescription)</span>
+        <span class="field-chip excel">備考 (note)</span>
+        <span class="field-chip excel">受付情報 (receptionDescription)</span>
+        <span class="field-chip admin">チェックイン方法 (checkInNote)</span>
+        <span class="field-chip admin">契約注意事項 (contractAttentionNote)</span>
+        <span class="field-chip excel">利用規約 (termsOfUse)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>営業時間・休日</h5>
+      <div class="field-list">
+        <span class="field-chip excel">営業時間テキスト (openHour)</span>
+        <span class="field-chip excel">定休日 (holiday)</span>
+        <span class="field-chip excel">開業日 (openedAt)</span>
+        <span class="field-chip readonly">営業時間ルール (ShopBusinessHourRule)</span>
+        <span class="field-chip readonly">曜日別営業時間 (ShopBusinessHour)</span>
+        <span class="field-chip readonly">営業時間例外 (ShopBusinessHourException)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>料金・プラン ← 金額変更の影響が大きい</h5>
+      <div class="field-list">
+        <span class="field-chip excel">都度利用 1分あたり (pricePerMinute)</span>
+        <span class="field-chip excel">1日最大料金 (maxPricePerDay)</span>
+        <span class="field-chip excel">初期費用 (initialCost)</span>
+        <span class="field-chip excel">初期費用名 (initialCostName)</span>
+        <span class="field-chip excel">初期費用備考 (initialCostNote)</span>
+        <span class="field-chip excel">契約可能年齢 (minimumAge)</span>
+        <span class="field-chip readonly">月額プラン (ShopPlan planType=1)</span>
+        <span class="field-chip readonly">ドロップインプラン (ShopPlan planType=2)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>座席・設備</h5>
+      <div class="field-list">
+        <span class="field-chip excel">施設席数 (seatQuantity)</span>
+        <span class="field-chip excel">割当数 (assignedSeatQuantity)</span>
+        <span class="field-chip new-field">WiFi速度</span>
+        <span class="field-chip new-field">電源口数</span>
+        <span class="field-chip new-field">個室有無</span>
+        <span class="field-chip new-field">モニター有無</span>
+        <span class="field-chip new-field">飲食可否</span>
+        <span class="field-chip new-field">駐車場</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>分類・カテゴリ</h5>
+      <div class="field-list">
+        <span class="field-chip excel">利用タイプ (usageType)</span>
+        <span class="field-chip excel">店舗タイプ (shopType)</span>
+        <span class="field-chip excel">規模 (sizeType)</span>
+        <span class="field-chip excel">雰囲気 (atmosphereType)</span>
+        <span class="field-chip excel">トイレ (bathroomType)</span>
+        <span class="field-chip excel">スタッフ (staffType)</span>
+        <span class="field-chip excel">駅徒歩 (walkFromStationType)</span>
+        <span class="field-chip excel">立地 (locationType)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>各種フラグ・設定</h5>
+      <div class="field-list">
+        <span class="field-chip admin">公開/非公開 (isActive)</span>
+        <span class="field-chip admin">月額申込可能 (canApplyMonthly)</span>
+        <span class="field-chip admin">時間利用可能 (canUseHourly)</span>
+        <span class="field-chip admin">見学予約可能 (canReservePreview)</span>
+        <span class="field-chip admin">店舗解約手続き必要 (resignAtShop)</span>
+        <span class="field-chip admin">契約承認必要 (requiresApprovalForContract)</span>
+        <span class="field-chip admin">ドア開閉可能 (canOpenDoor)</span>
+        <span class="field-chip admin">SoloTime (isSoloTime)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>画像</h5>
+      <div class="field-list">
+        <span class="field-chip readonly">メイン画像 (mainImageCount)</span>
+        <span class="field-chip readonly">設備画像 (facilityImageCount)</span>
+        <span class="field-chip readonly">座席画像 (seatImageCount)</span>
+        <span class="field-chip new-field">画像説明テキスト</span>
+        <span class="field-chip new-field">動画URL</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>統計・実績（自動計算 - 編集不可）</h5>
+      <div class="field-list">
+        <span class="field-chip readonly">レビュー数 (reviewCount)</span>
+        <span class="field-chip readonly">レビュー平均 (reviewStar)</span>
+        <span class="field-chip readonly">先月売上 (lastMonthSales)</span>
+        <span class="field-chip readonly">現在利用人数 (currentUsageCount)</span>
+        <span class="field-chip readonly">平均契約日数 (averageContractedDays)</span>
+        <span class="field-chip readonly">先月契約数 (monthlyContractCountInLastMonth)</span>
+        <span class="field-chip readonly">先月見学予約 (previewReservationCountInLastMonth)</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <h5>追加候補: 外部リンク・SNS</h5>
+      <div class="field-list">
+        <span class="field-chip new-field">公式サイトURL</span>
+        <span class="field-chip new-field">Googleマップリンク</span>
+        <span class="field-chip new-field">X (Twitter)</span>
+        <span class="field-chip new-field">Instagram</span>
+        <span class="field-chip new-field">LINE公式</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション4: 権限設計 -->
+<!-- ============================================ -->
+<div class="section" id="permission">
+  <h2 class="section-title">🔐 権限設計</h2>
+  <p class="section-desc">「誰が」「何を」編集できるかの権限マトリクスです。</p>
+
+  <div class="summary-box warn">
+    <strong>現状の権限</strong>
+    <p>現在はスタディGO運営の管理者アカウントのみが管理画面を操作できます。加盟法人（店舗）用の管理画面は存在しません。allianceページ（加盟法人ポータル）は存在しますが、店舗情報編集機能はありません。</p>
+  </div>
+
+  <div class="card" style="overflow-x:auto;">
+    <h4>権限マトリクス（提案）</h4>
+    <table class="perm-table">
+      <thead>
+        <tr>
+          <th>データ項目</th>
+          <th>スタディGO<br>運営（管理者）</th>
+          <th>加盟法人<br>（店舗オーナー）</th>
+          <th>承認</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">基本情報</td></tr>
+        <tr>
+          <td>店舗コード・店舗名</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-no">閲覧のみ</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>メールアドレス・電話番号</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+        <tr>
+          <td>住所・アクセス</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">紹介・テキスト</td></tr>
+        <tr>
+          <td>キャッチコピー・紹介文</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+        <tr>
+          <td>座席案内・利用ルール</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+        <tr>
+          <td>チェックイン方法・注意事項</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">料金・プラン</td></tr>
+        <tr>
+          <td>ドロップイン料金（分単価・日最大）</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+        <tr>
+          <td>月額プラン金額</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+        <tr>
+          <td>初期費用</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+        <tr>
+          <td>新規プラン作成</td>
+          <td class="status-yes">作成可</td>
+          <td class="status-new">作成可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">画像</td></tr>
+        <tr>
+          <td>メイン画像・設備画像・座席画像</td>
+          <td class="status-yes">アップ可</td>
+          <td class="status-new">アップ可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">営業設定</td></tr>
+        <tr>
+          <td>営業時間テキスト</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+        <tr>
+          <td>営業時間ルール（システム）</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-no">閲覧のみ</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>臨時休業日</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td>即時反映</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">各種フラグ</td></tr>
+        <tr>
+          <td>月額申込・時間利用・見学予約の可否</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+        <tr>
+          <td>公開/非公開</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-no">閲覧のみ</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td>契約承認必要・店舗解約手続き</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-new">編集可（新規）</td>
+          <td class="status-review">要承認</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">分類・カテゴリ</td></tr>
+        <tr>
+          <td>店舗タイプ・規模・雰囲気等</td>
+          <td class="status-yes">編集可</td>
+          <td class="status-no">閲覧のみ</td>
+          <td>—</td>
+        </tr>
+
+        <tr><td colspan="4" style="background:#f1f5f9; font-weight:700;">統計</td></tr>
+        <tr>
+          <td>売上・利用数・レビュー等</td>
+          <td class="status-yes">閲覧可</td>
+          <td class="status-new">閲覧可（新規）</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション5: 影響範囲 -->
+<!-- ============================================ -->
+<div class="section" id="impact">
+  <h2 class="section-title">💥 影響範囲</h2>
+  <p class="section-desc">この改善で変更が必要なシステムコンポーネントの一覧です。</p>
+
+  <div class="stat-row">
+    <div class="stat-item red"><div class="num">5</div><div class="label">影響度 高</div></div>
+    <div class="stat-item orange"><div class="num">6</div><div class="label">影響度 中</div></div>
+    <div class="stat-item green"><div class="num">5</div><div class="label">影響度 低</div></div>
+  </div>
+
+  <div class="impact-list" style="gap:8px;">
+
+    <!-- 影響度 高 -->
+    <div class="impact-item">
+      <div class="impact-badge high">高</div>
+      <div class="impact-content">
+        <strong>加盟法人ポータル（alliance）に店舗編集画面を新規作成</strong>
+        <p>現在の alliance ページに店舗情報編集機能を追加。基本情報・紹介文・画像・プラン・営業時間の各タブが必要。最も工数が大きい。</p>
+        <div class="impact-tags">
+          <span class="tag tag-front">管理画面</span>
+          <span class="tag tag-alliance">加盟法人ポータル</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge high">高</div>
+      <div class="impact-content">
+        <strong>adminSaveShop API の拡張</strong>
+        <p>現在は13項目のみ更新可能（isActive, description, checkInNote等）。住所・料金・席数・画像など48以上のフィールドを更新可能にする必要がある。バリデーション追加も必要。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-db">DB</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge high">高</div>
+      <div class="impact-content">
+        <strong>プラン金額変更機能（Stripe連携）</strong>
+        <p>ShopPlanの金額を変更した場合、Stripeの商品（Product）・価格（Price）オブジェクトの更新が必要。既存サブスクリプションへの影響も考慮が必要。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-stripe">Stripe</span>
+          <span class="tag tag-db">DB</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge high">高</div>
+      <div class="impact-content">
+        <strong>画像の個別アップロード機能</strong>
+        <p>現在はZIP一括取り込みのみ（adminImportImageZip）。S3への個別アップロード・削除・並び替えAPIが必要。画像リサイズ・フォーマット変換も考慮。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-front">管理画面</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge high">高</div>
+      <div class="impact-content">
+        <strong>承認ワークフロー機能の新規開発</strong>
+        <p>店舗が変更した金額・プランなどの承認待ちキュー、スタディGO運営への通知、承認/却下画面の新規開発が必要。DBに承認テーブルも追加。</p>
+        <div class="impact-tags">
+          <span class="tag tag-db">DB</span>
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-front">管理画面</span>
+          <span class="tag tag-alliance">加盟法人ポータル</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 影響度 中 -->
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>Shopモデルに新規フィールド追加（DB マイグレーション）</strong>
+        <p>WiFi速度・電源口数・SNSリンク・動画URL等の新規カラムをShopテーブルに追加。マイグレーションの実行が必要。</p>
+        <div class="impact-tags">
+          <span class="tag tag-db">DB</span>
+          <span class="tag tag-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>管理画面の店舗編集ページ拡張</strong>
+        <p>現在のadmin側 shops/edit/[id] ページでも、新しく追加されたフィールドの編集UIが必要。既存の読み取り専用フィールドを編集可能に変更。</p>
+        <div class="impact-tags">
+          <span class="tag tag-front">管理画面</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>ShopPlan CRUD API の新規作成</strong>
+        <p>現在プランの作成・編集はExcel取り込みのみ。管理画面からプランを追加・編集・削除するAPIが必要。Stripeとの同期処理も含む。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-stripe">Stripe</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>変更履歴テーブルの追加</strong>
+        <p>ShopChangeLogテーブルを新規作成。誰が・いつ・何を・どう変えたかを記録。管理画面から変更履歴を閲覧できるUIも必要。</p>
+        <div class="impact-tags">
+          <span class="tag tag-db">DB</span>
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-front">管理画面</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>加盟法人アカウントの権限拡張</strong>
+        <p>既存の alliance ユーザー認証に、店舗情報編集権限を追加。companyId による閲覧・編集範囲の制限も必要。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-alliance">加盟法人ポータル</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge mid">中</div>
+      <div class="impact-content">
+        <strong>Excel取り込みバッチとの整合性管理</strong>
+        <p>管理画面とExcelの両方から更新される過渡期に、データの整合性を保つ仕組みが必要。最終更新元の記録、競合検知など。</p>
+        <div class="impact-tags">
+          <span class="tag tag-batch">バッチ</span>
+          <span class="tag tag-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 影響度 低 -->
+    <div class="impact-item">
+      <div class="impact-badge low">低</div>
+      <div class="impact-content">
+        <strong>アプリ側の店舗詳細表示の拡充</strong>
+        <p>新規追加フィールド（WiFi速度、電源口数等）のアプリ表示。APIレスポンスに含めるだけで対応可能。</p>
+        <div class="impact-tags">
+          <span class="tag tag-app">アプリ</span>
+          <span class="tag tag-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge low">低</div>
+      <div class="impact-content">
+        <strong>Webフロント（LP等）での新フィールド表示</strong>
+        <p>店舗詳細ページに追加フィールドを表示。既存のページ構成をほぼ変えずに項目追加で対応。</p>
+        <div class="impact-tags">
+          <span class="tag tag-front">フロント</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge low">低</div>
+      <div class="impact-content">
+        <strong>メール通知（承認依頼・承認完了）</strong>
+        <p>金額変更の承認依頼メールをスタディGO運営へ、承認完了メールを店舗へ送信。既存のメール送信基盤を利用。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge low">低</div>
+      <div class="impact-content">
+        <strong>データエクスポートの項目追加</strong>
+        <p>adminExportDataExcel に新規フィールドを追加。既存のエクスポート基盤に列を追加するだけ。</p>
+        <div class="impact-tags">
+          <span class="tag tag-batch">バッチ</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-item">
+      <div class="impact-badge low">低</div>
+      <div class="impact-content">
+        <strong>検索フィルターの拡充</strong>
+        <p>新規フィールド（WiFi速度、個室有無等）をアプリの店舗検索フィルターに追加。ShopSearchServiceの修正。</p>
+        <div class="impact-tags">
+          <span class="tag tag-api">API</span>
+          <span class="tag tag-app">アプリ</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション6: 承認フロー -->
+<!-- ============================================ -->
+<div class="section" id="approval">
+  <h2 class="section-title">✅ 承認フロー設計</h2>
+  <p class="section-desc">金額・プランなどの重要な変更について、承認ワークフローの設計案です。</p>
+
+  <div class="card">
+    <h4>承認フローの全体像</h4>
+    <div class="flow-row">
+      <div class="flow-step new">店舗が<br>変更を保存</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--warning); background:var(--warning-light); color:#92400e;">下書き保存<br>（未反映）</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--primary); background:var(--primary-light); color:var(--primary);">運営に<br>通知メール</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step" style="border-color:var(--success); background:var(--success-light); color:var(--success);">承認 →<br>本番反映</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>即時反映する項目</h4>
+      <ul style="font-size:13px; padding-left:20px;">
+        <li>紹介文・キャッチコピー</li>
+        <li>座席案内・利用ルール</li>
+        <li>チェックイン方法・注意事項</li>
+        <li>受付情報・備考</li>
+        <li>画像（メイン・設備・座席）</li>
+        <li>営業時間テキスト</li>
+        <li>臨時休業日の登録</li>
+      </ul>
+      <p style="font-size:12px; color:var(--success); margin-top:8px; font-weight:600;">→ 表示系のテキスト・画像は即時反映で問題ない</p>
+    </div>
+    <div class="card">
+      <h4>承認が必要な項目</h4>
+      <ul style="font-size:13px; padding-left:20px;">
+        <li>ドロップイン料金（分単価・日最大）</li>
+        <li>月額プラン金額</li>
+        <li>初期費用</li>
+        <li>新規プランの作成・削除</li>
+        <li>月額申込・時間利用・見学予約の可否</li>
+        <li>契約承認・店舗解約フラグ</li>
+        <li>連絡先（メール・電話）</li>
+        <li>住所変更</li>
+      </ul>
+      <p style="font-size:12px; color:var(--danger); margin-top:8px; font-weight:600;">→ 金額・契約条件・連絡先は誤変更の影響が大きい</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>DB設計案: ShopChangeRequest テーブル</h4>
+    <table>
+      <thead>
+        <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>id</td><td>Int (PK)</td><td>申請ID</td></tr>
+        <tr><td>shopId</td><td>Int (FK)</td><td>対象店舗</td></tr>
+        <tr><td>requestedBy</td><td>Int (FK)</td><td>申請者（加盟法人ユーザー）</td></tr>
+        <tr><td>changeType</td><td>Enum</td><td>PRICE / PLAN / SETTING / CONTACT / ADDRESS</td></tr>
+        <tr><td>fieldName</td><td>String</td><td>変更対象フィールド名</td></tr>
+        <tr><td>oldValue</td><td>Text</td><td>変更前の値（JSON）</td></tr>
+        <tr><td>newValue</td><td>Text</td><td>変更後の値（JSON）</td></tr>
+        <tr><td>status</td><td>Enum</td><td>PENDING / APPROVED / REJECTED</td></tr>
+        <tr><td>reviewedBy</td><td>Int (FK, Nullable)</td><td>承認者（スタディGO運営）</td></tr>
+        <tr><td>reviewedAt</td><td>DateTime (Nullable)</td><td>承認日時</td></tr>
+        <tr><td>rejectReason</td><td>Text (Nullable)</td><td>却下理由</td></tr>
+        <tr><td>createdAt</td><td>DateTime</td><td>申請日時</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション7: 実装ロードマップ -->
+<!-- ============================================ -->
+<div class="section" id="roadmap">
+  <h2 class="section-title">🗺️ 実装ロードマップ</h2>
+  <p class="section-desc">段階的に機能を追加していく計画案です。</p>
+
+  <div class="phase-card">
+    <div class="phase-header p1">Phase 1: 管理画面の編集項目拡充（スタディGO運営向け）</div>
+    <div class="phase-body">
+      <li>adminSaveShop API の対応フィールドを48項目以上に拡張</li>
+      <li>管理画面 shops/edit ページの読み取り専用フィールドを編集可能に変更</li>
+      <li>住所・座席数・料金・営業時間のバリデーション追加</li>
+      <li>画像の個別アップロード・削除・並び替え機能</li>
+      <li>変更履歴テーブルの追加と記録開始</li>
+      <p style="font-size:12px; color:var(--danger); font-weight:600; margin-top:8px; padding-left:0;">目標: スタディGO運営がExcelを使わずに管理画面だけで全ての店舗情報を管理できる状態</p>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-header p2">Phase 2: 加盟法人ポータルに店舗編集機能を追加</div>
+    <div class="phase-body">
+      <li>加盟法人ポータル (alliance) に店舗一覧・詳細ページを作成</li>
+      <li>テキスト・画像の編集機能（即時反映される項目のみ）</li>
+      <li>自社店舗の統計情報閲覧機能</li>
+      <li>companyId による編集範囲の制限（自社店舗のみ）</li>
+      <li>操作ログの記録</li>
+      <p style="font-size:12px; color:var(--warning); font-weight:600; margin-top:8px; padding-left:0;">目標: 店舗が紹介文・画像を自分で更新できる状態</p>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-header p3">Phase 3: 承認ワークフロー＋金額編集</div>
+    <div class="phase-body">
+      <li>ShopChangeRequest テーブルの作成</li>
+      <li>承認待ちキュー画面（スタディGO運営向け）</li>
+      <li>加盟法人ポータルに金額・プラン編集機能を追加</li>
+      <li>承認依頼・承認完了メール通知</li>
+      <li>Stripe Price オブジェクトの更新処理</li>
+      <li>既存契約への影響範囲の確認画面</li>
+      <p style="font-size:12px; color:#0d9488; font-weight:600; margin-top:8px; padding-left:0;">目標: 店舗が金額・プランの変更を申請し、運営が承認してから反映される状態</p>
+    </div>
+  </div>
+
+  <div class="phase-card">
+    <div class="phase-header p4">Phase 4: データ項目拡充＋Excel廃止</div>
+    <div class="phase-body">
+      <li>新規フィールド追加（WiFi速度・電源口数・SNSリンク等）</li>
+      <li>アプリの店舗詳細表示に新フィールドを反映</li>
+      <li>検索フィルターへの新フィールド追加</li>
+      <li>Excel取り込み機能の段階的廃止</li>
+      <li>データ移行完了の確認・検証</li>
+      <p style="font-size:12px; color:var(--success); font-weight:600; margin-top:8px; padding-left:0;">目標: Excel不要の完全な管理画面運用、充実した店舗情報</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- セクション8: 現行システム参考 -->
+<!-- ============================================ -->
+<div class="section" id="reference">
+  <h2 class="section-title">📚 現行システム参考</h2>
+  <p class="section-desc">現在のシステム構成と関連ファイルの一覧です。</p>
+
+  <details>
+    <summary>Shop モデル全フィールド一覧（109項目）</summary>
+    <div class="details-body">
+      <table>
+        <thead><tr><th>カテゴリ</th><th>フィールド数</th><th>主なフィールド</th></tr></thead>
+        <tbody>
+          <tr><td>識別情報</td><td>6</td><td>id, code, name, subName, qrCode, email</td></tr>
+          <tr><td>所在地</td><td>7</td><td>prefecture, city, address, address2, latitude, longitude, phone</td></tr>
+          <tr><td>営業情報</td><td>3</td><td>openHour, holiday, openedAt</td></tr>
+          <tr><td>座席・容量</td><td>2</td><td>seatQuantity, assignedSeatQuantity</td></tr>
+          <tr><td>料金</td><td>6</td><td>pricePerMinute, maxPricePerDay, initialCost, initialCostName, initialCostNote, minimumAge</td></tr>
+          <tr><td>紹介テキスト</td><td>10</td><td>catchCopy, description, seatDescription, ruleDescription, accessWay, note, receptionDescription, checkInNote, contractAttentionNote, termsOfUse</td></tr>
+          <tr><td>分類</td><td>8</td><td>usageType, shopType, sizeType, atmosphereType, bathroomType, staffType, walkFromStationType, locationType</td></tr>
+          <tr><td>フラグ</td><td>9</td><td>isActive, isArchived, canOpenDoor, canApplyMonthly, canUseHourly, canReservePreview, requiresApprovalForContract, resignAtShop, canSuspendByAdmin</td></tr>
+          <tr><td>SoloTime</td><td>2</td><td>isSoloTime, soloTimeBuildingId</td></tr>
+          <tr><td>画像</td><td>4</td><td>imageFileName, mainImageCount, facilityImageCount, seatImageCount</td></tr>
+          <tr><td>統計・実績</td><td>9</td><td>reviewCount, reviewStar, lastMonthSales, currentUsageCount, averageContractedDays, averageUsageCount 他</td></tr>
+          <tr><td>リレーション</td><td>15+</td><td>company, shopPlans, shopImages, shopBusinessHours, shopContracts, shopUsages 他</td></tr>
+          <tr><td>タイムスタンプ</td><td>2</td><td>createdAt, updatedAt</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>Excel取り込みで扱っているフィールド（48項目）</summary>
+    <div class="details-body">
+      <table>
+        <thead><tr><th>Excelラベル</th><th>DBフィールド</th><th>備考</th></tr></thead>
+        <tbody>
+          <tr><td>店舗コード</td><td>code</td><td>6桁数字（ユニークキー）</td></tr>
+          <tr><td>店舗名</td><td>name</td><td>一意制約あり</td></tr>
+          <tr><td>サブ店舗名</td><td>subName</td><td>—</td></tr>
+          <tr><td>メールアドレス</td><td>email</td><td>—</td></tr>
+          <tr><td>キャッチコピー</td><td>catchCopy</td><td>—</td></tr>
+          <tr><td>説明テキスト</td><td>description</td><td>—</td></tr>
+          <tr><td>座席案内テキスト</td><td>seatDescription</td><td>—</td></tr>
+          <tr><td>都道府県</td><td>prefecture</td><td>列挙型（1-47）</td></tr>
+          <tr><td>市区郡町村</td><td>city</td><td>—</td></tr>
+          <tr><td>住所</td><td>address</td><td>—</td></tr>
+          <tr><td>ビル名・その他</td><td>address2</td><td>任意</td></tr>
+          <tr><td>緯度</td><td>latitude</td><td>自動補完あり</td></tr>
+          <tr><td>経度</td><td>longitude</td><td>自動補完あり</td></tr>
+          <tr><td>電話番号</td><td>phone</td><td>—</td></tr>
+          <tr><td>アクセス</td><td>accessWay</td><td>—</td></tr>
+          <tr><td>営業時間</td><td>openHour</td><td>テキスト表示用</td></tr>
+          <tr><td>定休日</td><td>holiday</td><td>—</td></tr>
+          <tr><td>施設席数</td><td>seatQuantity</td><td>—</td></tr>
+          <tr><td>割当数</td><td>assignedSeatQuantity</td><td>—</td></tr>
+          <tr><td>受付情報</td><td>receptionDescription</td><td>—</td></tr>
+          <tr><td>店舗利用ルール</td><td>note</td><td>—</td></tr>
+          <tr><td>初期料金</td><td>initialCost</td><td>—</td></tr>
+          <tr><td>契約可能年齢</td><td>minimumAge</td><td>—</td></tr>
+          <tr><td>都度利用1分あたり料金</td><td>pricePerMinute</td><td>—</td></tr>
+          <tr><td>1日最大利用料金</td><td>maxPricePerDay</td><td>—</td></tr>
+          <tr><td>利用タイプ</td><td>usageType</td><td>1=両方, 2=月額のみ, 3=都度のみ</td></tr>
+          <tr><td>店舗タイプ</td><td>shopType</td><td>1-6の分類</td></tr>
+          <tr><td>規模</td><td>sizeType</td><td>1=大, 2=中, 3=小</td></tr>
+          <tr><td>雰囲気</td><td>atmosphereType</td><td>1=会話OK～4=私語厳禁</td></tr>
+          <tr><td>トイレ</td><td>bathroomType</td><td>1=室内, 2=室外, 3=なし</td></tr>
+          <tr><td>スタッフ</td><td>staffType</td><td>1=常駐, 2=巡回, 3=無人</td></tr>
+          <tr><td>駅徒歩</td><td>walkFromStationType</td><td>—</td></tr>
+          <tr><td>立地</td><td>locationType</td><td>1=駅近, 2=1F, 3=2F↑, 4=地下</td></tr>
+          <tr><td>加盟法人名</td><td>company.name</td><td>FK参照</td></tr>
+          <tr><td>クーポンコード1-5</td><td>ShopHasCoupon</td><td>多対多</td></tr>
+          <tr><td>タグ</td><td>ShopHasTag</td><td>多対多</td></tr>
+          <tr><td>共通プランコード1-3</td><td>ShopPlan</td><td>デフォルトプラン紐付け</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>現在の管理画面で編集可能なフィールド（13項目）</summary>
+    <div class="details-body">
+      <table>
+        <thead><tr><th>フィールド</th><th>内容</th><th>バリデーション</th></tr></thead>
+        <tbody>
+          <tr><td>isActive</td><td>公開/非公開</td><td>公開時は営業時間設定必須</td></tr>
+          <tr><td>isArchived</td><td>アーカイブ</td><td>非公開＋契約0件が必須</td></tr>
+          <tr><td>description</td><td>店舗紹介文</td><td>—</td></tr>
+          <tr><td>checkInNote</td><td>チェックイン方法</td><td>400文字以内</td></tr>
+          <tr><td>contractAttentionNote</td><td>契約注意事項</td><td>400文字以内</td></tr>
+          <tr><td>canOpenDoor</td><td>ドア開閉可能</td><td>—</td></tr>
+          <tr><td>canApplyMonthly</td><td>月額申込可能</td><td>—</td></tr>
+          <tr><td>canUseHourly</td><td>時間利用可能</td><td>—</td></tr>
+          <tr><td>canReservePreview</td><td>見学予約可能</td><td>—</td></tr>
+          <tr><td>resignAtShop</td><td>店舗解約手続き必要</td><td>—</td></tr>
+          <tr><td>requiresApprovalForContract</td><td>契約承認必要</td><td>—</td></tr>
+          <tr><td>isSoloTime</td><td>SoloTime店舗</td><td>有効時はBuildingID必須</td></tr>
+          <tr><td>soloTimeBuildingId</td><td>SoloTimeビルID</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>関連ファイルパス一覧</summary>
+    <div class="details-body">
+      <table>
+        <thead><tr><th>コンポーネント</th><th>ファイルパス</th></tr></thead>
+        <tbody>
+          <tr><td>Prisma スキーマ</td><td>studygo-api-backup/prisma/schema.prisma</td></tr>
+          <tr><td>Shop インポート設定</td><td>studygo-api-backup/src/batch/importMasterDatum/sheets/shopSheet.ts</td></tr>
+          <tr><td>Admin Shop API</td><td>studygo-api-backup/src/api/resolvers/admin/adminShopResolver.ts</td></tr>
+          <tr><td>Admin Import API</td><td>studygo-api-backup/src/api/resolvers/admin/adminImportResolver.ts</td></tr>
+          <tr><td>Import サービス</td><td>studygo-api-backup/src/services/ImportService.ts</td></tr>
+          <tr><td>Shop サービス群</td><td>studygo-api-backup/src/services/shop/</td></tr>
+          <tr><td>管理画面 店舗一覧</td><td>studygo-front-backup/src/pages/admin/shops/index.tsx</td></tr>
+          <tr><td>管理画面 店舗編集</td><td>studygo-front-backup/src/pages/admin/shops/edit/[id]/index.tsx</td></tr>
+          <tr><td>Import 設定</td><td>studygo-front-backup/src/services/importer/config.ts</td></tr>
+          <tr><td>管理画面メニュー</td><td>studygo-front-backup/src/menu-items/dashboard.tsx</td></tr>
+          <tr><td>加盟法人ポータル</td><td>studygo-front-backup/src/pages/alliance/</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  <details>
+    <summary>技術スタック</summary>
+    <div class="details-body">
+      <div class="grid-3">
+        <div class="card" style="margin-bottom:0;">
+          <h4>API (studygo-api)</h4>
+          <p style="font-size:13px;">Express.js + TypeScript<br>Prisma ORM (MySQL)<br>GraphQL (Resolvers)<br>Stripe SDK<br>AWS S3 (画像)</p>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <h4>管理画面 (studygo-front)</h4>
+          <p style="font-size:13px;">Next.js + TypeScript<br>Material-UI (MUI)<br>Redux<br>Axios API Client</p>
+        </div>
+        <div class="card" style="margin-bottom:0;">
+          <h4>アプリ (studygo-app)</h4>
+          <p style="font-size:13px;">Flutter<br>Firebase (FCM)<br>REST API 通信</p>
+        </div>
+      </div>
+    </div>
+  </details>
+</div>
+
+</div>
+
+<!-- TOC ボタン -->
+<button class="toc-btn" onclick="toggleToc()">☰</button>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleToc()">
+  <div class="toc-panel" onclick="event.stopPropagation()">
+    <button class="toc-close" onclick="toggleToc()">✕</button>
+    <h3>目次</h3>
+    <a href="#decisions" onclick="toggleToc()">📋 まず決めること（必須4 / 推奨3 / 後から可2）</a>
+    <a href="#current" onclick="toggleToc()">⚠️ 現状の課題</a>
+    <a href="#scope" onclick="toggleToc()">📝 編集項目の整理</a>
+    <a href="#permission" onclick="toggleToc()">🔐 権限設計</a>
+    <a href="#impact" onclick="toggleToc()">💥 影響範囲（高5 / 中6 / 低5）</a>
+    <a href="#approval" onclick="toggleToc()">✅ 承認フロー設計</a>
+    <a href="#roadmap" onclick="toggleToc()">🗺️ 実装ロードマップ（Phase 1〜4）</a>
+    <a href="#reference" onclick="toggleToc()">📚 現行システム参考</a>
+  </div>
+</div>
+
+<script>
+function scrollTo_(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  // Update active nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleToc() {
+  document.getElementById('tocOverlay').classList.toggle('show');
+}
+
+// Scroll spy
+window.addEventListener('scroll', () => {
+  const sections = ['decisions','current','scope','permission','impact','approval','roadmap','reference'];
+  let current = sections[0];
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top <= 80) current = id;
+  }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+
+</body>
+</html>

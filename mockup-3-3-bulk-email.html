@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3-3. メール一斉送信 - 画面モックアップ</title>
+<style>
+  :root {
+    --primary: #2563eb; --success: #16a34a; --warning: #f59e0b; --danger: #ef4444;
+    --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb;
+    --gray-300: #d1d5db; --gray-400: #9ca3af; --gray-500: #6b7280;
+    --gray-600: #4b5563; --gray-700: #374151; --gray-800: #1f2937; --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI','Hiragino Sans','Meiryo',sans-serif; background: #f0f2f5; color: var(--gray-800); line-height: 1.6; }
+  .page-header { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: white; padding: 32px 24px; text-align: center; }
+  .page-header h1 { font-size: 22px; font-weight: 700; }
+  .page-header p { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 16px 60px; }
+  .tab-nav { display: flex; gap: 4px; background: white; border-radius: 12px; padding: 4px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .tab-btn { flex: 1; padding: 12px 16px; border: none; background: transparent; color: var(--gray-500); font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 8px; }
+  .tab-btn.active { background: var(--primary); color: white; }
+  .tab-btn:hover:not(.active) { background: var(--gray-100); }
+  .tab-content { display: none; } .tab-content.active { display: block; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .section-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 16px; }
+  .badge-web { background: #dbeafe; color: #1d4ed8; font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 600; }
+  .badge-app { background: #dcfce7; color: #15803d; font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 600; }
+
+  .web-frame { background: white; border-radius: 12px; border: 1px solid var(--gray-200); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .web-titlebar { background: var(--gray-100); padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--gray-200); }
+  .web-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .web-dot.red { background: #ef4444; } .web-dot.yellow { background: #f59e0b; } .web-dot.green { background: #22c55e; }
+  .web-url { flex: 1; background: white; border-radius: 6px; padding: 4px 12px; font-size: 12px; color: var(--gray-500); margin-left: 8px; }
+  .web-sidebar { width: 200px; background: var(--gray-900); color: white; min-height: 600px; padding: 16px 0; float: left; }
+  .web-sidebar .sidebar-title { font-size: 14px; font-weight: 700; padding: 0 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 8px; }
+  .web-sidebar .sidebar-item { padding: 8px 16px; font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer; }
+  .web-sidebar .sidebar-item.active { background: rgba(37,99,235,0.3); color: white; border-left: 3px solid var(--primary); }
+  .web-sidebar .sidebar-group { font-size: 11px; color: rgba(255,255,255,0.3); padding: 12px 16px 4px; letter-spacing: 1px; }
+  .web-main { margin-left: 200px; padding: 24px; min-height: 600px; }
+  .web-page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .web-page-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 20px; }
+  .clearfix::after { content: ''; display: table; clear: both; }
+
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-size: 13px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; display: block; }
+  .form-input, .form-select { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; background: white; }
+  .form-textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 200px; resize: vertical; line-height: 1.6; }
+  .form-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+  .form-row { display: flex; gap: 16px; }
+  .form-row > * { flex: 1; }
+  .btn { padding: 8px 20px; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-lg { padding: 12px 32px; font-size: 15px; }
+
+  /* Filter chips */
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .filter-chip { display: flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 12px; border-radius: 16px; border: 1px solid var(--gray-300); color: var(--gray-600); cursor: pointer; }
+  .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .filter-chip .remove { font-weight: 700; cursor: pointer; }
+
+  /* Target count */
+  .target-count { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin: 16px 0; display: flex; align-items: center; gap: 12px; }
+  .target-count .count-num { font-size: 32px; font-weight: 700; color: var(--primary); }
+  .target-count .count-label { font-size: 13px; color: var(--gray-600); }
+
+  /* Email preview */
+  .email-preview { border: 1px solid var(--gray-200); border-radius: 8px; overflow: hidden; max-width: 500px; }
+  .email-preview-header { background: var(--gray-100); padding: 12px 16px; border-bottom: 1px solid var(--gray-200); }
+  .email-preview-header .field { display: flex; gap: 8px; font-size: 12px; margin-bottom: 4px; }
+  .email-preview-header .field-label { color: var(--gray-500); width: 40px; }
+  .email-preview-header .field-value { color: var(--gray-700); }
+  .email-preview-body { padding: 20px; font-size: 13px; line-height: 1.8; }
+  .email-preview-body .email-logo { text-align: center; margin-bottom: 16px; font-size: 18px; font-weight: 700; color: var(--primary); }
+  .email-preview-body .email-footer { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--gray-200); font-size: 11px; color: var(--gray-400); text-align: center; }
+
+  /* Stats */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 20px; }
+  .stat-card { flex: 1; background: white; border: 1px solid var(--gray-200); border-radius: 10px; padding: 16px; }
+  .stat-card .stat-label { font-size: 12px; color: var(--gray-500); }
+  .stat-card .stat-value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+  .stat-card .stat-sub { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+  /* Table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { background: var(--gray-50); padding: 10px 12px; text-align: left; font-weight: 600; color: var(--gray-600); border-bottom: 2px solid var(--gray-200); white-space: nowrap; }
+  .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--gray-100); }
+  .status-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .status-sent { background: #dcfce7; color: #15803d; }
+  .status-scheduled { background: #dbeafe; color: #1d4ed8; }
+  .status-draft { background: var(--gray-200); color: var(--gray-600); }
+
+  /* Phone mockup */
+  .phone-frame { width: 320px; min-height: 500px; background: white; border-radius: 32px; border: 3px solid var(--gray-300); overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); margin: 0 auto; }
+  .phone-notch { width: 120px; height: 24px; background: var(--gray-800); border-radius: 0 0 16px 16px; margin: 0 auto; }
+  .phone-status-bar { display: flex; justify-content: space-between; padding: 4px 20px; font-size: 11px; font-weight: 600; }
+  .phone-nav-bar { background: var(--primary); color: white; padding: 12px 16px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+  .mockup-row { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+  .mockup-item { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .mockup-label { font-size: 14px; font-weight: 700; text-align: center; background: white; padding: 6px 16px; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .mockup-note { font-size: 12px; color: var(--gray-500); max-width: 320px; text-align: center; }
+
+  .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--gray-100); }
+  .setting-label { font-size: 14px; font-weight: 500; }
+  .setting-desc { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+  .toggle { width: 48px; height: 28px; background: var(--success); border-radius: 14px; position: relative; cursor: pointer; }
+  .toggle.off { background: var(--gray-300); }
+  .toggle::after { content: ''; width: 22px; height: 22px; background: white; border-radius: 50%; position: absolute; top: 3px; right: 3px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle.off::after { right: auto; left: 3px; }
+
+  @media (max-width: 768px) { .web-sidebar { display: none; } .web-main { margin-left: 0; } .stats-row { flex-direction: column; } .form-row { flex-direction: column; } .mockup-row { flex-direction: column; align-items: center; } }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>3-3. 加盟法人 → ユーザーメール一斉送信</h1>
+  <p>法人が自社店舗の契約者にHTMLメールを送信。フィルタ絞り込み・送信ログ・開封率対応。</p>
+</div>
+
+<div class="container">
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="showTab('compose')">メール作成</button>
+    <button class="tab-btn" onclick="showTab('history')">送信履歴</button>
+    <button class="tab-btn" onclick="showTab('optout')">配信停止（アプリ）</button>
+  </div>
+
+  <!-- ===== COMPOSE TAB ===== -->
+  <div class="tab-content active" id="tab-compose">
+    <div class="section">
+      <div class="section-title"><span class="badge-web">WEB</span> 法人画面 — メール一斉送信作成</div>
+      <div class="section-desc">送信対象のフィルタ → 本文作成 → プレビュー → 送信の流れ</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div><div class="web-dot yellow"></div><div class="web-dot green"></div>
+          <div class="web-url">company.studygo.jp/email/compose</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">渋谷スタディラウンジ</div>
+            <div class="sidebar-group">メール配信</div>
+            <div class="sidebar-item active">メール作成</div>
+            <div class="sidebar-item">送信履歴</div>
+            <div class="sidebar-group">会員</div>
+            <div class="sidebar-item">会員一覧</div>
+            <div class="sidebar-group">設定</div>
+            <div class="sidebar-item">店舗情報</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">メール一斉送信</div>
+            <div class="web-page-desc">自社店舗の契約者にメールを送信します</div>
+
+            <div style="display:flex;gap:24px;">
+              <!-- Left: Form -->
+              <div style="flex:1;">
+                <!-- Step 1: Target -->
+                <div style="background:#f8fafc;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid var(--gray-200);">
+                  <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--gray-900);">1. 送信対象を選択</div>
+
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">プラン種別</label>
+                    <div class="filter-chips">
+                      <span class="filter-chip active">すべて</span>
+                      <span class="filter-chip">月額プラン</span>
+                      <span class="filter-chip">ドロップイン</span>
+                      <span class="filter-chip">期間パス</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label">契約状態</label>
+                    <div class="filter-chips">
+                      <span class="filter-chip active">契約中</span>
+                      <span class="filter-chip">解約済み</span>
+                      <span class="filter-chip">すべて</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">最終利用日</label>
+                    <div class="form-row">
+                      <select class="form-select">
+                        <option>指定なし</option>
+                        <option>過去7日以内</option>
+                        <option>過去30日以内</option>
+                        <option selected>過去90日以内</option>
+                        <option>90日以上前</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="target-count">
+                    <div class="count-num">127</div>
+                    <div class="count-label">名が送信対象です<br><span style="font-size:11px;color:var(--gray-400);">※ 配信停止ユーザーは除外済み</span></div>
+                  </div>
+                </div>
+
+                <!-- Step 2: Content -->
+                <div style="background:#f8fafc;border-radius:8px;padding:16px;margin-bottom:20px;border:1px solid var(--gray-200);">
+                  <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--gray-900);">2. メール内容を作成</div>
+
+                  <div class="form-group">
+                    <label class="form-label">件名</label>
+                    <input class="form-input" value="【渋谷スタディラウンジ】3月のキャンペーンのお知らせ">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">本文（HTML対応）</label>
+                    <div style="border:1px solid var(--gray-300);border-radius:6px;overflow:hidden;">
+                      <div style="background:var(--gray-100);padding:6px 12px;display:flex;gap:8px;border-bottom:1px solid var(--gray-300);">
+                        <button style="border:none;background:none;font-weight:700;cursor:pointer;padding:4px 8px;">B</button>
+                        <button style="border:none;background:none;font-style:italic;cursor:pointer;padding:4px 8px;">I</button>
+                        <button style="border:none;background:none;text-decoration:underline;cursor:pointer;padding:4px 8px;">U</button>
+                        <span style="color:var(--gray-300);">|</span>
+                        <button style="border:none;background:none;cursor:pointer;padding:4px 8px;font-size:12px;">リンク</button>
+                        <button style="border:none;background:none;cursor:pointer;padding:4px 8px;font-size:12px;">画像</button>
+                      </div>
+                      <textarea class="form-textarea" style="border:none;border-radius:0;min-height:180px;">いつもスタディGOをご利用いただきありがとうございます。
+
+3月限定キャンペーンのお知らせです！
+
+【キャンペーン内容】
+期間中にドロップインをご利用いただくと、次回利用時に100円OFFクーポンをプレゼント！
+
+期間: 2026年3月1日〜3月31日
+
+ぜひご利用ください。
+
+渋谷スタディラウンジ</textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                  <button class="btn btn-primary btn-lg">プレビュー確認</button>
+                  <button class="btn btn-success btn-lg">送信する（127名）</button>
+                  <button class="btn btn-secondary">下書き保存</button>
+                </div>
+              </div>
+
+              <!-- Right: Preview -->
+              <div style="width:400px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:8px;">メールプレビュー</div>
+                <div class="email-preview">
+                  <div class="email-preview-header">
+                    <div class="field"><span class="field-label">From:</span><span class="field-value">渋谷スタディラウンジ &lt;noreply@studygo.jp&gt;</span></div>
+                    <div class="field"><span class="field-label">To:</span><span class="field-value">127名の契約者</span></div>
+                    <div class="field"><span class="field-label">件名:</span><span class="field-value" style="font-weight:600;">【渋谷スタディラウンジ】3月のキャンペーンのお知らせ</span></div>
+                  </div>
+                  <div class="email-preview-body">
+                    <div class="email-logo">StudyGO</div>
+                    <div style="white-space:pre-line;">いつもスタディGOをご利用いただきありがとうございます。
+
+3月限定キャンペーンのお知らせです！
+
+<strong>【キャンペーン内容】</strong>
+期間中にドロップインをご利用いただくと、次回利用時に100円OFFクーポンをプレゼント！
+
+<strong>期間:</strong> 2026年3月1日〜3月31日
+
+ぜひご利用ください。
+
+渋谷スタディラウンジ</div>
+                    <div class="email-footer">
+                      このメールは渋谷スタディラウンジから送信されています。<br>
+                      配信停止はスタディGOアプリの設定から変更できます。<br>
+                      &copy; 2026 StudyGO
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== HISTORY TAB ===== -->
+  <div class="tab-content" id="tab-history">
+    <div class="section">
+      <div class="section-title"><span class="badge-web">WEB</span> 法人画面 — 送信履歴・効果測定</div>
+      <div class="section-desc">送信済みメールの一覧と開封率トラッキング</div>
+
+      <div class="web-frame">
+        <div class="web-titlebar">
+          <div class="web-dot red"></div><div class="web-dot yellow"></div><div class="web-dot green"></div>
+          <div class="web-url">company.studygo.jp/email/history</div>
+        </div>
+        <div class="clearfix">
+          <div class="web-sidebar">
+            <div class="sidebar-title">渋谷スタディラウンジ</div>
+            <div class="sidebar-group">メール配信</div>
+            <div class="sidebar-item">メール作成</div>
+            <div class="sidebar-item active">送信履歴</div>
+          </div>
+          <div class="web-main">
+            <div class="web-page-title">送信履歴</div>
+            <div class="web-page-desc">過去に送信したメールの結果を確認</div>
+
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-label">今月の送信数</div>
+                <div class="stat-value">3</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">平均開封率</div>
+                <div class="stat-value" style="color:var(--success);">42%</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">総送信先数</div>
+                <div class="stat-value">381</div>
+              </div>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>送信日</th>
+                  <th>件名</th>
+                  <th>送信先</th>
+                  <th>配信数</th>
+                  <th>開封率</th>
+                  <th>ステータス</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>3/2 10:00</td>
+                  <td>【渋谷スタディラウンジ】3月のキャンペーン...</td>
+                  <td>契約中(全プラン)</td>
+                  <td>127名</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:60px;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;">
+                        <div style="width:45%;height:100%;background:var(--success);border-radius:3px;"></div>
+                      </div>
+                      <span style="font-weight:600;">45%</span>
+                    </div>
+                  </td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">詳細</button></td>
+                </tr>
+                <tr>
+                  <td>2/20 14:00</td>
+                  <td>【お知らせ】営業時間変更について</td>
+                  <td>契約中(全プラン)</td>
+                  <td>134名</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:60px;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;">
+                        <div style="width:52%;height:100%;background:var(--success);border-radius:3px;"></div>
+                      </div>
+                      <span style="font-weight:600;">52%</span>
+                    </div>
+                  </td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">詳細</button></td>
+                </tr>
+                <tr>
+                  <td>2/10 11:00</td>
+                  <td>【ご案内】新プラン登場のお知らせ</td>
+                  <td>ドロップインのみ</td>
+                  <td>82名</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <div style="width:60px;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;">
+                        <div style="width:38%;height:100%;background:var(--warning);border-radius:3px;"></div>
+                      </div>
+                      <span style="font-weight:600;">38%</span>
+                    </div>
+                  </td>
+                  <td><span class="status-tag status-sent">送信済</span></td>
+                  <td><button class="btn btn-secondary" style="padding:4px 12px;font-size:12px;">詳細</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OPT-OUT TAB ===== -->
+  <div class="tab-content" id="tab-optout">
+    <div class="section">
+      <div class="section-title"><span class="badge-app">APP</span> アプリ — メール配信設定</div>
+      <div class="section-desc">ユーザーがアプリ内で法人メールの配信停止を設定</div>
+
+      <div class="mockup-row">
+        <div class="mockup-item">
+          <div class="mockup-label">マイページ → メール配信設定</div>
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-status-bar"><span>12:30</span><span>85%</span></div>
+            <div class="phone-nav-bar"><span style="font-size:20px;">&lt;</span> メール配信設定</div>
+            <div style="background:var(--gray-50);min-height:400px;">
+              <div style="padding:16px;font-size:12px;color:var(--gray-500);">店舗からのメール</div>
+              <div style="background:white;">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">店舗からのお知らせメール</div>
+                    <div class="setting-desc">契約中の店舗からのキャンペーン・お知らせ</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+              </div>
+              <div style="padding:16px;font-size:12px;color:var(--gray-500);">システムメール</div>
+              <div style="background:white;">
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">チェックアウト完了メール</div>
+                    <div class="setting-desc">利用料金の確認メール</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('off')"></div>
+                </div>
+                <div class="setting-row">
+                  <div>
+                    <div class="setting-label">決済関連メール</div>
+                    <div class="setting-desc" style="color:var(--danger);">※ 重要なメールのためOFFにできません</div>
+                  </div>
+                  <div class="toggle" style="opacity:0.5;pointer-events:none;"></div>
+                </div>
+              </div>
+              <div style="padding:16px;font-size:11px;color:var(--gray-400);text-align:center;">
+                配信停止してもアカウント関連の重要なメールは届きます
+              </div>
+            </div>
+          </div>
+          <div class="mockup-note">「店舗からのお知らせメール」をOFFにすると、法人からの一斉送信メールが届かなくなる。決済関連は常時ON。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

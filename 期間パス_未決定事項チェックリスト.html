@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期間パス 決定事項チェックリスト - スタディGO</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-light: #e8f0fe;
+    --danger: #d93025;
+    --danger-light: #fce8e6;
+    --warning: #f9ab00;
+    --warning-light: #fef7e0;
+    --success: #1e8e3e;
+    --success-light: #e6f4ea;
+    --purple: #7c3aed;
+    --purple-light: #f3e8ff;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --border: #dadce0;
+    --text: #202124;
+    --text-sub: #5f6368;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #FF6B35 0%, #D63031 100%);
+    color: white;
+    padding: 40px 24px 28px;
+    text-align: center;
+    position: relative;
+  }
+  .header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .header p { font-size: 13px; opacity: 0.85; }
+
+  /* 進捗バー（固定） */
+  .progress-fixed {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-text {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    min-width: 120px;
+  }
+  .progress-text .count { color: var(--primary); font-size: 18px; }
+  .progress-bar-outer {
+    flex: 1;
+    height: 10px;
+    background: #e8e8e8;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--success));
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-export {
+    padding: 6px 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .btn-export:hover { background: #1557b0; }
+  .btn-export.green { background: var(--success); }
+  .btn-export.green:hover { background: #157a33; }
+  .btn-reset {
+    padding: 6px 12px;
+    background: white;
+    color: var(--text-sub);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+  /* カテゴリ */
+  .category {
+    margin-bottom: 32px;
+  }
+  .category-title {
+    font-size: 18px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-title .icon { font-size: 22px; }
+  .category-title .cat-toggle { font-size: 12px; color: var(--text-sub); margin-left: auto; }
+  .category-progress {
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 14px;
+    padding-left: 30px;
+  }
+  .category-progress .done { color: var(--success); font-weight: 700; }
+
+  /* 質問カード */
+  .q-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .q-card.answered { border-color: var(--success); }
+  .q-card.answered .q-header { background: var(--success-light); }
+
+  .q-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.3s;
+  }
+  .q-id {
+    width: 36px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    flex-shrink: 0;
+  }
+  .q-id.high { background: var(--danger); }
+  .q-id.mid { background: var(--warning); }
+  .q-id.low { background: var(--primary); }
+  .q-id.done { background: var(--success); }
+
+  .q-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .q-status {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .q-status.pending { background: var(--danger-light); color: var(--danger); }
+  .q-status.done { background: var(--success-light); color: var(--success); }
+
+  .q-body {
+    padding: 0 18px 16px;
+  }
+  .q-context {
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid var(--warning);
+  }
+
+  /* 選択肢 */
+  .q-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .q-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+  .q-option:hover { border-color: var(--primary); background: #fafbff; }
+  .q-option.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .q-option input[type="radio"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+  }
+  .q-option .opt-label { font-weight: 600; }
+  .q-option .opt-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+  .q-option .opt-rec {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+
+  /* 自由入力 */
+  .q-note {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 36px;
+    transition: border-color 0.2s;
+  }
+  .q-note:focus { border-color: var(--primary); outline: none; }
+  .q-note-label {
+    font-size: 11px;
+    color: var(--text-sub);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+
+  /* エクスポートモーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 300;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: white;
+    border-radius: 14px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 { font-size: 18px; }
+  .modal-close {
+    width: 32px; height: 32px;
+    border: none; background: #f0f0f0;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-body { padding: 20px 24px; }
+  .modal-body textarea {
+    width: 100%;
+    min-height: 300px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    resize: vertical;
+  }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  .modal-btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+  }
+  .modal-btn.primary { background: var(--primary); color: white; }
+  .modal-btn.secondary { background: #f0f0f0; color: var(--text); }
+
+  /* 最重要まとめ */
+  .critical-box {
+    background: white;
+    border: 2px solid var(--danger);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+  .critical-box h3 {
+    color: var(--danger);
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  .critical-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .critical-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .critical-item:last-child { border-bottom: none; }
+  .critical-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    color: white;
+    transition: all 0.3s;
+  }
+  .critical-check.done { background: var(--success); border-color: var(--success); }
+
+  @media (max-width: 768px) {
+    .progress-inner { flex-wrap: wrap; }
+    .progress-actions { width: 100%; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>期間パス 決定事項チェックリスト</h1>
+  <p>各項目を選択 → 最後に「エクスポート」で回答データを出力できます</p>
+</div>
+
+<!-- 固定プログレスバー -->
+<div class="progress-fixed">
+  <div class="progress-inner">
+    <div class="progress-text">
+      回答済: <span class="count" id="answeredCount">0</span> / <span id="totalCount">42</span>
+    </div>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progressBar"></div>
+    </div>
+    <div class="progress-actions">
+      <button class="btn-export green" onclick="exportData()">エクスポート</button>
+      <button class="btn-export" onclick="saveToLocal()">一時保存</button>
+      <button class="btn-reset" onclick="resetAll()">リセット</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- 開発着手の最低条件 -->
+<div class="critical-box">
+  <h3>&#9888; 開発着手の最低条件（8項目）</h3>
+  <p style="font-size:12px; color:var(--text-sub); margin-bottom:10px;">以下が全て決まるとDB設計・API設計に着手可能です。</p>
+  <div class="critical-list" id="criticalList">
+    <div class="critical-item" data-watch="S1-Q1"><div class="critical-check" id="crit-0">-</div> 期間パスの種類（前回検討レポート必須1）</div>
+    <div class="critical-item" data-watch="B4-Q1"><div class="critical-check" id="crit-1">-</div> 料金設定方法（前回検討レポート必須2）</div>
+    <div class="critical-item" data-watch="B2-Q1"><div class="critical-check" id="crit-2">-</div> 利用制限（前回検討レポート必須3）</div>
+    <div class="critical-item" data-watch="S3-Q1"><div class="critical-check" id="crit-3">-</div> 利用開始日の選択ルール</div>
+    <div class="critical-item" data-watch="B6-Q1"><div class="critical-check" id="crit-4">-</div> 中途解約・返金ポリシー</div>
+    <div class="critical-item" data-watch="B1-Q1"><div class="critical-check" id="crit-5">-</div> 月額プランとの同時契約の可否</div>
+    <div class="critical-item" data-watch="B2-Q1"><div class="critical-check" id="crit-6">-</div> 期間の計算方法（暦日 or 利用日）</div>
+    <div class="critical-item" data-watch="B3-Q1"><div class="critical-check" id="crit-7">-</div> 期間パスの終了時刻</div>
+  </div>
+</div>
+
+<!-- ===== カテゴリ1: 画面設計 ===== -->
+<div class="category" id="cat-screen">
+  <div class="category-title">
+    <span class="icon">&#128241;</span> 画面設計
+    <span class="cat-toggle" id="cat-screen-count">0/12 回答済</span>
+  </div>
+  <div class="category-progress">各画面のUI・レイアウト・表示要素に関する決定事項</div>
+
+  <!-- S1 -->
+  <div class="q-card" data-qid="S1">
+    <div class="q-header">
+      <div class="q-id high">S1</div>
+      <div class="q-title">店舗詳細: タブ・表示の仕様</div>
+      <div class="q-status pending" id="status-S1">未回答</div>
+    </div>
+    <div class="q-body">
+      <div class="q-context">店舗詳細画面の「月額プラン / 期間パス / ドロップイン」タブに関する3つの質問</div>
+
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: タブの並び順</p>
+      <div class="q-options" data-name="S1-Q1">
+        <label class="q-option selected" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q1" value="月額プラン→期間パス→ドロップイン" checked>
+          <div><span class="opt-label">月額プラン → 期間パス → ドロップイン</span><span class="opt-rec">おすすめ</span><div class="opt-desc">現モック案。期間パスを真ん中で目立たせる</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q1" value="期間パス→月額プラン→ドロップイン">
+          <div><span class="opt-label">期間パス → 月額プラン → ドロップイン</span><div class="opt-desc">お試し利用を最優先にする場合</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q1" value="ドロップイン→期間パス→月額プラン">
+          <div><span class="opt-label">ドロップイン → 期間パス → 月額プラン</span><div class="opt-desc">気軽な利用から始める導線</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 期間パス非提供店舗での表示</p>
+      <div class="q-options" data-name="S1-Q2">
+        <label class="q-option selected" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q2" value="タブ自体を非表示" checked>
+          <div><span class="opt-label">A) タブ自体を非表示にする</span><div class="opt-desc">提供していない店舗では期間パスタブが存在しない</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q2" value="「現在提供していません」と表示">
+          <div><span class="opt-label">B) タブはあるが「現在提供していません」と表示</span><div class="opt-desc">機能の存在を知ってもらえる</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q2" value="「近日公開」と表示">
+          <div><span class="opt-label">C) 「近日公開」と表示</span><div class="opt-desc">期待感を持たせる</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: 「NEW」バッジの表示</p>
+      <div class="q-options" data-name="S1-Q3">
+        <label class="q-option selected" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q3" value="不要（表示しない）" checked>
+          <div><span class="opt-label">D) 不要（表示しない）</span><div class="opt-desc">NEWバッジ機能は現時点では不要</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q3" value="リリースから30日間表示">
+          <div><span class="opt-label">A) リリースから30日間表示</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S1-Q3" value="管理画面から手動制御">
+          <div><span class="opt-label">C) 管理画面から手動制御</span></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S2 -->
+  <div class="q-card" data-qid="S2">
+    <div class="q-header">
+      <div class="q-id high">S2</div>
+      <div class="q-title">パス選択画面: 価格表示の仕様</div>
+      <div class="q-status pending" id="status-S2">未回答</div>
+    </div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 「1日あたり約○○円」の計算基準</p>
+      <div class="q-options" data-name="S2-Q1">
+        <label class="q-option selected" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q1" value="税込価格÷日数" checked>
+          <div><span class="opt-label">税込価格 ÷ 日数</span><div class="opt-desc">例: 7,678円÷14日=548円</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q1" value="税抜価格÷日数">
+          <div><span class="opt-label">税抜価格 ÷ 日数</span><div class="opt-desc">例: 6,980円÷14日=498円</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 「○%お得」の比較対象</p>
+      <div class="q-options" data-name="S2-Q2">
+        <label class="q-option selected" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q2" value="表示しない" checked>
+          <div><span class="opt-label">C) 表示しない</span><div class="opt-desc">「○%お得」の表示は行わない</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q2" value="1週間パスの日割り単価との比較">
+          <div><span class="opt-label">A) 1週間パスの日割り単価との比較</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q2" value="ドロップインの1日上限額との比較">
+          <div><span class="opt-label">B) ドロップインの1日上限額との比較</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: 税込・税抜どちらを大きく表示するか</p>
+      <div class="q-options" data-name="S2-Q3">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q3" value="税込を大きく表示（統一）">
+          <div><span class="opt-label">税込を大きく表示（全画面統一）</span><span class="opt-rec">おすすめ</span><div class="opt-desc">ユーザーが実際に払う金額を強調</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q3" value="税抜を大きく表示（統一）">
+          <div><span class="opt-label">税抜を大きく表示（全画面統一）</span><div class="opt-desc">安く見える。税込は小さく併記</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S2-Q3" value="画面によって使い分け">
+          <div><span class="opt-label">画面によって使い分け（現モック案）</span><div class="opt-desc">一覧は税抜、確認画面は税込</div></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S2" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S3 -->
+  <div class="q-card" data-qid="S3">
+    <div class="q-header">
+      <div class="q-id high">S3</div>
+      <div class="q-title">開始日選択: カレンダーUIの仕様</div>
+      <div class="q-status pending" id="status-S3">未回答</div>
+    </div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 選択可能な日付の範囲</p>
+      <div class="q-options" data-name="S3-Q1">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q1" value="本日から7日以内">
+          <div><span class="opt-label">本日から7日以内</span><span class="opt-rec">おすすめ</span><div class="opt-desc">現モック案。事前購入の機会もある</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q1" value="本日から14日以内">
+          <div><span class="opt-label">本日から14日以内</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q1" value="購入日から即開始のみ">
+          <div><span class="opt-label">購入日から即開始のみ（選択不可）</span><div class="opt-desc">シンプルだが柔軟性が低い</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 店舗の定休日は選択可能か</p>
+      <div class="q-options" data-name="S3-Q2">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q2" value="定休日も選択可能">
+          <div><span class="opt-label">定休日も選択可能</span><span class="opt-rec">おすすめ</span><div class="opt-desc">暦日ベースなので問題なし。翌営業日から利用開始</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q2" value="営業日のみ選択可能">
+          <div><span class="opt-label">営業日のみ選択可能</span><div class="opt-desc">定休日はグレーアウト</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: デフォルトで今日が選択済みか</p>
+      <div class="q-options" data-name="S3-Q3">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q3" value="今日をデフォルト選択">
+          <div><span class="opt-label">今日をデフォルト選択</span><span class="opt-rec">おすすめ</span><div class="opt-desc">即日開始が多いと想定。変更も可能</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S3-Q3" value="未選択状態から開始">
+          <div><span class="opt-label">未選択状態から開始</span><div class="opt-desc">ユーザーに明示的に日付を選ばせる</div></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S3" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S4 -->
+  <div class="q-card" data-qid="S4">
+    <div class="q-header">
+      <div class="q-id high">S4</div>
+      <div class="q-title">契約確認: 決済方法・利用規約</div>
+      <div class="q-status pending" id="status-S4">未回答</div>
+    </div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: カード未登録ユーザーの対応</p>
+      <div class="q-options" data-name="S4-Q1">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q1" value="確認画面でカード登録に遷移">
+          <div><span class="opt-label">この画面からカード登録フローに遷移</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q1" value="パス選択前にカード登録を促す">
+          <div><span class="opt-label">パス選択前にカード登録を促す</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 利用規約チェックボックス</p>
+      <div class="q-options" data-name="S4-Q2">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q2" value="チェック必須">
+          <div><span class="opt-label">「キャンセル不可に同意」チェック必須</span><span class="opt-rec">おすすめ</span><div class="opt-desc">法的リスク軽減</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q2" value="チェック不要（注意書きのみ）">
+          <div><span class="opt-label">チェック不要（注意書きのみ表示）</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: 3Dセキュア認証</p>
+      <div class="q-options" data-name="S4-Q3">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q3" value="3DS認証あり">
+          <div><span class="opt-label">3DS認証あり</span><span class="opt-rec">おすすめ</span><div class="opt-desc">既存実装を流用</div></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S4-Q3" value="3DS認証なし">
+          <div><span class="opt-label">3DS認証なし（通常決済のみ）</span></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S5 -->
+  <div class="q-card" data-qid="S5">
+    <div class="q-header">
+      <div class="q-id mid">S5</div>
+      <div class="q-title">契約完了: 完了後の導線</div>
+      <div class="q-status pending" id="status-S5">未回答</div>
+    </div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: チェックインボタンの表示条件</p>
+      <div class="q-options" data-name="S5-Q1">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S5-Q1" value="即日開始の場合のみ表示">
+          <div><span class="opt-label">即日開始の場合のみ表示</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S5-Q1" value="常に表示">
+          <div><span class="opt-label">常に表示（翌日以降開始でも）</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 利用方法ガイドの表示</p>
+      <div class="q-options" data-name="S5-Q2">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S5-Q2" value="毎回表示">
+          <div><span class="opt-label">毎回表示</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S5-Q2" value="初回のみ表示">
+          <div><span class="opt-label">初回購入のみ表示</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S5" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S6 -->
+  <div class="q-card" data-qid="S6">
+    <div class="q-header">
+      <div class="q-id high">S6</div>
+      <div class="q-title">マイページ: 期間パスカードの表示ルール</div>
+      <div class="q-status pending" id="status-S6">未回答</div>
+    </div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 月額+期間パス同時契約時の表示</p>
+      <div class="q-options" data-name="S6-Q1">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q1" value="両方を並べて表示">
+          <div><span class="opt-label">両方を上下に並べて表示</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q1" value="同時契約禁止のため該当なし">
+          <div><span class="opt-label">同時契約禁止のため該当なし</span><div class="opt-desc">→ B1の決定に依存</div></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 期限切れ後の表示</p>
+      <div class="q-options" data-name="S6-Q2">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q2" value="7日間「期限切れ」表示後に非表示">
+          <div><span class="opt-label">7日間「期限切れ」バッジ表示 → その後非表示</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q2" value="即座に非表示">
+          <div><span class="opt-label">即座に非表示</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q2" value="再購入導線として常に表示">
+          <div><span class="opt-label">「再購入しますか？」として表示し続ける</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: 残り日数の警告色の閾値</p>
+      <div class="q-options" data-name="S6-Q3">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q3" value="3日=オレンジ, 1日=赤">
+          <div><span class="opt-label">残り3日→オレンジ / 残り1日→赤</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q3" value="7日=黄, 3日=オレンジ, 1日=赤">
+          <div><span class="opt-label">残り7日→黄 / 残り3日→オレンジ / 残り1日→赤</span></div>
+        </label>
+      </div>
+
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q4: 「延長する」ボタンの表示タイミング</p>
+      <div class="q-options" data-name="S6-Q4">
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q4" value="購入直後から常に表示">
+          <div><span class="opt-label">購入直後から常に表示</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q4" value="残り7日から表示">
+          <div><span class="opt-label">残り7日を切ったら表示</span><span class="opt-rec">おすすめ</span></div>
+        </label>
+        <label class="q-option" onclick="selectOpt(this)">
+          <input type="radio" name="S6-Q4" value="残り3日から表示">
+          <div><span class="opt-label">残り3日を切ったら表示</span></div>
+        </label>
+      </div>
+
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S6" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <!-- S7〜S12は簡略化 -->
+  <div class="q-card" data-qid="S7">
+    <div class="q-header"><div class="q-id mid">S7</div><div class="q-title">チェックイン画面: 期間パス表示差分</div><div class="q-status pending" id="status-S7">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 「本日の利用:○回目」の表示</p>
+      <div class="q-options" data-name="S7-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S7-Q1" value="表示する"><div><span class="opt-label">表示する（統計情報として有用）</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S7-Q1" value="表示しない"><div><span class="opt-label">表示しない（使い放題なので不要）</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 自動チェックアウトの仕様</p>
+      <div class="q-options" data-name="S7-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S7-Q2" value="既存と同じ（営業時間終了時）"><div><span class="opt-label">既存と同じ（営業時間終了時）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S7-Q2" value="期間パス専用の時刻設定"><div><span class="opt-label">期間パス専用の時刻設定</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S7" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="S8">
+    <div class="q-header"><div class="q-id mid">S8</div><div class="q-title">延長（再購入）フローの設計</div><div class="q-status pending" id="status-S8">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 延長フローの形式</p>
+      <div class="q-options" data-name="S8-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q1" value="新規購入と同じ4画面フロー"><div><span class="opt-label">新規購入と同じ4画面フロー</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q1" value="簡略3画面（開始日自動）"><div><span class="opt-label">簡略3画面（開始日は自動で翌日）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q1" value="ワンタップ延長（確認ダイアログのみ）"><div><span class="opt-label">ワンタップ延長（確認ダイアログのみ）</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 延長時に別の期間を選べるか</p>
+      <div class="q-options" data-name="S8-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q2" value="選べる"><div><span class="opt-label">選べる（2週間パス→1ヶ月パスに変更可）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q2" value="同じ期間のみ"><div><span class="opt-label">同じ期間パスのみ</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q3: 延長時にクーポンは使えるか</p>
+      <div class="q-options" data-name="S8-Q3">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q3" value="使える"><div><span class="opt-label">使える</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S8-Q3" value="使えない"><div><span class="opt-label">使えない（初回購入のみ）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S8" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="S9">
+    <div class="q-header"><div class="q-id mid">S9</div><div class="q-title">ホーム画面: 期間パス情報の表示</div><div class="q-status pending" id="status-S9">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: ホーム画面での表示</p>
+      <div class="q-options" data-name="S9-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S9-Q1" value="残り日数カードを表示"><div><span class="opt-label">「現在有効な期間パス」残り日数カードを表示</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S9-Q1" value="マイページのみ"><div><span class="opt-label">ホームには表示せずマイページのみ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S9-Q1" value="期限間近のみ警告バナー"><div><span class="opt-label">期限間近の場合のみ警告バナー表示</span><span class="opt-rec">おすすめ</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S9" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="S10">
+    <div class="q-header"><div class="q-id low">S10</div><div class="q-title">利用履歴: 期間パスの履歴表示</div><div class="q-status pending" id="status-S10">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 履歴の表示形式</p>
+      <div class="q-options" data-name="S10-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S10-Q1" value="通常履歴にラベル付きで混在"><div><span class="opt-label">通常履歴に「期間パス利用」ラベル付きで混在</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S10-Q1" value="期間パス専用タブ追加"><div><span class="opt-label">期間パス専用タブ/フィルタを追加</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 領収書の発行</p>
+      <div class="q-options" data-name="S10-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S10-Q2" value="発行する"><div><span class="opt-label">発行する（既存の領収書機能に統合）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S10-Q2" value="初期リリースでは未対応"><div><span class="opt-label">初期リリースでは未対応</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S10" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="S11">
+    <div class="q-header"><div class="q-id low">S11</div><div class="q-title">お知らせ一覧: カテゴリフィルタ</div><div class="q-status pending" id="status-S11">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="S11-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S11-Q1" value="フィルタなし（時系列混在）"><div><span class="opt-label">フィルタなし（時系列で混在表示）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S11-Q1" value="カテゴリフィルタ追加"><div><span class="opt-label">「すべて/期間パス/チェックイン/その他」フィルタ追加</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S11" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="S12">
+    <div class="q-header"><div class="q-id low">S12</div><div class="q-title">店舗検索: 期間パス対応フィルタ</div><div class="q-status pending" id="status-S12">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="S12-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S12-Q1" value="フィルタ追加"><div><span class="opt-label">「期間パス対応」フィルタ追加</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="S12-Q1" value="フィルタ不要（アイコン表示のみ）"><div><span class="opt-label">フィルタ不要（検索結果にアイコン表示のみ）</span><span class="opt-rec">おすすめ</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="S12" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ===== カテゴリ2: ビジネスルール ===== -->
+<div class="category" id="cat-business">
+  <div class="category-title"><span class="icon">&#128176;</span> ビジネスルール <span class="cat-toggle" id="cat-business-count">0/8 回答済</span></div>
+  <div class="category-progress">料金・契約条件・決済の根幹ルール。最優先で決定が必要</div>
+
+  <div class="q-card" data-qid="B1">
+    <div class="q-header"><div class="q-id high">B1</div><div class="q-title">月額プランと期間パスの同時契約</div><div class="q-status pending" id="status-B1">未回答</div></div>
+    <div class="q-body">
+      <div class="q-context">同一ユーザーが月額プランと期間パスの両方を持てるか。契約ロジック・チェックイン判定に大きく影響。</div>
+      <div class="q-options" data-name="B1-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B1-Q1" value="同時契約は不可"><div><span class="opt-label">同時契約は不可</span><span class="opt-rec">おすすめ</span><div class="opt-desc">シンプルでトラブルを回避</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B1-Q1" value="別店舗なら可"><div><span class="opt-label">別店舗であれば同時契約可</span><div class="opt-desc">A店で月額、B店で期間パス</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B1-Q1" value="完全に自由"><div><span class="opt-label">完全に自由（同一店舗でも可）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B2">
+    <div class="q-header"><div class="q-id high">B2</div><div class="q-title">期間の計算方法と利用制限</div><div class="q-status pending" id="status-B2">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 暦日ベース or 利用日ベース</p>
+      <div class="q-options" data-name="B2-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B2-Q1" value="暦日ベース"><div><span class="opt-label">暦日ベース（カレンダー日数）</span><span class="opt-rec">おすすめ</span><div class="opt-desc">終了日が購入時に確定。シンプル</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B2-Q1" value="利用日ベース"><div><span class="opt-label">利用日ベース（チェックインした日のみカウント）</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 利用制限</p>
+      <div class="q-options" data-name="B2-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B2-Q2" value="期間内使い放題"><div><span class="opt-label">期間内使い放題</span><span class="opt-rec">おすすめ</span><div class="opt-desc">営業時間内なら回数・時間の制限なし</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B2-Q2" value="1日の時間上限あり"><div><span class="opt-label">1日の時間上限あり（例:8時間）</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B2-Q2" value="期間全体の時間上限あり"><div><span class="opt-label">期間全体の時間上限あり（例:50時間）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B2" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B3">
+    <div class="q-header"><div class="q-id high">B3</div><div class="q-title">期間パスの終了時刻</div><div class="q-status pending" id="status-B3">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="B3-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B3-Q1" value="終了日の営業時間終了まで"><div><span class="opt-label">終了日の営業時間終了まで</span><span class="opt-rec">おすすめ</span><div class="opt-desc">最終日も丸1日使える</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B3-Q1" value="終了日の23:59:59まで"><div><span class="opt-label">終了日の23:59:59まで</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B3-Q1" value="終了日の前日閉店まで"><div><span class="opt-label">終了日の0:00（前日の閉店まで）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B3" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B4">
+    <div class="q-header"><div class="q-id high">B4</div><div class="q-title">手数料率と精算方法</div><div class="q-status pending" id="status-B4">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 手数料率</p>
+      <div class="q-options" data-name="B4-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B4-Q1" value="月額と同率"><div><span class="opt-label">月額プランと同率（commissionRate）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B4-Q1" value="期間パス専用の手数料率"><div><span class="opt-label">期間パス専用の手数料率を新設</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 精算タイミング</p>
+      <div class="q-options" data-name="B4-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B4-Q2" value="月次精算"><div><span class="opt-label">月額と同じ月次精算</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B4-Q2" value="期間終了後精算"><div><span class="opt-label">期間パス終了後に精算</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B5">
+    <div class="q-header"><div class="q-id mid">B5</div><div class="q-title">連続購入回数の制限</div><div class="q-status pending" id="status-B5">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="B5-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B5-Q1" value="制限なし"><div><span class="opt-label">制限なし（月額プランの案内は表示）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B5-Q1" value="連続3回まで"><div><span class="opt-label">連続3回まで</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B5-Q1" value="合計60日超で月額推奨"><div><span class="opt-label">合計60日超で月額プラン推奨表示</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B5" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B6">
+    <div class="q-header"><div class="q-id mid">B6</div><div class="q-title">中途解約・返金・休会</div><div class="q-status pending" id="status-B6">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 中途解約・返金ポリシー</p>
+      <div class="q-options" data-name="B6-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B6-Q1" value="返金なし（買い切り）"><div><span class="opt-label">返金なし（買い切り）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B6-Q1" value="開始前のみキャンセル可"><div><span class="opt-label">開始前のみキャンセル可（全額返金）</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B6-Q1" value="日割り返金"><div><span class="opt-label">日割り返金</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 休会機能</p>
+      <div class="q-options" data-name="B6-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B6-Q2" value="休会なし"><div><span class="opt-label">休会なし</span><span class="opt-rec">おすすめ</span><div class="opt-desc">固定期間の買い切り</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B6-Q2" value="一時停止可能"><div><span class="opt-label">一時停止（残日数キープ）可能</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B6" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B7">
+    <div class="q-header"><div class="q-id mid">B7</div><div class="q-title">消費税の計算方法</div><div class="q-status pending" id="status-B7">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="B7-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B7-Q1" value="税込価格を直接設定"><div><span class="opt-label">店舗が税込価格を直接設定</span><span class="opt-rec">おすすめ</span><div class="opt-desc">端数の心配なし</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B7-Q1" value="税抜×1.1で自動計算"><div><span class="opt-label">税抜価格を設定しシステムが自動計算</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B7" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="B8">
+    <div class="q-header"><div class="q-id mid">B8</div><div class="q-title">Akerun（ドア解錠）の権限</div><div class="q-status pending" id="status-B8">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="B8-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B8-Q1" value="月額と同じ解錠権限"><div><span class="opt-label">月額プランと同じ解錠権限（期間中常時）</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="B8-Q1" value="チェックイン時のみ解錠"><div><span class="opt-label">チェックイン時のみ解錠可能</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="B8" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ===== カテゴリ3: UX・操作仕様 ===== -->
+<div class="category" id="cat-ux">
+  <div class="category-title"><span class="icon">&#128073;</span> UX・操作仕様 <span class="cat-toggle" id="cat-ux-count">0/7 回答済</span></div>
+  <div class="category-progress">ユーザーの操作フローやインタラクションの仕様</div>
+
+  <div class="q-card" data-qid="U1">
+    <div class="q-header"><div class="q-id high">U1</div><div class="q-title">未ログインユーザーの導線</div><div class="q-status pending" id="status-U1">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="U1-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U1-Q1" value="閲覧可能、購入時にログイン"><div><span class="opt-label">閲覧は可能、購入時にログイン/登録を促す</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U1-Q1" value="ログイン後のみ表示"><div><span class="opt-label">ログイン後のみ期間パスタブを表示</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U2">
+    <div class="q-header"><div class="q-id high">U2</div><div class="q-title">購入フロー中の離脱時の挙動</div><div class="q-status pending" id="status-U2">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 離脱時の入力保持</p>
+      <div class="q-options" data-name="U2-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U2-Q1" value="最初からやり直し"><div><span class="opt-label">アプリ再起動で最初からやり直し</span><span class="opt-rec">おすすめ</span><div class="opt-desc">実装がシンプル</div></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U2-Q1" value="30分間保持"><div><span class="opt-label">選択内容を30分間保持して復帰可能</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 「戻る」操作時の選択保持</p>
+      <div class="q-options" data-name="U2-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U2-Q2" value="選択を保持"><div><span class="opt-label">選択済みのパス・開始日を保持する</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U2-Q2" value="リセット"><div><span class="opt-label">リセットしてやり直し</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U2" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U3">
+    <div class="q-header"><div class="q-id mid">U3</div><div class="q-title">決済失敗時のリトライ</div><div class="q-status pending" id="status-U3">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="U3-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U3-Q1" value="確認画面でエラー+再試行"><div><span class="opt-label">確認画面にエラー表示 + 再試行/カード変更ボタン</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U3-Q1" value="失敗専用画面に遷移"><div><span class="opt-label">失敗専用画面に遷移</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U3" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U4">
+    <div class="q-header"><div class="q-id mid">U4</div><div class="q-title">期限切れ後のチェックイン時の挙動</div><div class="q-status pending" id="status-U4">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="U4-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U4-Q1" value="期限切れ画面+再購入/ドロップイン誘導"><div><span class="opt-label">「期限切れ」画面 + 再購入/ドロップイン/月額の3択提示</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U4-Q1" value="自動でドロップイン課金"><div><span class="opt-label">自動的にドロップイン利用として課金</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U4-Q1" value="チェックイン拒否のみ"><div><span class="opt-label">チェックイン拒否のみ（「利用できません」表示）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U5">
+    <div class="q-header"><div class="q-id mid">U5</div><div class="q-title">クーポン入力のタイミング</div><div class="q-status pending" id="status-U5">未回答</div></div>
+    <div class="q-body">
+      <div class="q-options" data-name="U5-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U5-Q1" value="パス選択画面"><div><span class="opt-label">パス選択画面（現モック案）</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U5-Q1" value="確認画面"><div><span class="opt-label">確認画面で入力</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U5-Q1" value="両方で入力可能"><div><span class="opt-label">両方で入力可能</span><span class="opt-rec">おすすめ</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U5" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U6">
+    <div class="q-header"><div class="q-id low">U6</div><div class="q-title">「詳細を見る」画面の内容</div><div class="q-status pending" id="status-U6">未回答</div></div>
+    <div class="q-body">
+      <div class="q-note-label">表示すべき情報を選択（自由記述）</div>
+      <textarea class="q-note" data-note="U6" placeholder="例: 契約日/開始日/終了日/残り日数/購入金額/利用回数/領収書..." oninput="updateProgress()" rows="3"></textarea>
+    </div>
+  </div>
+
+  <div class="q-card" data-qid="U7">
+    <div class="q-header"><div class="q-id low">U7</div><div class="q-title">月額プランへの切り替え導線</div><div class="q-status pending" id="status-U7">未回答</div></div>
+    <div class="q-body">
+      <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 案内タイミング</p>
+      <div class="q-options" data-name="U7-Q1">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U7-Q1" value="期限切れ通知時のみ"><div><span class="opt-label">期限切れ通知時のみ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U7-Q1" value="マイページに常にリンク"><div><span class="opt-label">マイページに常にリンク表示</span><span class="opt-rec">おすすめ</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 切り替え時の残り期間の扱い</p>
+      <div class="q-options" data-name="U7-Q2">
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U7-Q2" value="期間パス終了後に月額開始"><div><span class="opt-label">期間パス終了後に月額プラン開始</span><span class="opt-rec">おすすめ</span></div></label>
+        <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="U7-Q2" value="即座に月額プラン開始"><div><span class="opt-label">即座に月額プラン開始（期間パス残りは無効）</span></div></label>
+      </div>
+      <div class="q-note-label">補足メモ（任意）</div>
+      <textarea class="q-note" data-note="U7" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ===== カテゴリ4: 通知・メール ===== -->
+<div class="category" id="cat-notify">
+  <div class="category-title"><span class="icon">&#128276;</span> 通知・メール <span class="cat-toggle" id="cat-notify-count">0/5 回答済</span></div>
+  <div class="category-progress">プッシュ通知・メール・アプリ内通知の仕様</div>
+
+  <div class="q-card" data-qid="N1"><div class="q-header"><div class="q-id mid">N1</div><div class="q-title">通知の送信時刻</div><div class="q-status pending" id="status-N1">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: プッシュ通知の送信時刻</p>
+    <div class="q-options" data-name="N1-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N1-Q1" value="朝9:00"><div><span class="opt-label">朝9:00</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N1-Q1" value="夕方18:00"><div><span class="opt-label">夕方18:00</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N1-Q1" value="朝+夕方の2回"><div><span class="opt-label">朝+夕方の2回</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="N1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="N2"><div class="q-header"><div class="q-id mid">N2</div><div class="q-title">プッシュ通知のアクションボタン</div><div class="q-status pending" id="status-N2">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 「延長する」の遷移先</p>
+    <div class="q-options" data-name="N2-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N2-Q1" value="延長専用画面（簡略フロー）"><div><span class="opt-label">延長専用画面（簡略フロー）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N2-Q1" value="パス選択画面（フルフロー）"><div><span class="opt-label">パス選択画面（フルフロー）</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N2-Q1" value="マイページの期間パスカード"><div><span class="opt-label">マイページの期間パスカード</span></div></label>
+    </div>
+    <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 「あとで」ボタンの挙動</p>
+    <div class="q-options" data-name="N2-Q2">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N2-Q2" value="通知を消すだけ"><div><span class="opt-label">通知を消すだけ（アプリ内お知らせには残る）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N2-Q2" value="スヌーズ（数時間後に再通知）"><div><span class="opt-label">スヌーズ（数時間後に再通知）</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="N2" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="N3"><div class="q-header"><div class="q-id mid">N3</div><div class="q-title">メール通知の設定</div><div class="q-status pending" id="status-N3">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: メールのデザイン形式</p>
+    <div class="q-options" data-name="N3-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N3-Q1" value="HTMLメール"><div><span class="opt-label">HTMLメール（リッチデザイン）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N3-Q1" value="テキストメール"><div><span class="opt-label">テキストメール（シンプル）</span></div></label>
+    </div>
+    <div class="q-note-label">送信元アドレス・メール送信サービスの指定（任意）</div><textarea class="q-note" data-note="N3" placeholder="例: SendGrid利用、送信元 info.studygo@b-pt.jp..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="N4"><div class="q-header"><div class="q-id low">N4</div><div class="q-title">通知のオプトアウト設定</div><div class="q-status pending" id="status-N4">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="N4-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N4-Q1" value="常に通知（オフ不可）"><div><span class="opt-label">常に通知（オフ不可）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N4-Q1" value="個別にON/OFF可能"><div><span class="opt-label">通知設定画面で個別にON/OFF可能</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="N4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="N5"><div class="q-header"><div class="q-id low">N5</div><div class="q-title">購入完了時の通知</div><div class="q-status pending" id="status-N5">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 購入完了プッシュ通知</p>
+    <div class="q-options" data-name="N5-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N5-Q1" value="お知らせ一覧にも記録"><div><span class="opt-label">プッシュ通知 + お知らせ一覧にも記録</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="N5-Q1" value="プッシュ通知不要"><div><span class="opt-label">不要（完了画面で確認済みのため）</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="N5" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+</div>
+
+<!-- ===== カテゴリ5: 管理画面 ===== -->
+<div class="category" id="cat-admin">
+  <div class="category-title"><span class="icon">&#128187;</span> 管理画面 <span class="cat-toggle" id="cat-admin-count">0/5 回答済</span></div>
+  <div class="category-progress">本部管理・加盟法人画面の仕様</div>
+
+  <div class="q-card" data-qid="A1"><div class="q-header"><div class="q-id high">A1</div><div class="q-title">プラン作成・管理の権限</div><div class="q-status pending" id="status-A1">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: プラン作成の権限</p>
+    <div class="q-options" data-name="A1-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A1-Q1" value="本部のみ"><div><span class="opt-label">本部がプラン作成、加盟法人は有効/無効のみ</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A1-Q1" value="加盟法人も作成可"><div><span class="opt-label">加盟法人が独自の期間・価格でプラン作成可能</span></div></label>
+    </div>
+    <p style="font-size:13px; font-weight:700; margin:12px 0 6px;">Q2: 購入者ありプランの価格変更</p>
+    <div class="q-options" data-name="A1-Q2">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A1-Q2" value="既存契約に影響しない"><div><span class="opt-label">変更可（既存契約には影響なし、新規のみ新価格）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A1-Q2" value="新プラン作成で対応"><div><span class="opt-label">価格変更不可（新プラン作成→旧プラン終了の運用）</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="A1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="A2"><div class="q-header"><div class="q-id mid">A2</div><div class="q-title">管理者の契約操作権限</div><div class="q-status pending" id="status-A2">未回答</div></div><div class="q-body">
+    <div class="q-note-label">初期リリースで必要な管理者操作を選択（自由記述）</div>
+    <textarea class="q-note" data-note="A2" placeholder="例: 手動失効 / 期間延長 / 返金処理 / 契約詳細閲覧 / CSVエクスポート のうちどれが必要？" oninput="updateProgress()" rows="3"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="A3"><div class="q-header"><div class="q-id mid">A3</div><div class="q-title">加盟法人画面での表示範囲</div><div class="q-status pending" id="status-A3">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="A3-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A3-Q1" value="集計値のみ"><div><span class="opt-label">契約数・売上の集計値のみ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A3-Q1" value="一覧・詳細まで閲覧"><div><span class="opt-label">契約の一覧・詳細まで閲覧可能</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A3-Q1" value="操作も可能"><div><span class="opt-label">契約の操作（手動失効等）も可能</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="A3" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="A4"><div class="q-header"><div class="q-id low">A4</div><div class="q-title">売上レポートの仕様</div><div class="q-status pending" id="status-A4">未回答</div></div><div class="q-body">
+    <p style="font-size:13px; font-weight:700; margin-bottom:6px;">Q1: 売上計上タイミング</p>
+    <div class="q-options" data-name="A4-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A4-Q1" value="購入日に全額計上"><div><span class="opt-label">購入日に全額計上</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="A4-Q1" value="利用期間で日割り按分"><div><span class="opt-label">利用期間に応じて日割り按分</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="A4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="A5"><div class="q-header"><div class="q-id low">A5</div><div class="q-title">利用統計ダッシュボード</div><div class="q-status pending" id="status-A5">未回答</div></div><div class="q-body">
+    <div class="q-note-label">初期リリースで必要な統計指標（自由記述）</div>
+    <textarea class="q-note" data-note="A5" placeholder="例: 契約数/プラン別割合/延長率/月額転換率/平均利用時間/店舗別売上 のうちどれ？" oninput="updateProgress()" rows="3"></textarea>
+  </div></div>
+</div>
+
+<!-- ===== カテゴリ6: エッジケース ===== -->
+<div class="category" id="cat-edge">
+  <div class="category-title"><span class="icon">&#9888;</span> エッジケース・例外処理 <span class="cat-toggle" id="cat-edge-count">0/5 回答済</span></div>
+  <div class="category-progress">通常フロー以外の特殊ケース</div>
+
+  <div class="q-card" data-qid="E1"><div class="q-header"><div class="q-id high">E1</div><div class="q-title">利用中に終了日を迎えた場合</div><div class="q-status pending" id="status-E1">未回答</div></div><div class="q-body">
+    <div class="q-context">チェックイン中のまま期間が満了するケース</div>
+    <div class="q-options" data-name="E1-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E1-Q1" value="終了日の閉店まで利用可"><div><span class="opt-label">終了日の閉店まで利用可能（追加課金なし）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E1-Q1" value="満了時刻で強制チェックアウト"><div><span class="opt-label">期間満了時刻で強制チェックアウト</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E1-Q1" value="超過分はドロップイン課金"><div><span class="opt-label">超過分はドロップインとして課金</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="E1" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="E2"><div class="q-header"><div class="q-id high">E2</div><div class="q-title">購入後にプランが非公開になった場合</div><div class="q-status pending" id="status-E2">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="E2-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E2-Q1" value="購入済み契約は有効"><div><span class="opt-label">購入済みの契約は有効（非公開は新規購入にのみ影響）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E2-Q1" value="開始前ならキャンセル+返金"><div><span class="opt-label">開始前であれば自動キャンセル+全額返金</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="E2" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="E3"><div class="q-header"><div class="q-id mid">E3</div><div class="q-title">店舗の臨時休業時の対応</div><div class="q-status pending" id="status-E3">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="E3-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E3-Q1" value="延長しない"><div><span class="opt-label">期間は延長しない（利用規約に明記）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E3-Q1" value="管理者が手動延長"><div><span class="opt-label">管理者が手動で延長（個別対応）</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E3-Q1" value="休業日分を自動延長"><div><span class="opt-label">休業日分を自動延長</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="E3" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="E4"><div class="q-header"><div class="q-id mid">E4</div><div class="q-title">アカウント削除時の処理</div><div class="q-status pending" id="status-E4">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="E4-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E4-Q1" value="警告表示して削除許可（返金なし）"><div><span class="opt-label">警告表示して削除許可（返金なし）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E4-Q1" value="期間パス有効中は削除拒否"><div><span class="opt-label">期間パス有効中はアカウント削除を拒否</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="E4" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+
+  <div class="q-card" data-qid="E5"><div class="q-header"><div class="q-id low">E5</div><div class="q-title">複数店舗の期間パス同時購入</div><div class="q-status pending" id="status-E5">未回答</div></div><div class="q-body">
+    <div class="q-options" data-name="E5-Q1">
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E5-Q1" value="許可する"><div><span class="opt-label">許可する（複数店舗それぞれで保有可）</span><span class="opt-rec">おすすめ</span></div></label>
+      <label class="q-option" onclick="selectOpt(this)"><input type="radio" name="E5-Q1" value="1店舗のみ"><div><span class="opt-label">同時に保有できるのは1店舗分のみ</span></div></label>
+    </div>
+    <div class="q-note-label">補足メモ（任意）</div><textarea class="q-note" data-note="E5" placeholder="補足があれば入力..." oninput="updateProgress()"></textarea>
+  </div></div>
+</div>
+
+</div><!-- container -->
+
+<!-- エクスポートモーダル -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>回答データ エクスポート</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-sub); margin-bottom:12px;">以下のテキストをコピーして共有できます。「一時保存」で次回アクセス時に復元も可能です。</p>
+      <textarea id="exportText" readonly></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn secondary" onclick="closeModal()">閉じる</button>
+      <button class="modal-btn primary" onclick="copyExport()">コピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 選択肢クリック
+function selectOpt(el) {
+  const parent = el.closest('.q-options');
+  parent.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input[type=radio]').checked = true;
+  updateProgress();
+}
+
+// 進捗更新
+function updateProgress() {
+  const allCards = document.querySelectorAll('.q-card');
+  let total = allCards.length;
+  let answered = 0;
+
+  allCards.forEach(card => {
+    const qid = card.dataset.qid;
+    const hasRadio = card.querySelector('input[type=radio]:checked');
+    const notes = card.querySelectorAll('.q-note');
+    let hasNote = false;
+    notes.forEach(n => { if (n.value.trim()) hasNote = true; });
+
+    const isAnswered = hasRadio || hasNote;
+
+    const statusEl = document.getElementById('status-' + qid);
+    const idEl = card.querySelector('.q-id');
+    if (isAnswered) {
+      answered++;
+      card.classList.add('answered');
+      if (statusEl) { statusEl.textContent = '回答済'; statusEl.className = 'q-status done'; }
+    } else {
+      card.classList.remove('answered');
+      if (statusEl) { statusEl.textContent = '未回答'; statusEl.className = 'q-status pending'; }
+    }
+  });
+
+  document.getElementById('answeredCount').textContent = answered;
+  document.getElementById('totalCount').textContent = total;
+  const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+
+  // カテゴリ別カウント
+  const cats = {screen:'S', business:'B', ux:'U', notify:'N', admin:'A', edge:'E'};
+  Object.entries(cats).forEach(([cat, prefix]) => {
+    const catCards = document.querySelectorAll(`.q-card[data-qid^="${prefix}"]`);
+    let catTotal = catCards.length, catDone = 0;
+    catCards.forEach(c => { if (c.classList.contains('answered')) catDone++; });
+    const el = document.getElementById('cat-' + cat + '-count');
+    if (el) el.textContent = catDone + '/' + catTotal + ' 回答済';
+  });
+
+  // クリティカルチェック更新
+  updateCritical();
+}
+
+function updateCritical() {
+  const critMap = [
+    'S1-Q1', 'B4-Q1', 'B2-Q2', 'S3-Q1', 'B6-Q1', 'B1-Q1', 'B2-Q1', 'B3-Q1'
+  ];
+  critMap.forEach((name, i) => {
+    const radio = document.querySelector(`input[name="${name}"]:checked`);
+    const el = document.getElementById('crit-' + i);
+    if (radio) {
+      el.textContent = '✓';
+      el.classList.add('done');
+    } else {
+      el.textContent = '-';
+      el.classList.remove('done');
+    }
+  });
+}
+
+// エクスポート
+function exportData() {
+  let text = '# 期間パス 決定事項チェックリスト 回答データ\n';
+  text += '# エクスポート日時: ' + new Date().toLocaleString('ja-JP') + '\n\n';
+
+  const allCards = document.querySelectorAll('.q-card');
+  let currentCat = '';
+  const catNames = {S:'画面設計', B:'ビジネスルール', U:'UX・操作仕様', N:'通知・メール', A:'管理画面', E:'エッジケース'};
+
+  allCards.forEach(card => {
+    const qid = card.dataset.qid;
+    const prefix = qid.charAt(0);
+    if (prefix !== currentCat) {
+      currentCat = prefix;
+      text += '\n## ' + (catNames[prefix] || prefix) + '\n\n';
+    }
+
+    const title = card.querySelector('.q-title').textContent;
+    text += '### ' + qid + ': ' + title + '\n';
+
+    const radios = card.querySelectorAll('input[type=radio]:checked');
+    if (radios.length > 0) {
+      radios.forEach(r => {
+        text += '  → ' + r.name + ': ' + r.value + '\n';
+      });
+    } else {
+      text += '  → （未回答）\n';
+    }
+
+    const notes = card.querySelectorAll('.q-note');
+    notes.forEach(n => {
+      if (n.value.trim()) {
+        text += '  メモ: ' + n.value.trim() + '\n';
+      }
+    });
+    text += '\n';
+  });
+
+  document.getElementById('exportText').value = text;
+  document.getElementById('exportModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('exportModal').classList.remove('show');
+}
+
+function copyExport() {
+  const textarea = document.getElementById('exportText');
+  textarea.select();
+  document.execCommand('copy');
+  const btn = event.target;
+  btn.textContent = 'コピーしました！';
+  setTimeout(() => { btn.textContent = 'コピー'; }, 2000);
+}
+
+// ローカル保存
+function saveToLocal() {
+  const data = {};
+
+  document.querySelectorAll('input[type=radio]:checked').forEach(r => {
+    data[r.name] = r.value;
+  });
+
+  document.querySelectorAll('.q-note').forEach(n => {
+    const key = n.dataset.note;
+    if (key && n.value.trim()) {
+      data['note_' + key] = n.value.trim();
+    }
+  });
+
+  localStorage.setItem('periodPassChecklist', JSON.stringify(data));
+  alert('一時保存しました！\n次回このページを開いたとき自動復元されます。');
+}
+
+// ローカル復元
+function loadFromLocal() {
+  const saved = localStorage.getItem('periodPassChecklist');
+  if (!saved) return;
+
+  try {
+    const data = JSON.parse(saved);
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (key.startsWith('note_')) {
+        const noteKey = key.replace('note_', '');
+        const textarea = document.querySelector(`.q-note[data-note="${noteKey}"]`);
+        if (textarea) textarea.value = value;
+      } else {
+        const radio = document.querySelector(`input[name="${key}"][value="${value}"]`);
+        if (radio) {
+          radio.checked = true;
+          const label = radio.closest('.q-option');
+          if (label) {
+            label.closest('.q-options').querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+            label.classList.add('selected');
+          }
+        }
+      }
+    });
+
+    updateProgress();
+  } catch(e) {}
+}
+
+function resetAll() {
+  if (!confirm('すべての回答をリセットしますか？\n（ローカル保存データも削除されます）')) return;
+  localStorage.removeItem('periodPassChecklist');
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+  document.querySelectorAll('.q-note').forEach(n => n.value = '');
+  updateProgress();
+}
+
+// 初期化
+window.addEventListener('DOMContentLoaded', () => {
+  loadFromLocal();
+  updateProgress();
+});
+</script>
+
+</body>
+</html>

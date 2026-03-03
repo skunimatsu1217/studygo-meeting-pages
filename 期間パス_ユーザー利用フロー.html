@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 期間パス - ユーザー利用フロー</title>
+<style>
+  :root {
+    --green: #4CAF50;
+    --green-dark: #388E3C;
+    --green-light: #E8F5E9;
+    --orange: #FF9800;
+    --orange-light: #FFF3E0;
+    --red: #F44336;
+    --red-light: #FFEBEE;
+    --blue: #2196F3;
+    --blue-light: #E3F2FD;
+    --bg: #F5F5F5;
+    --white: #FFFFFF;
+    --text: #333333;
+    --text-sub: #757575;
+    --border: #E0E0E0;
+    --yellow: #FFC107;
+    --yellow-light: #FFFDE7;
+    --purple: #9C27B0;
+    --purple-light: #F3E5F5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif;
+    background: #2c2c2c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    color: #eee;
+  }
+
+  /* ===== ヘッダー ===== */
+  .page-header {
+    text-align: center;
+    margin-bottom: 28px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .page-header h1 {
+    font-size: 28px;
+    color: var(--green);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  .page-header .subtitle {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+  }
+
+  /* ===== 凡例 ===== */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 24px;
+    max-width: 900px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+  }
+  .legend-swatch {
+    width: 28px;
+    height: 18px;
+    border-radius: 4px;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .legend-swatch.existing { background: var(--blue); opacity: 0.7; }
+  .legend-swatch.new-screen { border: 2px dashed var(--green); background: rgba(76,175,80,0.15); }
+  .legend-swatch.modified { border: 2px solid var(--orange); background: rgba(255,152,0,0.15); }
+
+  /* ===== タブナビ ===== */
+  .tab-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 10px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .tab-btn {
+    padding: 10px 18px;
+    border: 2px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.85);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.25s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .tab-btn:hover {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.4);
+  }
+  .tab-btn.active {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(76,175,80,0.35);
+  }
+  .show-all-toggle {
+    padding: 10px 20px;
+    border: 2px solid var(--orange);
+    background: rgba(255,152,0,0.12);
+    color: var(--orange);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: all 0.25s;
+    font-family: inherit;
+    margin-left: 8px;
+  }
+  .show-all-toggle:hover { background: rgba(255,152,0,0.25); }
+  .show-all-toggle.active {
+    background: var(--orange);
+    color: #fff;
+  }
+
+  /* ===== シナリオパネル ===== */
+  .scenario-panel {
+    display: none;
+    max-width: 1400px;
+    width: 100%;
+    margin-top: 20px;
+    animation: fadeIn 0.35s ease;
+  }
+  .scenario-panel.visible { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ペルソナ */
+  .persona-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .persona-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    color: #fff;
+    font-weight: 700;
+  }
+  .persona-info h3 {
+    font-size: 16px;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .persona-info p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+
+  .scenario-title {
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--green);
+    display: inline-block;
+  }
+
+  /* ===== フローコンテナ ===== */
+  .flow-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  /* ステップカード */
+  .step-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  .step-card .step-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    box-shadow: 0 3px 10px rgba(76,175,80,0.35);
+    z-index: 2;
+  }
+  .step-card .step-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* 矢印 */
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: var(--green);
+    padding-top: 50px;
+    flex-shrink: 0;
+    min-width: 30px;
+  }
+  .flow-arrow::after {
+    content: '\27A1';
+  }
+
+  /* ===== Phone Frame ===== */
+  .phone-frame {
+    width: 300px;
+    min-height: 520px;
+    background: var(--bg);
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+    border: 7px solid #1a1a1a;
+    position: relative;
+    color: var(--text);
+  }
+  .phone-frame.existing .screen-type-tag { background: var(--blue); }
+  .phone-frame.new-screen {
+    border: 7px dashed var(--green);
+  }
+  .phone-frame.new-screen .screen-type-tag { background: var(--green-dark); }
+  .phone-frame.modified {
+    border: 7px solid var(--orange);
+  }
+  .phone-frame.modified .screen-type-tag { background: var(--orange); }
+
+  /* Status bar */
+  .phone-status {
+    background: var(--green-dark);
+    color: #fff;
+    padding: 6px 16px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Screen type tag */
+  .screen-type-tag {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    padding: 3px 10px;
+    border-radius: 4px 0 0 4px;
+    font-size: 10px;
+    color: #fff;
+    font-weight: 700;
+    z-index: 5;
+  }
+
+  /* ナビバー */
+  .phone-navbar {
+    background: var(--green);
+    color: #fff;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .phone-navbar .back-arrow {
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  /* 画面コンテンツ */
+  .phone-body {
+    padding: 12px;
+    min-height: 400px;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  /* ボトムタブ */
+  .phone-bottom-tabs {
+    display: flex;
+    background: #fff;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .phone-bottom-tabs .btab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 2px 6px;
+    font-size: 9px;
+    color: var(--text-sub);
+  }
+  .phone-bottom-tabs .btab.active {
+    color: var(--green);
+    font-weight: 700;
+  }
+  .phone-bottom-tabs .btab .btab-icon {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* 画面内パーツ */
+  .mock-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .mock-card h4 {
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .mock-card p,
+  .mock-card li {
+    font-size: 11px;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+
+  .mock-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .mock-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #fff;
+    color: var(--text-sub);
+    border-right: 1px solid var(--border);
+  }
+  .mock-tab:last-child { border-right: none; }
+  .mock-tab.active {
+    background: var(--green);
+    color: #fff;
+  }
+
+  .mock-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 8px;
+    cursor: default;
+    font-family: inherit;
+  }
+  .mock-btn.primary {
+    background: var(--green);
+    color: #fff;
+  }
+  .mock-btn.outline {
+    background: transparent;
+    border: 2px solid var(--green);
+    color: var(--green);
+  }
+  .mock-btn.danger {
+    background: var(--red);
+    color: #fff;
+  }
+  .mock-btn.warn {
+    background: var(--orange);
+    color: #fff;
+  }
+  .mock-btn.secondary {
+    background: var(--blue);
+    color: #fff;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 12px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-row.total {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--green-dark);
+    border-bottom: none;
+    border-top: 2px solid var(--green);
+    margin-top: 4px;
+    padding-top: 8px;
+  }
+
+  .pass-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--green);
+    cursor: default;
+  }
+  .pass-card .pass-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .pass-card .pass-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green);
+  }
+  .pass-card .pass-daily {
+    font-size: 11px;
+    color: var(--text-sub);
+  }
+  .pass-card.selected {
+    border: 2px solid var(--green);
+    background: var(--green-light);
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin: 8px 0;
+  }
+  .cal-header {
+    text-align: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-sub);
+    padding: 4px 0;
+  }
+  .cal-day {
+    text-align: center;
+    font-size: 11px;
+    padding: 6px 2px;
+    border-radius: 6px;
+    color: var(--text);
+  }
+  .cal-day.today {
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+  }
+  .cal-day.end {
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-weight: 700;
+  }
+  .cal-day.in-range {
+    background: rgba(76,175,80,0.1);
+  }
+  .cal-day.disabled {
+    color: #ccc;
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    margin-bottom: 8px;
+    background: #fff;
+    font-family: inherit;
+    color: var(--text);
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-sub);
+    margin: 8px 0;
+  }
+  .checkbox-row input[type="checkbox"] {
+    accent-color: var(--green);
+    margin-top: 2px;
+  }
+
+  .notification-mock {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    margin-bottom: 14px;
+    border-left: 4px solid var(--green);
+  }
+  .notification-mock.warn { border-left-color: var(--orange); }
+  .notification-mock.danger { border-left-color: var(--red); }
+  .notification-mock .notif-app {
+    font-size: 10px;
+    color: var(--green);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .notification-mock .notif-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .notification-mock .notif-body {
+    font-size: 11px;
+    color: var(--text-sub);
+    line-height: 1.5;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .status-badge.active { background: var(--green); }
+  .status-badge.warning { background: var(--orange); }
+  .status-badge.expired { background: var(--red); }
+  .status-badge.info { background: var(--blue); }
+
+  .member-card-mock {
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    border-radius: 14px;
+    padding: 18px 16px;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .member-card-mock .mc-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .member-card-mock .mc-id {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+  .member-card-mock .mc-pass {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.25);
+    font-size: 12px;
+  }
+  .member-card-mock .mc-pass .remaining {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  /* Step description */
+  .step-desc {
+    max-width: 300px;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.55);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ===== Desktop Frame (for admin scenarios) ===== */
+  .desktop-frame {
+    width: 520px;
+    min-height: 380px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+    border: 2px solid #555;
+    color: var(--text);
+  }
+  .desktop-frame.new-screen {
+    border: 2px dashed var(--green);
+  }
+  .desktop-frame.modified {
+    border: 2px solid var(--orange);
+  }
+  .desktop-titlebar {
+    background: #e0e0e0;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-sub);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.red { background: #ff5f56; }
+  .dot.yellow { background: #ffbd2e; }
+  .dot.green { background: #27c93f; }
+  .desktop-body {
+    display: flex;
+    min-height: 340px;
+  }
+  .desktop-sidebar {
+    width: 160px;
+    background: #263238;
+    color: #fff;
+    padding: 12px 0;
+    flex-shrink: 0;
+  }
+  .desktop-sidebar .sidebar-item {
+    padding: 10px 16px;
+    font-size: 11px;
+    cursor: default;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .desktop-sidebar .sidebar-item.active {
+    background: rgba(76,175,80,0.3);
+    border-left: 3px solid var(--green);
+  }
+  .desktop-sidebar .sidebar-item .si-icon { font-size: 14px; }
+  .desktop-content {
+    flex: 1;
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.6;
+    overflow-y: auto;
+    background: #fafafa;
+  }
+  .desktop-content h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin-top: 8px;
+  }
+  .admin-table th {
+    background: var(--green-light);
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--green);
+    color: var(--green-dark);
+  }
+  .admin-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+  .admin-table tr:hover td { background: rgba(76,175,80,0.04); }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+  }
+
+  .toggle-switch {
+    width: 40px;
+    height: 22px;
+    background: #ccc;
+    border-radius: 11px;
+    position: relative;
+    display: inline-block;
+    cursor: default;
+  }
+  .toggle-switch.on { background: var(--green); }
+  .toggle-switch::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: left 0.2s;
+  }
+  .toggle-switch.on::after { left: 20px; }
+
+  /* ===== Branch flow ===== */
+  .branch-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+  .branch-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    margin-top: 8px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .branch-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+  }
+  .branch-option {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+    min-width: 160px;
+  }
+  .branch-option .bo-letter {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 26px;
+    margin-bottom: 6px;
+  }
+  .branch-option .bo-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  /* ===== Divider ===== */
+  .scenario-divider {
+    border: none;
+    border-top: 2px solid rgba(255,255,255,0.08);
+    margin: 40px 0;
+    max-width: 1400px;
+    width: 100%;
+  }
+
+  /* ===== Footer ===== */
+  .page-footer {
+    margin-top: 50px;
+    padding: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    max-width: 1400px;
+    width: 100%;
+  }
+
+  /* ===== success screen ===== */
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 16px auto;
+  }
+
+  .qr-placeholder {
+    width: 120px;
+    height: 120px;
+    border: 3px solid var(--text);
+    border-radius: 8px;
+    margin: 12px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-sub);
+    background: #fff;
+    position: relative;
+  }
+  .qr-placeholder::before {
+    content: '';
+    width: 80px;
+    height: 80px;
+    background: repeating-conic-gradient(#333 0% 25%, #fff 0% 50%) 50% / 10px 10px;
+    position: absolute;
+    opacity: 0.3;
+  }
+
+  .checkin-badge {
+    text-align: center;
+    padding: 16px;
+  }
+  .checkin-badge .ci-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .flow-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .flow-arrow {
+      transform: rotate(90deg);
+      padding-top: 0;
+      min-width: unset;
+      min-height: 30px;
+    }
+    .desktop-frame {
+      width: 100%;
+      max-width: 520px;
+    }
+    .desktop-body { flex-direction: column; }
+    .desktop-sidebar { width: 100%; padding: 8px 0; display: flex; overflow-x: auto; }
+    .desktop-sidebar .sidebar-item { white-space: nowrap; }
+    .phone-frame { width: 280px; min-height: 460px; }
+    .tab-btn { font-size: 11px; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="page-header">
+  <h1>スタディGO 期間パス - ユーザー利用フロー</h1>
+  <p class="subtitle">具体的な利用シナリオとアプリ画面遷移</p>
+</div>
+
+<!-- ===== 凡例 ===== -->
+<div class="legend">
+  <div class="legend-item">
+    <span class="legend-swatch existing"></span>
+    既存画面（変更なし）
+  </div>
+  <div class="legend-item">
+    <span class="legend-swatch new-screen"></span>
+    新規画面
+  </div>
+  <div class="legend-item">
+    <span class="legend-swatch modified"></span>
+    変更画面（既存画面の改修）
+  </div>
+</div>
+
+<!-- ===== タブナビゲーション ===== -->
+<div class="tab-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="scenario1">1. 初めての購入</button>
+  <button class="tab-btn" data-tab="scenario2">2. 毎日の利用</button>
+  <button class="tab-btn" data-tab="scenario3">3. 期限切れ前の延長</button>
+  <button class="tab-btn" data-tab="scenario4">4. 期限切れチェックイン</button>
+  <button class="tab-btn" data-tab="scenario5">5. 月額+期間パス併用</button>
+  <button class="tab-btn" data-tab="scenario6">6. 管理者プラン作成</button>
+  <button class="tab-btn" data-tab="scenario7">7. 加盟法人の確認</button>
+  <button class="show-all-toggle" id="showAllBtn">全シナリオ表示</button>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 1: 初めての期間パス購入 -->
+<!-- =========================================================================== -->
+<div class="scenario-panel visible" id="scenario1">
+  <h2 class="scenario-title">シナリオ1: 初めての期間パス購入</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);">田</div>
+    <div class="persona-info">
+      <h3>田中さん（28歳 / フリーランス）</h3>
+      <p>月額契約は不安だが、2週間集中で使ってみたい。まずは短期間で試してから判断したいタイプ。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">店舗詳細画面</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>9:41</span>
+          <span>100%</span>
+        </div>
+        <div class="phone-navbar">
+          <span class="back-arrow">&lt;</span>
+          StudyGO コワーキング渋谷店
+        </div>
+        <div class="phone-body">
+          <div class="mock-tabs">
+            <div class="mock-tab">月額プラン</div>
+            <div class="mock-tab active">期間パス</div>
+            <div class="mock-tab">ドロップイン</div>
+          </div>
+
+          <div class="pass-card">
+            <div class="pass-name">7日パス</div>
+            <div class="pass-price">&yen;5,000<span style="font-size:11px;color:#757575;font-weight:400;">（税込）</span></div>
+            <div class="pass-daily">1日あたり &yen;714</div>
+          </div>
+
+          <div class="pass-card selected">
+            <div class="pass-name">14日パス</div>
+            <div class="pass-price">&yen;8,000<span style="font-size:11px;color:#757575;font-weight:400;">（税込）</span></div>
+            <div class="pass-daily">1日あたり &yen;571</div>
+          </div>
+
+          <div class="pass-card">
+            <div class="pass-name">30日パス</div>
+            <div class="pass-price">&yen;12,000<span style="font-size:11px;color:#757575;font-weight:400;">（税込）</span></div>
+            <div class="pass-daily">1日あたり &yen;400</div>
+          </div>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab active"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">「期間パス」タブを選択し、パス一覧を表示。14日パスをタップ。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">パス選択 + クーポン</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:41</span>
+          <span>100%</span>
+        </div>
+        <div class="phone-navbar">
+          <span class="back-arrow">&lt;</span>
+          期間パス購入
+        </div>
+        <div class="phone-body">
+          <div class="mock-card">
+            <h4>選択中のプラン</h4>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:15px;font-weight:700;">14日パス</div>
+                <div style="font-size:11px;color:#757575;">コワーキング渋谷店</div>
+              </div>
+              <div style="font-size:20px;font-weight:700;color:#4CAF50;">&yen;8,000</div>
+            </div>
+            <div style="font-size:11px;color:#757575;margin-top:6px;">1日あたり &yen;571 / 税込価格</div>
+          </div>
+
+          <div class="mock-card">
+            <h4>年齢割引</h4>
+            <p style="color:#4CAF50;font-weight:600;">対象外（28歳）</p>
+          </div>
+
+          <div class="mock-card">
+            <h4>クーポンコード</h4>
+            <input class="input-field" type="text" placeholder="クーポンコードを入力" readonly>
+            <button class="mock-btn outline" style="font-size:12px;padding:8px;margin-top:4px;">適用する</button>
+          </div>
+
+          <button class="mock-btn primary" style="margin-top:16px;">次へ</button>
+        </div>
+      </div>
+      <div class="step-desc">パス詳細を確認。クーポンコードがあれば入力して「次へ」。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">開始日選択</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:41</span>
+          <span>100%</span>
+        </div>
+        <div class="phone-navbar">
+          <span class="back-arrow">&lt;</span>
+          開始日を選択
+        </div>
+        <div class="phone-body">
+          <div class="mock-card">
+            <h4>利用開始日を選んでください</h4>
+            <p>本日から7日以内で選択できます</p>
+          </div>
+
+          <div class="mock-card">
+            <div style="text-align:center;font-weight:700;font-size:13px;margin-bottom:8px;">2026年 2月</div>
+            <div class="calendar-grid">
+              <div class="cal-header">日</div><div class="cal-header">月</div><div class="cal-header">火</div><div class="cal-header">水</div><div class="cal-header">木</div><div class="cal-header">金</div><div class="cal-header">土</div>
+              <div class="cal-day disabled">22</div><div class="cal-day disabled">23</div>
+              <div class="cal-day today">24</div>
+              <div class="cal-day in-range">25</div><div class="cal-day in-range">26</div><div class="cal-day in-range">27</div><div class="cal-day in-range">28</div>
+            </div>
+            <div class="calendar-grid" style="margin-top:4px;">
+              <div style="grid-column: span 7; text-align:center; font-weight:700; font-size:13px; margin-bottom:8px;">2026年 3月</div>
+              <div class="cal-header">日</div><div class="cal-header">月</div><div class="cal-header">火</div><div class="cal-header">水</div><div class="cal-header">木</div><div class="cal-header">金</div><div class="cal-header">土</div>
+              <div class="cal-day in-range">1</div><div class="cal-day">2</div><div class="cal-day">3</div><div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div><div class="cal-day">7</div>
+              <div class="cal-day">8</div><div class="cal-day end">9</div><div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div><div class="cal-day">14</div>
+            </div>
+          </div>
+
+          <div class="mock-card" style="background: var(--green-light);">
+            <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;">
+              <span>開始日: 2/24（月）</span>
+              <span>終了日: 3/9（日）</span>
+            </div>
+            <div style="text-align:center;font-size:11px;color:#757575;margin-top:4px;">14日間</div>
+          </div>
+
+          <button class="mock-btn primary">次へ</button>
+        </div>
+      </div>
+      <div class="step-desc">カレンダーで開始日を選択。終了日は自動計算。本日がデフォルト。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-badge">4</div>
+      <div class="step-label">確認 + 決済</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:41</span>
+          <span>100%</span>
+        </div>
+        <div class="phone-navbar">
+          <span class="back-arrow">&lt;</span>
+          注文確認
+        </div>
+        <div class="phone-body">
+          <div class="mock-card">
+            <h4>注文内容</h4>
+            <div style="font-size:13px;font-weight:600;margin-bottom:2px;">14日パス</div>
+            <div style="font-size:11px;color:#757575;">コワーキング渋谷店</div>
+            <div style="font-size:11px;color:#757575;">2/24（月）〜 3/9（日）</div>
+          </div>
+
+          <div class="mock-card">
+            <h4>料金明細</h4>
+            <div class="price-row"><span>基本料金</span><span>&yen;8,000</span></div>
+            <div class="price-row"><span>年齢割引</span><span style="color:#999;">--</span></div>
+            <div class="price-row"><span>クーポン割引</span><span style="color:#999;">--</span></div>
+            <div class="price-row total"><span>合計（税込）</span><span>&yen;8,000</span></div>
+          </div>
+
+          <div class="mock-card">
+            <h4>お支払い方法</h4>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:18px;">&#128179;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">登録済みカード</div>
+                <div style="font-size:11px;color:#757575;">**** **** **** 1234</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" checked disabled>
+            <span>期間パスは購入後のキャンセル・返金はできません。この内容に同意します。</span>
+          </div>
+
+          <button class="mock-btn primary" style="font-size:16px;padding:14px;">購入する</button>
+          <div style="text-align:center;font-size:10px;color:#999;margin-top:6px;">3Dセキュア認証画面へ進みます</div>
+        </div>
+      </div>
+      <div class="step-desc">料金明細を確認。キャンセル不可に同意し「購入する」→ 3Dセキュア認証。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 5 -->
+    <div class="step-card">
+      <div class="step-badge">5</div>
+      <div class="step-label">完了画面</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:42</span>
+          <span>100%</span>
+        </div>
+        <div class="phone-navbar">
+          購入完了
+        </div>
+        <div class="phone-body" style="text-align:center;">
+          <div class="success-icon">&#10003;</div>
+          <div style="font-size:18px;font-weight:700;color:#333;margin-bottom:4px;">期間パスを購入しました！</div>
+          <div style="font-size:12px;color:#757575;margin-bottom:16px;">購入完了のプッシュ通知が送信されました</div>
+
+          <div class="mock-card" style="background:var(--green-light);text-align:left;">
+            <h4>利用期間</h4>
+            <div style="font-size:16px;font-weight:700;color:var(--green-dark);text-align:center;">2/24（月） 〜 3/9（日）</div>
+            <div style="text-align:center;font-size:11px;color:#757575;">14日間</div>
+          </div>
+
+          <button class="mock-btn primary" style="margin-top:12px;">チェックインする</button>
+          <div style="font-size:10px;color:#999;margin-top:4px;">即日開始のため今すぐ利用可能</div>
+
+          <div class="mock-card" style="margin-top:16px;text-align:left;">
+            <h4>利用方法ガイド</h4>
+            <ul style="padding-left:16px;margin-top:6px;">
+              <li>QRコードまたはボタンでチェックイン</li>
+              <li>毎日チェックイン/チェックアウトが必要です</li>
+              <li>期限終了後は自動で利用停止されます</li>
+            </ul>
+          </div>
+
+          <button class="mock-btn outline" style="margin-top:12px;">ホームに戻る</button>
+        </div>
+      </div>
+      <div class="step-desc">購入完了。即日開始ならチェックインボタン表示。初回は利用ガイドも表示。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 2: 毎日のチェックイン・チェックアウト -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario2">
+  <h2 class="scenario-title">シナリオ2: 毎日のチェックイン・チェックアウト</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);">田</div>
+    <div class="persona-info">
+      <h3>田中さん（期間パス利用中）</h3>
+      <p>14日パスを購入済み。毎日コワーキングスペースに来て作業している。残り10日。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">ホーム画面</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>9:30</span>
+          <span>85%</span>
+        </div>
+        <div class="phone-navbar">StudyGO</div>
+        <div class="phone-body">
+          <div class="member-card-mock">
+            <div class="mc-name">田中 太郎</div>
+            <div class="mc-id">ID: SG-2026-0815</div>
+            <div class="mc-pass">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:11px;opacity:0.8;">14日パス / 渋谷店</div>
+                  <div>残り <span class="remaining">10</span> 日</div>
+                </div>
+                <span class="status-badge active">利用可能</span>
+              </div>
+              <div style="font-size:10px;opacity:0.7;margin-top:4px;">2/24 〜 3/9</div>
+            </div>
+          </div>
+
+          <div class="mock-card" style="text-align:center;">
+            <button class="mock-btn primary" style="font-size:16px;padding:14px;">チェックインする</button>
+          </div>
+
+          <div class="mock-card">
+            <h4>お知らせ</h4>
+            <p>新しいお知らせはありません</p>
+          </div>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab active"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">メンバーカードに期間パス情報と残り日数を表示。チェックインボタンをタップ。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">チェックイン</div>
+      <div class="phone-frame existing">
+        <span class="screen-type-tag" style="background:var(--blue);">既存画面</span>
+        <div class="phone-status">
+          <span>9:31</span>
+          <span>85%</span>
+        </div>
+        <div class="phone-navbar">チェックイン</div>
+        <div class="phone-body" style="text-align:center;">
+          <div class="qr-placeholder">
+            <span style="position:relative;z-index:1;">QR Code</span>
+          </div>
+          <div style="font-size:12px;color:#757575;margin-bottom:16px;">QRコードをスキャン、<br>またはボタンでチェックイン</div>
+
+          <div class="checkin-badge">
+            <div class="ci-icon" style="background:var(--green-light);color:var(--green);">&#10003;</div>
+            <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px;">チェックインしました</div>
+            <div style="font-size:12px;color:#757575;">9:31 / コワーキング渋谷店</div>
+            <div style="margin-top:8px;">
+              <span class="status-badge active">期間パス利用</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">QRスキャンまたはボタンでチェックイン。期間パスとして自動判定。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">利用中</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>14:00</span>
+          <span>62%</span>
+        </div>
+        <div class="phone-navbar">マイページ</div>
+        <div class="phone-body">
+          <div class="mock-card" style="border-left:4px solid var(--green);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <h4>現在の利用状況</h4>
+              <span class="status-badge active">利用中</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;">コワーキング渋谷店</div>
+            <div style="font-size:11px;color:#757575;">チェックイン: 9:31</div>
+            <div style="font-size:11px;color:#757575;">経過時間: 4時間29分</div>
+          </div>
+
+          <div class="mock-card">
+            <h4>期間パス情報</h4>
+            <div style="font-size:13px;font-weight:600;">14日パス</div>
+            <div style="font-size:11px;color:#757575;">2/24（月）〜 3/9（日）</div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center;">
+              <div style="font-size:11px;color:#757575;">残り10日</div>
+              <div style="background:var(--green);height:6px;border-radius:3px;width:120px;position:relative;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:29%;background:var(--green-dark);border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="mock-btn warn" style="margin-top:12px;font-size:14px;">チェックアウトする</button>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab active"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">マイページで「利用中」ステータスと期間パス残日数を確認。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-badge">4</div>
+      <div class="step-label">チェックアウト</div>
+      <div class="phone-frame existing">
+        <span class="screen-type-tag" style="background:var(--blue);">既存画面</span>
+        <div class="phone-status">
+          <span>18:00</span>
+          <span>38%</span>
+        </div>
+        <div class="phone-navbar">チェックアウト</div>
+        <div class="phone-body" style="text-align:center;">
+          <div class="checkin-badge">
+            <div class="ci-icon" style="background:var(--orange-light);color:var(--orange);">&#128075;</div>
+            <div style="font-size:18px;font-weight:700;color:var(--orange);margin-bottom:4px;">お疲れ様でした</div>
+            <div style="font-size:12px;color:#757575;">チェックアウト: 18:00</div>
+            <div style="font-size:12px;color:#757575;">利用時間: 8時間29分</div>
+          </div>
+
+          <div class="mock-card" style="text-align:left;">
+            <h4>本日の利用</h4>
+            <div class="price-row"><span>店舗</span><span>コワーキング渋谷店</span></div>
+            <div class="price-row"><span>チェックイン</span><span>9:31</span></div>
+            <div class="price-row"><span>チェックアウト</span><span>18:00</span></div>
+            <div class="price-row"><span>プラン</span><span style="color:var(--green);font-weight:600;">期間パス（14日）</span></div>
+            <div class="price-row"><span>追加料金</span><span>&yen;0</span></div>
+          </div>
+
+          <div style="font-size:10px;color:#999;margin-top:10px;">※ 営業時間終了時は自動チェックアウトされます</div>
+
+          <button class="mock-btn outline" style="margin-top:12px;">ホームに戻る</button>
+        </div>
+      </div>
+      <div class="step-desc">チェックアウト完了。営業時間終了時は自動チェックアウト。追加料金なし。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 3: 期限切れが近づく → 延長 -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario3">
+  <h2 class="scenario-title">シナリオ3: 期限切れが近づく → 延長</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #4CAF50, #2E7D32);">田</div>
+    <div class="persona-info">
+      <h3>田中さん（期間パス残り3日）</h3>
+      <p>14日パスの残り3日。気に入ったので延長したい。延長通知を受け取る。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1: Push notification (3 days) -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">プッシュ通知（残り3日）</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:00</span>
+          <span>90%</span>
+        </div>
+        <div class="phone-navbar" style="background:#333;">ロック画面</div>
+        <div class="phone-body" style="background:#444;padding:20px 12px;">
+          <div class="notification-mock warn">
+            <div class="notif-app">StudyGO</div>
+            <div class="notif-title">期間パスの期限が近づいています</div>
+            <div class="notif-body">14日パス（渋谷店）の期限が<strong>3日後</strong>に切れます。延長をご検討ください。</div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="mock-btn primary" style="flex:1;padding:8px;font-size:11px;margin:0;">延長する</button>
+              <button class="mock-btn outline" style="flex:1;padding:8px;font-size:11px;margin:0;color:#999;border-color:#999;">あとで</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">残り3日で朝9:00にプッシュ通知。「延長する」か「あとで」を選択。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2: My Page (warning) -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">マイページ（警告表示）</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>10:00</span>
+          <span>88%</span>
+        </div>
+        <div class="phone-navbar">マイページ</div>
+        <div class="phone-body">
+          <div class="mock-card" style="border-left:4px solid var(--orange);background:var(--orange-light);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <h4 style="color:var(--orange);">期間パス</h4>
+              <span class="status-badge warning">残り3日</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;">14日パス / 渋谷店</div>
+            <div style="font-size:11px;color:#757575;">2/24 〜 3/9</div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center;">
+              <div style="font-size:11px;color:var(--orange);font-weight:600;">まもなく終了</div>
+              <div style="background:#ddd;height:6px;border-radius:3px;width:120px;position:relative;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:79%;background:var(--orange);border-radius:3px;"></div>
+              </div>
+            </div>
+            <button class="mock-btn warn" style="margin-top:10px;font-size:13px;">延長する</button>
+          </div>
+
+          <div class="mock-card">
+            <h4>利用履歴</h4>
+            <div class="price-row"><span>3/6（木）</span><span>9:00 〜 18:00</span></div>
+            <div class="price-row"><span>3/5（水）</span><span>10:30 〜 17:45</span></div>
+            <div class="price-row"><span>3/4（火）</span><span>9:15 〜 19:00</span></div>
+          </div>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab active"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">マイページの期間パスカードがオレンジ警告に。「延長する」ボタンが表示。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3: Push notification (1 day) -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">プッシュ通知（残り1日）</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:00</span>
+          <span>75%</span>
+        </div>
+        <div class="phone-navbar" style="background:#333;">ロック画面</div>
+        <div class="phone-body" style="background:#444;padding:20px 12px;">
+          <div class="notification-mock danger">
+            <div class="notif-app" style="color:var(--red);">StudyGO</div>
+            <div class="notif-title" style="color:var(--red);">期間パスの期限が明日切れます</div>
+            <div class="notif-body">14日パス（渋谷店）の期限が<strong style="color:var(--red);">明日</strong>で終了します。延長しないと利用できなくなります。</div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <button class="mock-btn danger" style="flex:1;padding:8px;font-size:11px;margin:0;">今すぐ延長する</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">残り1日で赤い警告通知。「今すぐ延長する」をタップして延長フローへ。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 4-7: Extension purchase flow -->
+    <div class="step-card">
+      <div class="step-badge" style="width:auto;padding:0 14px;border-radius:18px;">4-7</div>
+      <div class="step-label">延長購入フロー（4画面）</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>9:01</span>
+          <span>75%</span>
+        </div>
+        <div class="phone-navbar">
+          <span class="back-arrow">&lt;</span>
+          期間パス延長
+        </div>
+        <div class="phone-body">
+          <div class="mock-card" style="background:var(--green-light);">
+            <h4 style="color:var(--green-dark);">延長購入フロー</h4>
+            <p style="font-size:11px;">新規購入と同じ4ステップ</p>
+          </div>
+
+          <div class="mock-card">
+            <h4>Step 4: パス選択</h4>
+            <p>前回と異なる期間も選択可能</p>
+            <div style="margin-top:6px;">
+              <div class="pass-card" style="margin-bottom:6px;padding:10px;">
+                <div class="pass-name" style="font-size:12px;">7日パス - &yen;5,000</div>
+              </div>
+              <div class="pass-card selected" style="margin-bottom:6px;padding:10px;">
+                <div class="pass-name" style="font-size:12px;">14日パス - &yen;8,000</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mock-card">
+            <h4>Step 5: 開始日</h4>
+            <p style="color:var(--green);font-weight:600;">自動設定: 現パス終了翌日</p>
+            <div style="font-size:12px;margin-top:4px;">開始: 3/10（月） → 終了: 3/23（日）</div>
+          </div>
+
+          <div class="mock-card">
+            <h4>Step 6: 確認 + 決済</h4>
+            <p>クーポン利用も可能</p>
+          </div>
+
+          <div class="mock-card" style="background:var(--green-light);">
+            <h4>Step 7: 完了</h4>
+            <p style="color:var(--green-dark);font-weight:600;">延長パス購入完了！</p>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">新規購入と同じ4画面。開始日は現パス終了翌日が自動設定。別期間も選択可。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 4: 期限切れ後にチェックイン試行 -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario4">
+  <h2 class="scenario-title">シナリオ4: 期限切れ後にチェックインを試みる</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #2196F3, #1565C0);">鈴</div>
+    <div class="persona-info">
+      <h3>鈴木さん（期間パス期限切れ翌日）</h3>
+      <p>7日パスの期限切れに気づかず、翌日に来店してしまった。延長を忘れていた。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">チェックイン試行</div>
+      <div class="phone-frame existing">
+        <span class="screen-type-tag" style="background:var(--blue);">既存画面</span>
+        <div class="phone-status">
+          <span>10:00</span>
+          <span>72%</span>
+        </div>
+        <div class="phone-navbar">チェックイン</div>
+        <div class="phone-body" style="text-align:center;">
+          <div class="qr-placeholder">
+            <span style="position:relative;z-index:1;">QR Code</span>
+          </div>
+          <div style="font-size:12px;color:#757575;">QRコードをスキャンしてチェックイン</div>
+          <button class="mock-btn primary" style="margin-top:16px;">チェックインする</button>
+        </div>
+      </div>
+      <div class="step-desc">いつも通りQRスキャンでチェックインを試みる。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">期限切れ画面</div>
+      <div class="phone-frame new-screen">
+        <span class="screen-type-tag">新規画面</span>
+        <div class="phone-status">
+          <span>10:00</span>
+          <span>72%</span>
+        </div>
+        <div class="phone-navbar" style="background:var(--red);">チェックインエラー</div>
+        <div class="phone-body" style="text-align:center;">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--red-light);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:32px;margin:16px auto;">!</div>
+          <div style="font-size:16px;font-weight:700;color:var(--red);margin-bottom:4px;">期間パスの期限が切れています</div>
+          <div style="font-size:12px;color:#757575;margin-bottom:20px;">7日パス（渋谷店）は 3/2 に終了しました</div>
+
+          <button class="mock-btn primary" style="margin-bottom:8px;font-size:13px;">期間パスを再購入する</button>
+          <button class="mock-btn secondary" style="margin-bottom:8px;font-size:13px;">ドロップインで利用する</button>
+          <button class="mock-btn outline" style="font-size:13px;border-color:var(--purple);color:var(--purple);">月額プランに申し込む</button>
+
+          <div style="font-size:10px;color:#999;margin-top:16px;">それぞれのプランページに移動します</div>
+        </div>
+      </div>
+      <div class="step-desc">期限切れのエラー表示。再購入・ドロップイン・月額の3つから選択。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3: Branch -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">選択肢</div>
+      <div class="branch-container">
+        <div class="branch-options">
+          <div class="branch-option" style="border-color:var(--green);">
+            <div class="bo-letter">A</div>
+            <div class="bo-title">期間パス再購入</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);">購入フロー（4画面）<br>シナリオ1と同じ</div>
+          </div>
+          <div class="branch-option" style="border-color:var(--blue);">
+            <div class="bo-letter" style="background:var(--blue);">B</div>
+            <div class="bo-title">ドロップイン</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);">既存のドロップイン<br>手続きフローへ</div>
+          </div>
+          <div class="branch-option" style="border-color:var(--purple);">
+            <div class="bo-letter" style="background:var(--purple);">C</div>
+            <div class="bo-title">月額プラン</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.5);">既存の月額プラン<br>申込フローへ</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">ユーザーの状況に合わせて最適な選択肢を提示。離脱を防止。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 5: 月額プランと期間パス両方持ち -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario5">
+  <h2 class="scenario-title">シナリオ5: 月額プランと期間パス両方持ち</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #9C27B0, #6A1B9A);">佐</div>
+    <div class="persona-info">
+      <h3>佐藤さん（A店で月額契約中 + B店で期間パス）</h3>
+      <p>A店（新宿店）で月額プラン利用中。出張先のB店（渋谷店）で2週間の期間パスを購入。契約上限に期間パスは含めない。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">ホーム画面</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>9:00</span>
+          <span>95%</span>
+        </div>
+        <div class="phone-navbar">StudyGO</div>
+        <div class="phone-body">
+          <div class="member-card-mock">
+            <div class="mc-name">佐藤 花子</div>
+            <div class="mc-id">ID: SG-2026-1023</div>
+          </div>
+
+          <div class="mock-card" style="border-left:4px solid var(--blue);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <h4>A店: 新宿店</h4>
+              <span class="status-badge info">月額プラン</span>
+            </div>
+            <div style="font-size:11px;color:#757575;">スタンダードプラン / 自動更新</div>
+          </div>
+
+          <div class="mock-card" style="border-left:4px solid var(--green);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <h4>B店: 渋谷店</h4>
+              <span class="status-badge active">期間パス</span>
+            </div>
+            <div style="font-size:11px;color:#757575;">14日パス / 残り8日</div>
+            <div style="font-size:10px;color:#999;">2/24 〜 3/9</div>
+          </div>
+
+          <div class="mock-card" style="background:var(--blue-light);border:none;">
+            <p style="font-size:10px;color:var(--blue);">* 契約上限（2店舗）に期間パスは含まれません</p>
+          </div>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab active"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">2つの契約を一覧表示。期間パスは契約上限に含まれない旨を注記。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">マイページ</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>9:05</span>
+          <span>95%</span>
+        </div>
+        <div class="phone-navbar">マイページ</div>
+        <div class="phone-body">
+          <div class="mock-card" style="border-left:4px solid var(--blue);">
+            <h4>月額プラン</h4>
+            <div style="font-size:13px;font-weight:600;">A店: 新宿店</div>
+            <div style="font-size:11px;color:#757575;">スタンダードプラン</div>
+            <div style="font-size:11px;color:#757575;">次回更新: 3/15</div>
+            <div style="font-size:11px;color:var(--blue);">通常表示</div>
+          </div>
+
+          <div class="mock-card" style="border-left:4px solid var(--green);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <h4>期間パス</h4>
+              <span class="status-badge active">残り8日</span>
+            </div>
+            <div style="font-size:13px;font-weight:600;">B店: 渋谷店</div>
+            <div style="font-size:11px;color:#757575;">14日パス</div>
+            <div style="font-size:11px;color:#757575;">2/24 〜 3/9</div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;align-items:center;">
+              <span style="font-size:10px;color:#999;">経過 6日 / 全14日</span>
+              <div style="background:#ddd;height:5px;border-radius:3px;width:100px;position:relative;">
+                <div style="position:absolute;left:0;top:0;height:100%;width:43%;background:var(--green);border-radius:3px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-bottom-tabs">
+          <div class="btab"><span class="btab-icon">&#9750;</span>ホーム</div>
+          <div class="btab"><span class="btab-icon">&#128269;</span>検索</div>
+          <div class="btab"><span class="btab-icon">&#127970;</span>店舗</div>
+          <div class="btab active"><span class="btab-icon">&#128100;</span>マイページ</div>
+        </div>
+      </div>
+      <div class="step-desc">月額プランと期間パスを分けて表示。それぞれの店舗名・残日数を確認。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">B店でチェックイン</div>
+      <div class="phone-frame existing">
+        <span class="screen-type-tag" style="background:var(--blue);">既存画面</span>
+        <div class="phone-status">
+          <span>9:10</span>
+          <span>94%</span>
+        </div>
+        <div class="phone-navbar">チェックイン</div>
+        <div class="phone-body" style="text-align:center;">
+          <div class="checkin-badge">
+            <div class="ci-icon" style="background:var(--green-light);color:var(--green);">&#10003;</div>
+            <div style="font-size:16px;font-weight:700;color:var(--green);margin-bottom:4px;">チェックインしました</div>
+            <div style="font-size:13px;color:#333;font-weight:600;">コワーキング渋谷店</div>
+            <div style="font-size:12px;color:#757575;">9:10</div>
+            <div style="margin-top:10px;">
+              <span class="status-badge active">期間パス利用でチェックイン</span>
+            </div>
+            <div style="font-size:10px;color:#999;margin-top:6px;">期間パスが自動で優先判定されました</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">B店ではQ期間パスが自動で優先判定。「期間パス利用でチェックイン」と表示。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-badge">4</div>
+      <div class="step-label">同じ店で両方持つ場合</div>
+      <div class="phone-frame modified">
+        <span class="screen-type-tag">変更画面</span>
+        <div class="phone-status">
+          <span>9:15</span>
+          <span>93%</span>
+        </div>
+        <div class="phone-navbar">プラン優先順位</div>
+        <div class="phone-body">
+          <div class="mock-card" style="background:var(--green-light);border:2px solid var(--green);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="background:var(--green);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">1</span>
+              <h4 style="color:var(--green-dark);">期間パス（優先）</h4>
+            </div>
+            <p>期間パスが有効な間は、こちらが自動適用されます。追加料金は発生しません。</p>
+          </div>
+
+          <div style="text-align:center;font-size:20px;color:var(--green);padding:6px 0;">&#8595;</div>
+          <div style="text-align:center;font-size:10px;color:#999;margin-bottom:6px;">期間パス終了後</div>
+
+          <div class="mock-card" style="border:1px solid var(--blue);opacity:0.7;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="background:var(--blue);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">2</span>
+              <h4 style="color:var(--blue);">月額プラン（自動切替）</h4>
+            </div>
+            <p>期間パス終了後は月額プランでそのまま利用可能。手続き不要。</p>
+          </div>
+
+          <div class="mock-card" style="margin-top:12px;">
+            <h4>同一店舗での優先順位ルール</h4>
+            <ul style="padding-left:16px;font-size:11px;line-height:1.8;">
+              <li>期間パスが有効な間は期間パスを優先</li>
+              <li>期間パス終了後は自動で月額プランに切替</li>
+              <li>ユーザー側での切替操作は不要</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">同一店舗で両方持つ場合、期間パスが優先。終了後は月額に自動切替。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 6: 管理者がプランを作成 -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario6">
+  <h2 class="scenario-title">シナリオ6: 管理者がプランを作成</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #FF9800, #E65100);">管</div>
+    <div class="persona-info">
+      <h3>管理者（本部スタッフ）</h3>
+      <p>StudyGO本部の管理者。新しい期間パスプランを作成し、加盟法人に展開する。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1: Dashboard -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">本部管理画面</div>
+      <div class="desktop-frame modified">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">StudyGO 本部管理 - ダッシュボード</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> ユーザー管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128203;</span> プラン管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#9881;</span> 設定</div>
+          </div>
+          <div class="desktop-content">
+            <h3>ダッシュボード</h3>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+              <div class="mock-card" style="flex:1;min-width:140px;text-align:center;">
+                <div style="font-size:11px;color:#757575;">月額会員数</div>
+                <div style="font-size:24px;font-weight:700;color:var(--blue);">1,234</div>
+              </div>
+              <div class="mock-card" style="flex:1;min-width:140px;text-align:center;">
+                <div style="font-size:11px;color:#757575;">期間パス利用中</div>
+                <div style="font-size:24px;font-weight:700;color:var(--green);">89</div>
+              </div>
+              <div class="mock-card" style="flex:1;min-width:140px;text-align:center;">
+                <div style="font-size:11px;color:#757575;">本日の売上</div>
+                <div style="font-size:24px;font-weight:700;color:var(--orange);">&yen;543K</div>
+              </div>
+            </div>
+            <p style="color:#757575;">左メニューの「プラン管理」をクリック</p>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">本部ダッシュボードから「プラン管理」メニューへ。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2: Create Plan -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">期間パスプラン作成</div>
+      <div class="desktop-frame new-screen">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">プラン管理 &gt; 期間パスプラン作成</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> ユーザー管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128203;</span> プラン管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#9881;</span> 設定</div>
+          </div>
+          <div class="desktop-content">
+            <h3>期間パスプラン作成</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div class="form-group">
+                <label>プラン名 *</label>
+                <input type="text" value="14日パス" readonly style="font-family:inherit;">
+              </div>
+              <div class="form-group">
+                <label>サブタイトル</label>
+                <input type="text" value="2週間集中利用に最適" readonly style="font-family:inherit;">
+              </div>
+              <div class="form-group">
+                <label>カテゴリタイトル</label>
+                <input type="text" value="期間パス" readonly style="font-family:inherit;">
+              </div>
+              <div class="form-group">
+                <label>プランコード *</label>
+                <input type="text" value="PERIOD_14D" readonly style="font-family:inherit;">
+              </div>
+              <div class="form-group">
+                <label>価格（税込） *</label>
+                <input type="text" value="&yen;8,000" readonly style="font-family:inherit;">
+              </div>
+              <div class="form-group">
+                <label>期間日数 *</label>
+                <input type="text" value="14日" readonly style="font-family:inherit;">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:4px;">
+              <label>年齢割引設定</label>
+              <div style="display:flex;gap:12px;align-items:center;font-size:11px;">
+                <span>U22割引: 10%OFF</span>
+                <span>|</span>
+                <span>U18割引: 15%OFF</span>
+                <span>|</span>
+                <span>シニア割引: 5%OFF</span>
+              </div>
+            </div>
+            <button class="mock-btn primary" style="width:200px;margin-top:12px;">保存する</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">プラン名・コード・価格・期間日数・年齢割引を設定して保存。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3: Plan List -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">プラン一覧で確認</div>
+      <div class="desktop-frame new-screen">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">プラン管理 &gt; 期間パス一覧</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> ユーザー管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128203;</span> プラン管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#9881;</span> 設定</div>
+          </div>
+          <div class="desktop-content">
+            <h3>期間パスプラン一覧</h3>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>コード</th>
+                  <th>プラン名</th>
+                  <th>期間</th>
+                  <th>価格（税込）</th>
+                  <th>ステータス</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>PERIOD_7D</td>
+                  <td>7日パス</td>
+                  <td>7日</td>
+                  <td>&yen;5,000</td>
+                  <td><span class="status-badge active">有効</span></td>
+                  <td><a href="#" style="color:var(--blue);font-size:11px;">編集</a></td>
+                </tr>
+                <tr style="background:var(--green-light);">
+                  <td>PERIOD_14D</td>
+                  <td><strong>14日パス</strong></td>
+                  <td>14日</td>
+                  <td>&yen;8,000</td>
+                  <td><span class="status-badge active">有効</span></td>
+                  <td><a href="#" style="color:var(--blue);font-size:11px;">編集</a></td>
+                </tr>
+                <tr>
+                  <td>PERIOD_30D</td>
+                  <td>30日パス</td>
+                  <td>30日</td>
+                  <td>&yen;12,000</td>
+                  <td><span class="status-badge active">有効</span></td>
+                  <td><a href="#" style="color:var(--blue);font-size:11px;">編集</a></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:8px;font-size:10px;color:#999;">新規作成した14日パスがハイライト表示</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">作成したプランが一覧に表示。ステータスや価格を確認。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 4: Alliance enable -->
+    <div class="step-card">
+      <div class="step-badge">4</div>
+      <div class="step-label">加盟法人側で有効化</div>
+      <div class="desktop-frame modified">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">加盟法人管理 &gt; 店舗設定 &gt; 期間パス</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128203;</span> 期間パス設定</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上確認</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> 会員管理</div>
+          </div>
+          <div class="desktop-content">
+            <h3>期間パスプラン 有効/無効設定</h3>
+            <p style="font-size:11px;color:#757575;margin-bottom:12px;">店舗: コワーキング渋谷店</p>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>プラン名</th>
+                  <th>期間</th>
+                  <th>価格</th>
+                  <th>有効/無効</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>7日パス</td>
+                  <td>7日</td>
+                  <td>&yen;5,000</td>
+                  <td><span class="toggle-switch on"></span></td>
+                </tr>
+                <tr>
+                  <td>14日パス</td>
+                  <td>14日</td>
+                  <td>&yen;8,000</td>
+                  <td><span class="toggle-switch on"></span></td>
+                </tr>
+                <tr>
+                  <td>30日パス</td>
+                  <td>30日</td>
+                  <td>&yen;12,000</td>
+                  <td><span class="toggle-switch"></span></td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top:12px;padding:10px;background:var(--yellow-light);border-radius:8px;font-size:11px;color:#333;">
+              <strong>注意:</strong> 有効にすると、すぐにアプリ上でユーザーが購入可能になります。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">加盟法人が自店舗の期間パスプランを有効/無効に切り替え。トグルで操作。</div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================== -->
+<!-- SCENARIO 7: 加盟法人が契約を確認 -->
+<!-- =========================================================================== -->
+<div class="scenario-panel" id="scenario7">
+  <h2 class="scenario-title">シナリオ7: 加盟法人が契約を確認</h2>
+
+  <div class="persona-card">
+    <div class="persona-avatar" style="background: linear-gradient(135deg, #607D8B, #37474F);">法</div>
+    <div class="persona-info">
+      <h3>加盟法人スタッフ</h3>
+      <p>コワーキング渋谷店の運営スタッフ。期間パスの契約状況と売上を確認したい。</p>
+    </div>
+  </div>
+
+  <div class="flow-container">
+    <!-- Step 1: Dashboard -->
+    <div class="step-card">
+      <div class="step-badge">1</div>
+      <div class="step-label">加盟法人ダッシュボード</div>
+      <div class="desktop-frame modified">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">加盟法人管理 - ダッシュボード</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item active"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#128203;</span> 期間パス設定</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上確認</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> 会員管理</div>
+          </div>
+          <div class="desktop-content">
+            <h3>ダッシュボード - コワーキング渋谷店</h3>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+              <div class="mock-card" style="flex:1;min-width:120px;text-align:center;">
+                <div style="font-size:10px;color:#757575;">月額会員</div>
+                <div style="font-size:22px;font-weight:700;color:var(--blue);">156</div>
+              </div>
+              <div class="mock-card" style="flex:1;min-width:120px;text-align:center;border:2px solid var(--green);">
+                <div style="font-size:10px;color:var(--green);font-weight:600;">期間パス利用中</div>
+                <div style="font-size:22px;font-weight:700;color:var(--green);">23</div>
+              </div>
+              <div class="mock-card" style="flex:1;min-width:120px;text-align:center;">
+                <div style="font-size:10px;color:#757575;">今月売上</div>
+                <div style="font-size:22px;font-weight:700;color:var(--orange);">&yen;184K</div>
+              </div>
+            </div>
+            <div class="mock-card" style="border-left:4px solid var(--green);">
+              <h4>期間パス概要</h4>
+              <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11px;">
+                <div><strong>7日パス:</strong> 8件</div>
+                <div><strong>14日パス:</strong> 12件</div>
+                <div><strong>30日パス:</strong> 3件</div>
+                <div><strong>今月の期間パス売上:</strong> &yen;184,000</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">ダッシュボードに期間パス専用セクション。契約数・売上を一目で確認。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 2: Contract List -->
+    <div class="step-card">
+      <div class="step-badge">2</div>
+      <div class="step-label">期間パス契約一覧</div>
+      <div class="desktop-frame new-screen">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">期間パス契約一覧（閲覧のみ）</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128203;</span> 期間パス設定</div>
+            <div class="sidebar-item"><span class="si-icon">&#128176;</span> 売上確認</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> 会員管理</div>
+          </div>
+          <div class="desktop-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <h3>期間パス契約一覧</h3>
+              <span style="font-size:10px;color:#999;background:var(--yellow-light);padding:4px 10px;border-radius:4px;">閲覧のみ</span>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ユーザー名</th>
+                  <th>パス種類</th>
+                  <th>開始日</th>
+                  <th>終了日</th>
+                  <th>ステータス</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>田中 太郎</td>
+                  <td>14日パス</td>
+                  <td>2/24</td>
+                  <td>3/9</td>
+                  <td><span class="status-badge active">利用中</span></td>
+                </tr>
+                <tr>
+                  <td>山田 次郎</td>
+                  <td>7日パス</td>
+                  <td>3/1</td>
+                  <td>3/7</td>
+                  <td><span class="status-badge warning">残り3日</span></td>
+                </tr>
+                <tr>
+                  <td>佐藤 花子</td>
+                  <td>14日パス</td>
+                  <td>2/24</td>
+                  <td>3/9</td>
+                  <td><span class="status-badge active">利用中</span></td>
+                </tr>
+                <tr>
+                  <td>高橋 美咲</td>
+                  <td>30日パス</td>
+                  <td>2/15</td>
+                  <td>3/16</td>
+                  <td><span class="status-badge active">利用中</span></td>
+                </tr>
+                <tr>
+                  <td>鈴木 健太</td>
+                  <td>7日パス</td>
+                  <td>2/20</td>
+                  <td>2/26</td>
+                  <td><span class="status-badge expired">期限切れ</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">契約一覧を閲覧のみで確認。ユーザー名・パス種類・期間・ステータスを表示。</div>
+    </div>
+
+    <div class="flow-arrow"></div>
+
+    <!-- Step 3: Payment Records -->
+    <div class="step-card">
+      <div class="step-badge">3</div>
+      <div class="step-label">支払い実績</div>
+      <div class="desktop-frame modified">
+        <div class="desktop-titlebar">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+          <span style="margin-left:12px;">売上管理 &gt; 精算レポート</span>
+        </div>
+        <div class="desktop-body">
+          <div class="desktop-sidebar">
+            <div class="sidebar-item"><span class="si-icon">&#128200;</span> ダッシュボード</div>
+            <div class="sidebar-item"><span class="si-icon">&#127970;</span> 店舗管理</div>
+            <div class="sidebar-item"><span class="si-icon">&#128203;</span> 期間パス設定</div>
+            <div class="sidebar-item active"><span class="si-icon">&#128176;</span> 売上確認</div>
+            <div class="sidebar-item"><span class="si-icon">&#128101;</span> 会員管理</div>
+          </div>
+          <div class="desktop-content">
+            <h3>売上レポート - 2026年2月</h3>
+            <div class="mock-card">
+              <h4>売上内訳</h4>
+              <div class="price-row"><span>月額プラン売上</span><span style="font-weight:600;">&yen;1,248,000</span></div>
+              <div class="price-row"><span>ドロップイン売上</span><span style="font-weight:600;">&yen;156,000</span></div>
+              <div class="price-row" style="background:var(--green-light);border-radius:4px;padding:8px;"><span style="color:var(--green-dark);font-weight:700;">期間パス売上</span><span style="font-weight:700;color:var(--green-dark);">&yen;184,000</span></div>
+              <div class="price-row total"><span>合計</span><span>&yen;1,588,000</span></div>
+            </div>
+
+            <div class="mock-card" style="margin-top:8px;">
+              <h4>期間パス売上詳細</h4>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>パス種類</th>
+                    <th>販売数</th>
+                    <th>売上</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>7日パス</td>
+                    <td>8件</td>
+                    <td>&yen;40,000</td>
+                  </tr>
+                  <tr>
+                    <td>14日パス</td>
+                    <td>12件</td>
+                    <td>&yen;96,000</td>
+                  </tr>
+                  <tr>
+                    <td>30日パス</td>
+                    <td>4件</td>
+                    <td>&yen;48,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="font-size:10px;color:#999;margin-top:8px;">期間パス売上は既存の精算レポートに統合表示されます</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-desc">期間パス売上が既存精算レポートに統合表示。種類別の販売数・売上も確認可能。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="page-footer">
+  スタディGO 期間パス ユーザー利用フロー v1.0 - 2026年2月24日作成
+</div>
+
+<!-- ===== JavaScript ===== -->
+<script>
+(function() {
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.scenario-panel');
+  const showAllBtn = document.getElementById('showAllBtn');
+  let showAll = false;
+
+  function showTab(tabId) {
+    if (showAll) return; // Don't switch if "show all" is active
+    panels.forEach(p => p.classList.remove('visible'));
+    tabBtns.forEach(b => b.classList.remove('active'));
+    const target = document.getElementById(tabId);
+    if (target) {
+      target.classList.add('visible');
+      // Smooth scroll to the panel
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    tabBtns.forEach(b => {
+      if (b.getAttribute('data-tab') === tabId) {
+        b.classList.add('active');
+      }
+    });
+  }
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (showAll) {
+        // Deactivate "show all" first
+        showAll = false;
+        showAllBtn.classList.remove('active');
+        showAllBtn.textContent = '\u5168\u30B7\u30CA\u30EA\u30AA\u8868\u793A';
+        panels.forEach(p => p.classList.remove('visible'));
+      }
+      showTab(this.getAttribute('data-tab'));
+    });
+  });
+
+  // Show all toggle
+  showAllBtn.addEventListener('click', function() {
+    showAll = !showAll;
+    if (showAll) {
+      this.classList.add('active');
+      this.textContent = '\u500B\u5225\u8868\u793A\u306B\u623B\u3059';
+      panels.forEach(p => p.classList.add('visible'));
+      tabBtns.forEach(b => b.classList.remove('active'));
+    } else {
+      this.classList.remove('active');
+      this.textContent = '\u5168\u30B7\u30CA\u30EA\u30AA\u8868\u793A';
+      panels.forEach(p => p.classList.remove('visible'));
+      // Show the first tab by default
+      showTab('scenario1');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

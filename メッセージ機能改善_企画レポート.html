@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メッセージ機能改善 企画レポート & プロトタイプ</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f0f2f5; color: #333; line-height: 1.6; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  h1 { text-align: center; margin-bottom: 8px; font-size: 28px; color: #1a1a2e; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 32px; }
+  h2 { font-size: 20px; color: #16213e; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 3px solid #0f3460; }
+  h3 { font-size: 16px; color: #555; margin-bottom: 12px; }
+  h4 { font-size: 14px; color: #333; margin-bottom: 8px; }
+
+  .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  /* ===== ナビゲーション ===== */
+  .nav-tabs { display: flex; gap: 0; margin-bottom: 24px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .nav-tab { flex: 1; padding: 16px; text-align: center; cursor: pointer; font-weight: bold; font-size: 14px; border: none; background: white; color: #666; transition: all 0.3s; border-bottom: 3px solid transparent; }
+  .nav-tab:hover { background: #f5f5f5; }
+  .nav-tab.active { color: #1a73e8; border-bottom-color: #1a73e8; background: #e8f0fe; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ===== 比較レイアウト ===== */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  @media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+
+  .arrow-section { text-align: center; font-size: 40px; color: #0f3460; margin: 16px 0; }
+
+  /* ===== 課題カード ===== */
+  .issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .issue-card { border: 2px solid #ffcdd2; border-radius: 12px; padding: 16px; background: #fff5f5; }
+  .issue-card .issue-title { font-weight: bold; color: #c62828; margin-bottom: 8px; font-size: 15px; }
+  .issue-card .issue-desc { font-size: 13px; color: #555; }
+  .issue-card .issue-who { display: inline-block; background: #e53935; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+
+  /* ===== 提案カード ===== */
+  .proposal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .proposal-card { border: 2px solid #c8e6c9; border-radius: 12px; padding: 16px; background: #f1f8e9; }
+  .proposal-card .prop-title { font-weight: bold; color: #2e7d32; margin-bottom: 8px; font-size: 15px; }
+  .proposal-card .prop-desc { font-size: 13px; color: #555; }
+  .proposal-card .prop-priority { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-bottom: 8px; }
+  .prop-priority.high { background: #e53935; color: white; }
+  .prop-priority.mid { background: #ff9800; color: white; }
+  .prop-priority.low { background: #4caf50; color: white; }
+
+  /* ===== ロードマップ ===== */
+  .roadmap { position: relative; padding-left: 40px; }
+  .roadmap::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 3px; background: #1a73e8; }
+  .roadmap-item { position: relative; margin-bottom: 24px; }
+  .roadmap-item::before { content: ''; position: absolute; left: -33px; top: 4px; width: 20px; height: 20px; border-radius: 50%; border: 3px solid #1a73e8; background: white; }
+  .roadmap-item.done::before { background: #1a73e8; }
+  .roadmap-phase { font-weight: bold; color: #1a73e8; font-size: 14px; }
+  .roadmap-period { font-size: 12px; color: #999; margin-bottom: 4px; }
+  .roadmap-tasks { font-size: 13px; color: #555; padding-left: 16px; }
+  .roadmap-tasks li { padding: 2px 0; }
+
+  /* ===== アプリモック ===== */
+  .phone-frame {
+    width: 340px; margin: 0 auto; background: #fff; border-radius: 32px;
+    border: 3px solid #333; padding: 48px 16px 32px; position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); min-height: 640px;
+  }
+  .phone-frame::before {
+    content: ''; position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 6px; background: #333; border-radius: 3px;
+  }
+  .phone-label { text-align: center; font-weight: bold; color: #555; margin-bottom: 12px; font-size: 14px; }
+
+  /* 共通アプリUI */
+  .app-header { background: #1a73e8; color: white; padding: 12px; margin: -16px -16px 12px; text-align: center; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .app-header .back { cursor: pointer; font-size: 18px; }
+  .app-header .title { flex: 1; }
+  .app-header .action { font-size: 12px; cursor: pointer; opacity: 0.8; }
+
+  /* メッセージリスト */
+  .msg-thread { display: flex; align-items: center; padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; gap: 12px; }
+  .msg-thread:hover { background: #f5f8ff; }
+  .msg-thread .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; flex-shrink: 0; }
+  .msg-thread .thread-info { flex: 1; min-width: 0; }
+  .msg-thread .thread-name { font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-thread .thread-preview { font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-thread .thread-meta { text-align: right; flex-shrink: 0; }
+  .msg-thread .thread-time { font-size: 10px; color: #999; }
+  .msg-thread .unread-badge { background: #e53935; color: white; border-radius: 12px; padding: 1px 7px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block; }
+
+  /* LINE連携バッジ */
+  .line-badge { background: #06C755; color: white; border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: bold; margin-left: 4px; }
+  .line-connected { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #06C755; }
+
+  /* チャット画面 */
+  .chat-area { height: 380px; overflow-y: auto; padding: 8px 0; display: flex; flex-direction: column; gap: 8px; }
+  .chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; word-break: break-word; }
+  .chat-bubble.sent { background: #1a73e8; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .chat-bubble.received { background: #f0f0f0; color: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .chat-bubble .time { font-size: 9px; opacity: 0.7; margin-top: 4px; display: block; }
+  .chat-bubble .read-status { font-size: 9px; opacity: 0.6; text-align: right; }
+  .chat-date { text-align: center; font-size: 10px; color: #999; padding: 8px 0; }
+
+  .chat-input-area { display: flex; gap: 8px; padding: 10px 0 0; border-top: 1px solid #eee; margin-top: 8px; align-items: flex-end; }
+  .chat-input { flex: 1; border: 1px solid #ddd; border-radius: 20px; padding: 8px 14px; font-size: 13px; resize: none; min-height: 36px; max-height: 80px; outline: none; }
+  .chat-input:focus { border-color: #1a73e8; }
+  .chat-send-btn { width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: white; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .chat-send-btn:hover { background: #1557b0; }
+  .chat-attach-btn { width: 36px; height: 36px; border-radius: 50%; background: #f0f0f0; color: #666; border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  /* クイック返信 */
+  .quick-replies { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0; }
+  .quick-reply { background: #e8f0fe; color: #1a73e8; border: 1px solid #1a73e8; border-radius: 16px; padding: 4px 12px; font-size: 11px; white-space: nowrap; cursor: pointer; flex-shrink: 0; }
+  .quick-reply:hover { background: #1a73e8; color: white; }
+
+  /* 店舗管理画面 */
+  .admin-panel { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .admin-sidebar { width: 280px; background: #f8f9fa; border-right: 1px solid #e0e0e0; }
+  .admin-layout { display: flex; min-height: 500px; }
+  .admin-main { flex: 1; display: flex; flex-direction: column; }
+  .admin-header-bar { background: #1a1a2e; color: white; padding: 14px 20px; font-weight: bold; font-size: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .admin-header-bar .badge-count { background: #e53935; border-radius: 12px; padding: 2px 10px; font-size: 12px; }
+
+  .user-list-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #eee; cursor: pointer; gap: 10px; transition: background 0.2s; }
+  .user-list-item:hover { background: #e8f0fe; }
+  .user-list-item.active { background: #e8f0fe; border-left: 3px solid #1a73e8; }
+  .user-list-item .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; flex-shrink: 0; }
+  .user-list-item .user-info { flex: 1; min-width: 0; }
+  .user-list-item .user-name { font-size: 13px; font-weight: bold; }
+  .user-list-item .user-preview { font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-list-item .user-time { font-size: 10px; color: #999; }
+  .user-list-item .unread-dot { width: 10px; height: 10px; border-radius: 50%; background: #e53935; flex-shrink: 0; }
+
+  .admin-chat-header { padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; background: #fafafa; }
+  .admin-chat-header .user-detail { font-weight: bold; font-size: 15px; }
+  .admin-chat-header .user-status { font-size: 11px; color: #999; }
+  .admin-chat-area { flex: 1; padding: 16px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; background: #fafafa; }
+  .admin-chat-input-area { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid #eee; align-items: flex-end; background: white; }
+  .admin-chat-input { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; font-size: 13px; resize: none; min-height: 40px; outline: none; }
+  .admin-chat-send { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; }
+  .admin-chat-send:hover { background: #1557b0; }
+
+  /* テンプレート */
+  .template-btn { background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px; padding: 8px 14px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .template-btn:hover { background: #e0e0e0; }
+  .template-list { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 8px; position: absolute; bottom: 60px; left: 20px; right: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 10; }
+  .template-list.show { display: block; }
+  .template-item { padding: 8px 12px; font-size: 12px; cursor: pointer; border-radius: 4px; }
+  .template-item:hover { background: #f5f5f5; }
+
+  /* フィルタ */
+  .filter-bar { display: flex; gap: 8px; padding: 8px 16px; border-bottom: 1px solid #eee; background: white; flex-wrap: wrap; }
+  .filter-chip { padding: 4px 12px; border-radius: 16px; font-size: 11px; cursor: pointer; border: 1px solid #ddd; background: white; }
+  .filter-chip.active { background: #1a73e8; color: white; border-color: #1a73e8; }
+  .search-input { border: 1px solid #ddd; border-radius: 8px; padding: 6px 12px; font-size: 12px; width: 100%; margin: 8px 16px; }
+
+  /* LINE連携セクション */
+  .line-section { background: linear-gradient(135deg, #06C755 0%, #04a848 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .line-section h3 { color: white; }
+
+  /* 統計カード */
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; }
+  .stat-card { background: white; border-radius: 8px; padding: 16px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .stat-card .stat-value { font-size: 28px; font-weight: bold; color: #1a73e8; }
+  .stat-card .stat-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+  /* フローチャート */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .flow-step { background: #e3f2fd; border: 2px solid #1a73e8; border-radius: 8px; padding: 10px 16px; font-size: 13px; text-align: center; font-weight: bold; }
+  .flow-step.line { background: #e8f5e9; border-color: #06C755; }
+  .flow-step.highlight { background: #fff3e0; border-color: #ff9800; }
+  .flow-arrow { font-size: 20px; color: #999; }
+
+  .note { background: #fffde7; border-left: 4px solid #ffc107; padding: 12px 16px; font-size: 13px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }
+  .tag.current { background: #e3f2fd; color: #1565c0; }
+  .tag.new { background: #e8f5e9; color: #2e7d32; }
+  .tag.line { background: #06C755; color: white; }
+  .tag.improve { background: #fff3e0; color: #e65100; }
+
+  /* DB設計 */
+  .db-table { border-collapse: collapse; width: 100%; font-size: 13px; margin-bottom: 16px; }
+  .db-table th { background: #1a1a2e; color: white; padding: 8px 12px; text-align: left; }
+  .db-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  .db-table tr:hover { background: #f5f5f5; }
+  .db-table .new { background: #e8f5e9; }
+  .db-table .pk { color: #ff9800; font-weight: bold; }
+  .db-table .fk { color: #2196f3; }
+
+  /* アーキテクチャ図 */
+  .arch-diagram { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .arch-box { border: 2px solid #ddd; border-radius: 12px; padding: 16px; text-align: center; }
+  .arch-box.app { border-color: #1a73e8; background: #e8f0fe; }
+  .arch-box.api { border-color: #ff9800; background: #fff3e0; }
+  .arch-box.ext { border-color: #06C755; background: #e8f5e9; }
+  .arch-box h4 { margin-bottom: 8px; }
+  .arch-box ul { text-align: left; font-size: 12px; padding-left: 16px; }
+  .arch-box li { padding: 2px 0; }
+  @media (max-width: 768px) { .arch-diagram { grid-template-columns: 1fr; } }
+
+  /* 画面切り替え */
+  .screen-switcher { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; }
+  .screen-btn { padding: 8px 16px; border: 2px solid #1a73e8; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; background: white; color: #1a73e8; transition: all 0.2s; }
+  .screen-btn.active { background: #1a73e8; color: white; }
+  .screen-btn:hover { background: #e8f0fe; }
+  .screen-btn.active:hover { background: #1557b0; }
+  .mock-screen { display: none; }
+  .mock-screen.active { display: block; }
+
+  /* 通知ドット */
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: #06C755; display: inline-block; margin-left: 4px; }
+
+  /* アニメーション */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn 0.3s ease; }
+
+  /* タイピングインジケーター */
+  .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; align-self: flex-start; }
+  .typing-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; animation: typing 1.4s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+
+  /* 画像プレビュー */
+  .img-message { max-width: 200px; border-radius: 12px; overflow: hidden; }
+  .img-message img { width: 100%; display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>StudyGO メッセージ機能改善 企画レポート</h1>
+<p class="subtitle">現状分析 / 課題整理 / LINE連携 / 新機能提案 / プロトタイプUI</p>
+
+<!-- ===== ナビゲーション ===== -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('report')">企画レポート</div>
+  <div class="nav-tab" onclick="switchTab('customer')">お客様アプリUI</div>
+  <div class="nav-tab" onclick="switchTab('store')">店舗管理画面UI</div>
+  <div class="nav-tab" onclick="switchTab('line')">LINE連携</div>
+  <div class="nav-tab" onclick="switchTab('tech')">技術設計</div>
+</div>
+
+<!-- ========================================== -->
+<!--            企画レポート                      -->
+<!-- ========================================== -->
+<div id="tab-report" class="tab-content active">
+
+<!-- 現状分析 -->
+<div class="section">
+  <h2>1. 現状のメッセージ機能</h2>
+
+  <h3>メッセージスレッドの種類</h3>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-value" style="font-size:20px;">MEMO</div>
+      <div class="stat-label">勉強メモ（ユーザー自身のノート）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="font-size:20px;">GENERAL</div>
+      <div class="stat-label">運営からのお知らせ</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" style="font-size:20px;">SHOP</div>
+      <div class="stat-label">店舗⇔お客様の個別チャット</div>
+    </div>
+  </div>
+
+  <h3>現在のメッセージフロー</h3>
+  <div class="flow">
+    <div class="flow-step">お客様がメッセージ送信</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">DB保存</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FCMプッシュ通知</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">店舗メール通知</div>
+  </div>
+  <div class="flow">
+    <div class="flow-step">店舗が返信</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">DB保存</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FCMプッシュ通知</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">アプリで確認</div>
+  </div>
+
+  <div class="note">
+    <strong>通知手段：</strong> FCM（プッシュ通知）+ メール のみ。リアルタイム通信（WebSocket等）は未実装。<br>
+    <strong>送信条件：</strong> アクティブな月額契約 or 見学予約（訪問日から7日以内）が必要。
+  </div>
+</div>
+
+<!-- 課題 -->
+<div class="section">
+  <h2>2. 現状の課題</h2>
+
+  <h3>お客様側の課題</h3>
+  <div class="issue-grid">
+    <div class="issue-card">
+      <div class="issue-who">お客様</div>
+      <div class="issue-title">メッセージに気づきにくい</div>
+      <div class="issue-desc">プッシュ通知のみのため、通知を見逃すと店舗からのメッセージに長時間気づかない。アプリを開かないと新着が確認できない。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">お客様</div>
+      <div class="issue-title">テキストのみで情報伝達に限界</div>
+      <div class="issue-desc">画像・ファイル送信機能がないため、座席の写真や書類のやり取りができず、別途メールやLINEを使う必要がある。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">お客様</div>
+      <div class="issue-title">リアルタイム性がない</div>
+      <div class="issue-desc">WebSocket未実装のため、チャット画面を開いていても新着メッセージの自動更新がなく、手動で再読み込みが必要。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">お客様</div>
+      <div class="issue-title">既読確認がわかりにくい</div>
+      <div class="issue-desc">送ったメッセージが店舗に読まれたのかどうか、お客様側からは判別しにくい。返信を待つべきか判断できない。</div>
+    </div>
+  </div>
+
+  <h3>店舗側の課題</h3>
+  <div class="issue-grid">
+    <div class="issue-card">
+      <div class="issue-who">店舗</div>
+      <div class="issue-title">未読管理が煩雑</div>
+      <div class="issue-desc">複数ユーザーからのメッセージが一覧で確認しづらく、未返信のメッセージを見落としやすい。フィルタリング機能も不十分。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">店舗</div>
+      <div class="issue-title">定型文がない</div>
+      <div class="issue-desc">よくある質問への回答を毎回手入力する必要があり、返信に時間がかかる。テンプレート機能がない。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">店舗</div>
+      <div class="issue-title">複数チャネルの管理が大変</div>
+      <div class="issue-desc">アプリ内メッセージ、メール、LINEなど複数の連絡手段を個別に管理する必要があり、やり取りが分散してしまう。</div>
+    </div>
+    <div class="issue-card">
+      <div class="issue-who">店舗</div>
+      <div class="issue-title">一斉送信の操作性</div>
+      <div class="issue-desc">お知らせやキャンペーン情報を顧客に一斉に送る際の操作が複雑。対象の絞り込みやスケジュール送信もできない。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 提案 -->
+<div class="section">
+  <h2>3. 改善提案一覧</h2>
+
+  <div class="proposal-grid">
+    <div class="proposal-card">
+      <div class="prop-priority high">優先度：高</div>
+      <div class="prop-title">LINE公式アカウント連携</div>
+      <div class="prop-desc">LINE Messaging APIを連携し、お客様がLINEからもメッセージを送受信できるように。店舗側は管理画面で一元管理。日本ユーザーの95%がLINEを利用しており、通知到達率が大幅に向上する。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority high">優先度：高</div>
+      <div class="prop-title">テンプレート返信機能</div>
+      <div class="prop-desc">店舗がよく使う返信をテンプレートとして保存し、ワンクリックで送信。営業時間・料金案内・空席状況など定型的な質問への対応を高速化。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority high">優先度：高</div>
+      <div class="prop-title">未読・未返信ダッシュボード</div>
+      <div class="prop-desc">未返信メッセージの一覧表示、経過時間のアラート、優先度の自動判定を実装。返信漏れを防止し、顧客満足度を向上。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority mid">優先度：中</div>
+      <div class="prop-title">画像・ファイル送信</div>
+      <div class="prop-desc">S3を活用した画像・PDFの送受信機能。座席の写真、領収書、案内資料などを直接チャットで共有可能に。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority mid">優先度：中</div>
+      <div class="prop-title">クイック返信ボタン</div>
+      <div class="prop-desc">お客様側に「空席はありますか？」「予約変更したい」などの定型質問ボタンを表示。入力の手間を減らし、問い合わせのハードルを下げる。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority mid">優先度：中</div>
+      <div class="prop-title">既読表示の改善</div>
+      <div class="prop-desc">LINEのような「既読」マーク表示を導入。お客様が「読まれたかどうか」を一目で確認でき、安心感を提供。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority mid">優先度：中</div>
+      <div class="prop-title">一斉送信の強化</div>
+      <div class="prop-desc">送信先のセグメント指定（契約プラン別、来店頻度別）、スケジュール送信、送信結果の分析ダッシュボードを追加。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-priority low">優先度：低</div>
+      <div class="prop-title">自動応答Bot</div>
+      <div class="prop-desc">営業時間外の自動返信、FAQ自動回答を実装。店舗スタッフの負担を軽減し、24時間対応を実現。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ロードマップ -->
+<div class="section">
+  <h2>4. 実装ロードマップ</h2>
+
+  <div class="roadmap">
+    <div class="roadmap-item">
+      <div class="roadmap-phase">Phase 1：UX改善 & テンプレート</div>
+      <div class="roadmap-period">開発期間：約2-3週間</div>
+      <ul class="roadmap-tasks">
+        <li>既読表示（readAtフィールド活用）の改善</li>
+        <li>店舗向けテンプレート返信機能</li>
+        <li>お客様向けクイック返信ボタン</li>
+        <li>未読・未返信フィルタリング強化</li>
+        <li>タイピングインジケーター（WebSocket導入準備）</li>
+      </ul>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase">Phase 2：メディア対応 & 通知強化</div>
+      <div class="roadmap-period">開発期間：約2-3週間</div>
+      <ul class="roadmap-tasks">
+        <li>画像・ファイル送受信（S3連携）</li>
+        <li>WebSocketによるリアルタイム更新</li>
+        <li>一斉送信のセグメント機能</li>
+        <li>スケジュール送信</li>
+      </ul>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase">Phase 3：LINE連携</div>
+      <div class="roadmap-period">開発期間：約3-4週間</div>
+      <ul class="roadmap-tasks">
+        <li>LINE Messaging API連携（Webhook受信）</li>
+        <li>LINE ⇔ アプリ メッセージ同期</li>
+        <li>LINE経由の通知配信</li>
+        <li>LINEリッチメニューでの導線設計</li>
+      </ul>
+    </div>
+    <div class="roadmap-item">
+      <div class="roadmap-phase">Phase 4：自動化 & 分析</div>
+      <div class="roadmap-period">開発期間：約2-3週間</div>
+      <ul class="roadmap-tasks">
+        <li>自動応答Bot（営業時間外対応）</li>
+        <li>メッセージ分析ダッシュボード</li>
+        <li>顧客満足度アンケート機能</li>
+        <li>送信効果レポート</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 期待効果 -->
+<div class="section">
+  <h2>5. 期待される効果</h2>
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-value">+60%</div>
+      <div class="stat-label">メッセージ到達率向上<br>（LINE連携後）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">-50%</div>
+      <div class="stat-label">店舗の返信時間短縮<br>（テンプレート導入後）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">0件</div>
+      <div class="stat-label">未返信の見落とし<br>（ダッシュボード導入後）</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">24h</div>
+      <div class="stat-label">自動応答による<br>対応可能時間</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-report -->
+
+
+<!-- ========================================== -->
+<!--          お客様アプリUI                      -->
+<!-- ========================================== -->
+<div id="tab-customer" class="tab-content">
+
+<div class="section">
+  <h2>お客様向けメッセージ画面（改善版プロトタイプ）</h2>
+  <p style="font-size:13px; color:#888; margin-bottom:16px;">左が現行のイメージ、右が改善後のイメージです。タップで画面遷移を体験できます。</p>
+
+  <div class="comparison">
+    <!-- 現行版 -->
+    <div>
+      <div class="phone-label"><span class="tag current">現行</span> メッセージ一覧</div>
+      <div class="phone-frame">
+        <div class="app-header">
+          <span></span>
+          <span class="title">メッセージ</span>
+          <span></span>
+        </div>
+
+        <div class="msg-thread">
+          <div class="avatar" style="background:#ffd54f;color:#333;">📝</div>
+          <div class="thread-info">
+            <div class="thread-name">勉強メモ</div>
+            <div class="thread-preview">今日の英語の復習ポイント...</div>
+          </div>
+          <div class="thread-meta">
+            <div class="thread-time">14:30</div>
+          </div>
+        </div>
+        <div class="msg-thread">
+          <div class="avatar" style="background:#4caf50;">G</div>
+          <div class="thread-info">
+            <div class="thread-name">スタディGO運営</div>
+            <div class="thread-preview">メンテナンスのお知らせ</div>
+          </div>
+          <div class="thread-meta">
+            <div class="thread-time">昨日</div>
+          </div>
+        </div>
+        <div class="msg-thread">
+          <div class="avatar" style="background:#1a73e8;">渋</div>
+          <div class="thread-info">
+            <div class="thread-name">StudySpace渋谷店</div>
+            <div class="thread-preview">ご予約ありがとうございます</div>
+          </div>
+          <div class="thread-meta">
+            <div class="thread-time">2/18</div>
+          </div>
+        </div>
+        <div class="msg-thread" style="opacity:0.5;">
+          <div class="avatar" style="background:#9e9e9e;">新</div>
+          <div class="thread-info">
+            <div class="thread-name" style="color:#999;">StudySpace新宿店（見学のみ）</div>
+            <div class="thread-preview">見学のご予約を承りました</div>
+          </div>
+          <div class="thread-meta">
+            <div class="thread-time">2/10</div>
+          </div>
+        </div>
+
+        <div style="text-align:center; color:#ccc; padding:40px; font-size:13px;">
+          テキストメッセージのみ<br>
+          画像送信不可<br>
+          リアルタイム更新なし
+        </div>
+      </div>
+    </div>
+
+    <!-- 改善版 -->
+    <div>
+      <div class="phone-label"><span class="tag new">改善版</span> メッセージ一覧</div>
+      <div class="phone-frame" id="customer-app">
+        <!-- 画面1: メッセージ一覧 -->
+        <div class="mock-screen active" id="cust-list">
+          <div class="app-header">
+            <span></span>
+            <span class="title">メッセージ</span>
+            <span class="action">✏️</span>
+          </div>
+
+          <!-- 検索バー -->
+          <div style="margin-bottom:8px;">
+            <input type="text" placeholder="🔍 メッセージを検索..." style="width:100%; padding:8px 12px; border:1px solid #eee; border-radius:20px; font-size:12px; background:#f5f5f5; outline:none;">
+          </div>
+
+          <div class="msg-thread" onclick="showScreen('cust-memo')">
+            <div class="avatar" style="background:#ffd54f;color:#333;">📝</div>
+            <div class="thread-info">
+              <div class="thread-name">勉強メモ</div>
+              <div class="thread-preview">今日の英語の復習ポイント...</div>
+            </div>
+            <div class="thread-meta">
+              <div class="thread-time">14:30</div>
+            </div>
+          </div>
+
+          <div class="msg-thread" onclick="showScreen('cust-chat')">
+            <div class="avatar" style="background:#1a73e8;">渋</div>
+            <div class="thread-info">
+              <div class="thread-name">StudySpace渋谷店 <span class="line-badge">LINE</span></div>
+              <div class="thread-preview">お席のご案内です📷</div>
+            </div>
+            <div class="thread-meta">
+              <div class="thread-time">14:20</div>
+              <div class="unread-badge">2</div>
+            </div>
+          </div>
+
+          <div class="msg-thread">
+            <div class="avatar" style="background:#4caf50;">G</div>
+            <div class="thread-info">
+              <div class="thread-name">スタディGO運営</div>
+              <div class="thread-preview">🎉 新キャンペーンのお知らせ</div>
+            </div>
+            <div class="thread-meta">
+              <div class="thread-time">昨日</div>
+              <div class="unread-badge">1</div>
+            </div>
+          </div>
+
+          <div class="msg-thread">
+            <div class="avatar" style="background:#e91e63;">池</div>
+            <div class="thread-info">
+              <div class="thread-name">StudySpace池袋店</div>
+              <div class="thread-preview">お問い合わせありがとうございます</div>
+            </div>
+            <div class="thread-meta">
+              <div class="thread-time">2/18</div>
+            </div>
+          </div>
+
+          <div class="msg-thread">
+            <div class="avatar" style="background:#ff9800;">新</div>
+            <div class="thread-info">
+              <div class="thread-name">StudySpace新宿店</div>
+              <div class="thread-preview">見学のご予約を承りました ✅</div>
+            </div>
+            <div class="thread-meta">
+              <div class="thread-time">2/10</div>
+            </div>
+          </div>
+
+          <div style="padding:12px; text-align:center;">
+            <div class="line-connected" style="justify-content:center;">
+              <span style="font-size:16px;">🟢</span> LINE連携中 - LINEからも返信できます
+            </div>
+          </div>
+        </div>
+
+        <!-- 画面2: チャット -->
+        <div class="mock-screen" id="cust-chat">
+          <div class="app-header">
+            <span class="back" onclick="showScreen('cust-list')">←</span>
+            <span class="title">StudySpace渋谷店</span>
+            <span class="action">📞</span>
+          </div>
+
+          <div class="chat-area">
+            <div class="chat-date">2月20日（木）</div>
+
+            <div class="chat-bubble received">
+              いつもご利用ありがとうございます！明日のご予約を承りました。
+              <span class="time">10:00</span>
+            </div>
+
+            <div class="chat-bubble sent">
+              ありがとうございます！個室は空いていますか？
+              <span class="time">10:15</span>
+              <span class="read-status">✓✓ 既読</span>
+            </div>
+
+            <div class="chat-bubble received">
+              はい、明日は個室Aが空いております！こちらのお部屋です👇
+              <span class="time">14:15</span>
+            </div>
+
+            <div class="chat-bubble received" style="padding:4px;">
+              <div class="img-message" style="background:#e0e0e0; height:120px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#888; font-size:12px;">
+                📷 個室Aの写真<br>(画像送受信対応)
+              </div>
+              <span class="time" style="padding:4px 10px;">14:16</span>
+            </div>
+
+            <div class="chat-bubble sent">
+              きれいですね！こちらでお願いします。
+              <span class="time">14:20</span>
+              <span class="read-status">✓ 送信済み</span>
+            </div>
+
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+
+          <!-- クイック返信 -->
+          <div class="quick-replies">
+            <div class="quick-reply">空席はありますか？</div>
+            <div class="quick-reply">予約を変更したい</div>
+            <div class="quick-reply">料金を知りたい</div>
+            <div class="quick-reply">WiFiパスワード</div>
+          </div>
+
+          <div class="chat-input-area">
+            <button class="chat-attach-btn">+</button>
+            <input class="chat-input" placeholder="メッセージを入力...">
+            <button class="chat-send-btn">▶</button>
+          </div>
+        </div>
+
+        <!-- 画面3: メモ -->
+        <div class="mock-screen" id="cust-memo">
+          <div class="app-header">
+            <span class="back" onclick="showScreen('cust-list')">←</span>
+            <span class="title">勉強メモ</span>
+            <span class="action">📌</span>
+          </div>
+
+          <div class="chat-area">
+            <div class="chat-date">2月19日（水）</div>
+            <div class="chat-bubble sent">
+              英語リスニング - シャドーイング30分完了
+              <span class="time">21:00</span>
+            </div>
+            <div class="chat-date">2月20日（木）</div>
+            <div class="chat-bubble sent">
+              今日の英語の復習ポイント：<br>
+              ・関係代名詞 who/which/that<br>
+              ・仮定法過去の用法<br>
+              ・TOEIC Part5 演習20問
+              <span class="time">14:30</span>
+            </div>
+          </div>
+
+          <div class="chat-input-area">
+            <button class="chat-attach-btn">+</button>
+            <input class="chat-input" placeholder="メモを追加...">
+            <button class="chat-send-btn">▶</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <h3>改善ポイント</h3>
+  <div class="proposal-grid">
+    <div class="proposal-card">
+      <div class="prop-title">🔍 メッセージ検索</div>
+      <div class="prop-desc">一覧画面上部に検索バーを追加。過去のやり取りをキーワードで素早く検索可能。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">✓✓ 既読表示</div>
+      <div class="prop-desc">送信メッセージにLINE風の既読マークを表示。相手が読んだかどうかを一目で確認。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">📷 画像送受信</div>
+      <div class="prop-desc">「+」ボタンから画像・ファイルを送信可能。店舗の写真確認や書類のやり取りがスムーズに。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">⚡ クイック返信</div>
+      <div class="prop-desc">よくある質問をボタン化。タップするだけで定型質問を送信でき、入力の手間を削減。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">💬 タイピングインジケーター</div>
+      <div class="prop-desc">相手が入力中であることをリアルタイムに表示。会話のテンポ感が向上。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">🟢 LINE連携バッジ</div>
+      <div class="prop-desc">LINE連携済みの店舗にバッジを表示。LINEからも返信できることを案内。</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-customer -->
+
+
+<!-- ========================================== -->
+<!--          店舗管理画面UI                      -->
+<!-- ========================================== -->
+<div id="tab-store" class="tab-content">
+
+<div class="section">
+  <h2>店舗管理画面（改善版プロトタイプ）</h2>
+  <p style="font-size:13px; color:#888; margin-bottom:16px;">PCの管理画面で使うメッセージ管理画面のプロトタイプです。</p>
+
+  <div class="admin-panel">
+    <div class="admin-header-bar">
+      <span>💬 メッセージ管理</span>
+      <span>
+        未返信 <span class="badge-count">3</span>
+        &nbsp;|&nbsp;
+        LINE経由 <span class="badge-count" style="background:#06C755;">5</span>
+      </span>
+    </div>
+
+    <!-- フィルタバー -->
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="filterMessages(this,'all')">すべて</div>
+      <div class="filter-chip" onclick="filterMessages(this,'unreplied')">未返信のみ</div>
+      <div class="filter-chip" onclick="filterMessages(this,'line')">LINE経由</div>
+      <div class="filter-chip" onclick="filterMessages(this,'contract')">契約者</div>
+      <div class="filter-chip" onclick="filterMessages(this,'preview')">見学予約</div>
+      <input type="text" class="search-input" placeholder="🔍 ユーザー名・メッセージ内容で検索...">
+    </div>
+
+    <div class="admin-layout">
+      <!-- サイドバー：ユーザー一覧 -->
+      <div class="admin-sidebar">
+        <div class="user-list-item active" onclick="selectUser(this)">
+          <div class="user-avatar">田</div>
+          <div class="user-info">
+            <div class="user-name">田中 太郎 <span class="line-badge">LINE</span></div>
+            <div class="user-preview">個室は空いていますか？</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">14:20</div>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+        <div class="user-list-item" onclick="selectUser(this)">
+          <div class="user-avatar">佐</div>
+          <div class="user-info">
+            <div class="user-name">佐藤 花子</div>
+            <div class="user-preview">明日の予約を確認したいです</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">13:45</div>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+        <div class="user-list-item" onclick="selectUser(this)">
+          <div class="user-avatar">鈴</div>
+          <div class="user-info">
+            <div class="user-name">鈴木 一郎 <span class="line-badge">LINE</span></div>
+            <div class="user-preview">WiFiのパスワードを教えて...</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">12:30</div>
+            <div class="unread-dot"></div>
+          </div>
+        </div>
+        <div class="user-list-item" onclick="selectUser(this)">
+          <div class="user-avatar" style="background:#4caf50;">山</div>
+          <div class="user-info">
+            <div class="user-name">山田 美咲</div>
+            <div class="user-preview" style="color:#4caf50;">✓ 返信済み</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">11:00</div>
+          </div>
+        </div>
+        <div class="user-list-item" onclick="selectUser(this)">
+          <div class="user-avatar" style="background:#ff9800;">高</div>
+          <div class="user-info">
+            <div class="user-name">高橋 健太 <span style="font-size:10px;color:#ff9800;">見学</span></div>
+            <div class="user-preview">見学の日程を変更できますか</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">昨日</div>
+          </div>
+        </div>
+        <div class="user-list-item" onclick="selectUser(this)">
+          <div class="user-avatar" style="background:#9c27b0;">中</div>
+          <div class="user-info">
+            <div class="user-name">中村 さくら <span class="line-badge">LINE</span></div>
+            <div class="user-preview" style="color:#4caf50;">✓ 返信済み</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="user-time">昨日</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- メインエリア：チャット -->
+      <div class="admin-main" style="position:relative;">
+        <div class="admin-chat-header">
+          <div>
+            <div class="user-detail">田中 太郎</div>
+            <div class="user-status">
+              月額契約中 ・ 最終来店: 2/19 ・ <span class="line-badge">LINE連携済み</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button style="padding:6px 12px; border:1px solid #ddd; border-radius:6px; font-size:12px; cursor:pointer; background:white;">📋 顧客情報</button>
+            <button style="padding:6px 12px; border:1px solid #ddd; border-radius:6px; font-size:12px; cursor:pointer; background:white;">📊 利用履歴</button>
+          </div>
+        </div>
+
+        <div class="admin-chat-area">
+          <div class="chat-date">2月20日（木）</div>
+
+          <div class="chat-bubble sent" style="align-self:flex-end;">
+            いつもご利用ありがとうございます！明日のご予約を承りました。
+            <span class="time">10:00 · アプリ内</span>
+          </div>
+
+          <div class="chat-bubble received" style="align-self:flex-start;">
+            ありがとうございます！個室は空いていますか？
+            <span class="time">10:15 · <span style="color:#06C755;">LINE経由</span></span>
+          </div>
+
+          <div class="chat-bubble sent" style="align-self:flex-end;">
+            はい、明日は個室Aが空いております！こちらのお部屋です👇
+            <span class="time">14:15 · アプリ内</span>
+          </div>
+
+          <div class="chat-bubble sent" style="align-self:flex-end; padding:4px;">
+            <div style="background:#e0e0e0; height:100px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#888; font-size:12px; width:180px;">
+              📷 個室Aの写真
+            </div>
+            <span class="time" style="padding:4px 10px;">14:16 · アプリ内</span>
+          </div>
+
+          <div class="chat-bubble received" style="align-self:flex-start;">
+            きれいですね！こちらでお願いします。
+            <span class="time">14:20 · <span style="color:#06C755;">LINE経由</span></span>
+          </div>
+        </div>
+
+        <!-- テンプレート選択 -->
+        <div class="template-list" id="templateList">
+          <div style="font-weight:bold; padding:8px 12px; border-bottom:1px solid #eee; font-size:13px;">📋 テンプレート</div>
+          <div class="template-item" onclick="useTemplate('ご予約ありがとうございます。当日お待ちしております。')">✅ 予約確認の返信</div>
+          <div class="template-item" onclick="useTemplate('営業時間は平日9:00〜22:00、土日祝10:00〜20:00です。')">🕐 営業時間のご案内</div>
+          <div class="template-item" onclick="useTemplate('個室のご利用料金は1時間500円（税込）です。月額プランの場合は追加料金なしでご利用いただけます。')">💰 料金案内</div>
+          <div class="template-item" onclick="useTemplate('WiFiのSSIDは「StudySpace_5G」、パスワードは店舗内の掲示をご確認ください。')">📶 WiFi案内</div>
+          <div class="template-item" onclick="useTemplate('ただいまの空席状況をお知らせします。\n・オープン席: ○\n・個室A: ○\n・個室B: ×\n・グループ席: ○')">🪑 空席案内</div>
+          <div class="template-item" onclick="useTemplate('お忙しいところ恐れ入りますが、ご契約の更新期限が近づいております。引き続きご利用いただける場合は、アプリから更新手続きをお願いいたします。')">📄 契約更新案内</div>
+        </div>
+
+        <div class="admin-chat-input-area">
+          <button class="template-btn" onclick="toggleTemplate()">📋 テンプレート</button>
+          <button class="template-btn" style="font-size:16px; padding:8px 10px;">📎</button>
+          <textarea class="admin-chat-input" id="adminChatInput" placeholder="メッセージを入力... (Enterで送信)" rows="1"></textarea>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <button class="admin-chat-send">送信</button>
+            <div style="display:flex; gap:4px; font-size:10px; color:#888;">
+              <label><input type="checkbox" checked style="margin-right:2px;">アプリ</label>
+              <label><input type="checkbox" checked style="margin-right:2px; accent-color:#06C755;">LINE</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 未返信ダッシュボード -->
+<div class="section">
+  <h2>未返信ダッシュボード</h2>
+  <p style="font-size:13px; color:#888; margin-bottom:16px;">返信漏れを防ぐための一覧ビュー。経過時間でアラートカラーが変わります。</p>
+
+  <div class="stat-grid">
+    <div class="stat-card" style="border-top:4px solid #e53935;">
+      <div class="stat-value" style="color:#e53935;">1</div>
+      <div class="stat-label">3時間以上未返信</div>
+    </div>
+    <div class="stat-card" style="border-top:4px solid #ff9800;">
+      <div class="stat-value" style="color:#ff9800;">2</div>
+      <div class="stat-label">1時間以上未返信</div>
+    </div>
+    <div class="stat-card" style="border-top:4px solid #4caf50;">
+      <div class="stat-value" style="color:#4caf50;">4</div>
+      <div class="stat-label">本日返信済み</div>
+    </div>
+    <div class="stat-card" style="border-top:4px solid #1a73e8;">
+      <div class="stat-value" style="color:#1a73e8;">15分</div>
+      <div class="stat-label">平均返信時間</div>
+    </div>
+  </div>
+
+  <table class="db-table">
+    <thead>
+      <tr>
+        <th>ユーザー</th>
+        <th>最新メッセージ</th>
+        <th>経由</th>
+        <th>経過時間</th>
+        <th>ステータス</th>
+        <th>アクション</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="background:#fff5f5;">
+        <td><strong>田中 太郎</strong></td>
+        <td>個室は空いていますか？</td>
+        <td><span class="line-badge">LINE</span></td>
+        <td style="color:#e53935; font-weight:bold;">3時間20分</td>
+        <td><span class="tag" style="background:#fce4ec;color:#c62828;">要返信</span></td>
+        <td><button style="padding:4px 12px; background:#1a73e8; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">返信する</button></td>
+      </tr>
+      <tr style="background:#fff8e1;">
+        <td><strong>佐藤 花子</strong></td>
+        <td>明日の予約を確認したいです</td>
+        <td><span class="tag current">アプリ</span></td>
+        <td style="color:#ff9800; font-weight:bold;">1時間45分</td>
+        <td><span class="tag" style="background:#fff3e0;color:#e65100;">要返信</span></td>
+        <td><button style="padding:4px 12px; background:#1a73e8; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">返信する</button></td>
+      </tr>
+      <tr style="background:#fff8e1;">
+        <td><strong>鈴木 一郎</strong></td>
+        <td>WiFiのパスワードを教えて...</td>
+        <td><span class="line-badge">LINE</span></td>
+        <td style="color:#ff9800; font-weight:bold;">1時間10分</td>
+        <td><span class="tag" style="background:#fff3e0;color:#e65100;">要返信</span></td>
+        <td><button style="padding:4px 12px; background:#1a73e8; color:white; border:none; border-radius:4px; cursor:pointer; font-size:12px;">返信する</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 一斉送信 -->
+<div class="section">
+  <h2>一斉送信機能（改善版）</h2>
+  <div style="border:1px solid #ddd; border-radius:12px; padding:20px;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+      <div>
+        <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:6px;">送信先セグメント</label>
+        <select style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; font-size:13px;">
+          <option>すべてのユーザー</option>
+          <option>月額契約者のみ</option>
+          <option>見学予約者のみ</option>
+          <option>1ヶ月以上来店なし</option>
+          <option>LINE連携済みユーザー</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:6px;">送信チャネル</label>
+        <div style="display:flex; gap:12px; padding:8px 0;">
+          <label style="font-size:13px;"><input type="checkbox" checked> アプリ内メッセージ</label>
+          <label style="font-size:13px;"><input type="checkbox" checked style="accent-color:#06C755;"> LINE</label>
+          <label style="font-size:13px;"><input type="checkbox"> メール</label>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:6px;">メッセージ本文</label>
+      <textarea style="width:100%; min-height:80px; padding:10px; border:1px solid #ddd; border-radius:8px; font-size:13px; resize:vertical;" placeholder="メッセージを入力してください..."></textarea>
+    </div>
+    <div style="display:flex; gap:16px; margin-bottom:16px;">
+      <div style="flex:1;">
+        <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:6px;">送信スケジュール</label>
+        <div style="display:flex; gap:8px;">
+          <label style="font-size:13px; padding:6px 12px; border:2px solid #1a73e8; border-radius:8px; cursor:pointer; background:#e8f0fe;"><input type="radio" name="schedule" checked style="margin-right:4px;"> 今すぐ送信</label>
+          <label style="font-size:13px; padding:6px 12px; border:2px solid #ddd; border-radius:8px; cursor:pointer;"><input type="radio" name="schedule" style="margin-right:4px;"> 日時指定</label>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:13px; font-weight:bold; display:block; margin-bottom:6px;">対象人数</label>
+        <div style="font-size:24px; font-weight:bold; color:#1a73e8; padding:4px 0;">156名</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button style="padding:10px 20px; border:1px solid #ddd; border-radius:8px; font-size:13px; cursor:pointer; background:white;">プレビュー</button>
+      <button style="padding:10px 20px; background:#1a73e8; color:white; border:none; border-radius:8px; font-size:13px; font-weight:bold; cursor:pointer;">送信する</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-store -->
+
+
+<!-- ========================================== -->
+<!--            LINE連携                         -->
+<!-- ========================================== -->
+<div id="tab-line" class="tab-content">
+
+<div class="section">
+  <div class="line-section">
+    <h3>LINE公式アカウント連携</h3>
+    <p style="font-size:14px; margin-top:8px;">日本ユーザーの約95%が利用するLINEとStudyGOを連携し、メッセージの到達率と利便性を大幅に向上させます。</p>
+  </div>
+
+  <h3>連携アーキテクチャ</h3>
+  <div class="flow">
+    <div class="flow-step line">LINE<br>ユーザー</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step line">LINE<br>Messaging API</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">StudyGO API<br>Webhook</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Message<br>Thread DB</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FCM + LINE<br>通知配信</div>
+  </div>
+
+  <div class="note">
+    お客様がLINEから送信したメッセージは、StudyGOの同じメッセージスレッドに統合されます。店舗側は管理画面から一元的に返信でき、返信はアプリとLINE両方に配信されます。
+  </div>
+</div>
+
+<div class="section">
+  <h3>LINE連携フロー（お客様側）</h3>
+
+  <div class="comparison">
+    <div>
+      <div class="phone-label">Step 1: アプリでLINE連携</div>
+      <div class="phone-frame">
+        <div class="app-header" style="background:#06C755;">
+          <span class="back">←</span>
+          <span class="title">LINE連携</span>
+          <span></span>
+        </div>
+
+        <div style="text-align:center; padding:20px 0;">
+          <div style="font-size:48px; margin-bottom:12px;">💬</div>
+          <h4>LINEと連携する</h4>
+          <p style="font-size:12px; color:#888; margin:8px 0 20px;">LINEと連携すると、メッセージをLINEでも受信・返信できるようになります。</p>
+
+          <div style="text-align:left; padding:0 12px; margin-bottom:20px;">
+            <div style="display:flex; gap:8px; align-items:center; padding:8px 0; font-size:13px;">
+              <span style="color:#06C755;">✅</span> 店舗からのメッセージをLINEで通知
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; padding:8px 0; font-size:13px;">
+              <span style="color:#06C755;">✅</span> LINEから直接返信可能
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; padding:8px 0; font-size:13px;">
+              <span style="color:#06C755;">✅</span> アプリとLINEでメッセージ同期
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; padding:8px 0; font-size:13px;">
+              <span style="color:#06C755;">✅</span> 予約リマインダーをLINEで受信
+            </div>
+          </div>
+
+          <button style="width:100%; padding:14px; background:#06C755; color:white; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; margin-bottom:8px;">
+            LINEで連携する
+          </button>
+          <p style="font-size:10px; color:#999;">※LINEアプリが起動し、友だち追加画面に遷移します</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="phone-label">Step 2: LINEでの受信イメージ</div>
+      <div class="phone-frame">
+        <div class="app-header" style="background:#06C755;">
+          <span class="back">←</span>
+          <span class="title">StudyGO</span>
+          <span></span>
+        </div>
+
+        <div class="chat-area" style="height:400px;">
+          <div class="chat-date">2月20日（木）</div>
+
+          <div class="chat-bubble received" style="background:#06C755; color:white; border-bottom-left-radius:4px;">
+            <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">📍 StudySpace渋谷店</div>
+            いつもご利用ありがとうございます！明日のご予約を承りました。
+            <span class="time" style="color:rgba(255,255,255,0.7);">10:00</span>
+          </div>
+
+          <div class="chat-bubble sent">
+            ありがとうございます！個室は空いていますか？
+            <span class="time">10:15</span>
+          </div>
+
+          <div class="chat-bubble received" style="background:#06C755; color:white; border-bottom-left-radius:4px;">
+            <div style="font-size:10px; opacity:0.8; margin-bottom:4px;">📍 StudySpace渋谷店</div>
+            はい、明日は個室Aが空いております！
+            <span class="time" style="color:rgba(255,255,255,0.7);">14:15</span>
+          </div>
+
+          <div class="chat-bubble received" style="background:#06C755; color:white; padding:8px; border-bottom-left-radius:4px;">
+            <div style="background:rgba(255,255,255,0.2); height:100px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px;">
+              📷 個室Aの写真
+            </div>
+            <span class="time" style="color:rgba(255,255,255,0.7); display:block; margin-top:4px;">14:16</span>
+          </div>
+
+          <!-- リッチメニュー風 -->
+          <div style="border:1px solid #ddd; border-radius:8px; overflow:hidden; align-self:flex-start; max-width:80%;">
+            <div style="background:#f5f5f5; padding:8px 12px; font-size:11px; font-weight:bold; border-bottom:1px solid #ddd;">📋 クイックメニュー</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:#ddd;">
+              <div style="background:white; padding:10px; text-align:center; font-size:11px; cursor:pointer;">🪑 空席確認</div>
+              <div style="background:white; padding:10px; text-align:center; font-size:11px; cursor:pointer;">📅 予約する</div>
+              <div style="background:white; padding:10px; text-align:center; font-size:11px; cursor:pointer;">💰 料金確認</div>
+              <div style="background:white; padding:10px; text-align:center; font-size:11px; cursor:pointer;">📞 お問合せ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <input class="chat-input" placeholder="メッセージを入力">
+          <button class="chat-send-btn" style="background:#06C755;">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>LINE連携の技術フロー</h3>
+
+  <h4>1. お客様がLINEを連携する流れ</h4>
+  <div class="flow">
+    <div class="flow-step">アプリで<br>「LINE連携」タップ</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step line">LINE Login<br>OAuth認証</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">LINE User ID<br>取得・保存</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">連携完了<br>友だち追加</div>
+  </div>
+
+  <h4 style="margin-top:20px;">2. LINEメッセージ受信→アプリ同期</h4>
+  <div class="flow">
+    <div class="flow-step line">LINE<br>メッセージ送信</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight">Webhook<br>受信</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">LINE User ID→<br>AppUser特定</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Message DB<br>保存</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FCM通知<br>(アプリ)</div>
+  </div>
+
+  <h4 style="margin-top:20px;">3. 店舗返信→LINE配信</h4>
+  <div class="flow">
+    <div class="flow-step">店舗が<br>管理画面で返信</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Message DB<br>保存</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">FCM通知<br>(アプリ)</div>
+    <div class="flow-arrow">+</div>
+    <div class="flow-step line">LINE Push<br>Message API</div>
+  </div>
+
+  <div class="note" style="margin-top:16px;">
+    <strong>LINE Messaging APIの料金：</strong><br>
+    ・フリープラン：月200通まで無料<br>
+    ・ライトプラン：月5,000通 / 月5,000円<br>
+    ・スタンダードプラン：月30,000通 / 月15,000円（追加: ～3円/通）<br>
+    ※通数は「Push Message」のみカウント。Webhookでの受信は無制限。
+  </div>
+</div>
+
+<div class="section">
+  <h3>LINEリッチメニュー設計</h3>
+  <p style="font-size:13px; color:#888; margin-bottom:16px;">LINE公式アカウントのリッチメニューから主要機能に直接アクセスできるようにします。</p>
+
+  <div style="max-width:400px; margin:0 auto; border:2px solid #06C755; border-radius:12px; overflow:hidden;">
+    <div style="background:#06C755; color:white; padding:10px 16px; font-weight:bold; text-align:center;">StudyGO リッチメニュー</div>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:#ddd;">
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">🪑</div>
+        <div style="font-size:12px; font-weight:bold;">空席確認</div>
+      </div>
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">📅</div>
+        <div style="font-size:12px; font-weight:bold;">予約する</div>
+      </div>
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">💬</div>
+        <div style="font-size:12px; font-weight:bold;">メッセージ</div>
+      </div>
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">📍</div>
+        <div style="font-size:12px; font-weight:bold;">店舗検索</div>
+      </div>
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">🎫</div>
+        <div style="font-size:12px; font-weight:bold;">クーポン</div>
+      </div>
+      <div style="background:white; padding:20px; text-align:center;">
+        <div style="font-size:28px; margin-bottom:8px;">👤</div>
+        <div style="font-size:12px; font-weight:bold;">マイページ</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-line -->
+
+
+<!-- ========================================== -->
+<!--            技術設計                          -->
+<!-- ========================================== -->
+<div id="tab-tech" class="tab-content">
+
+<div class="section">
+  <h2>技術設計概要</h2>
+
+  <h3>システムアーキテクチャ</h3>
+  <div class="arch-diagram">
+    <div class="arch-box app">
+      <h4>フロントエンド</h4>
+      <ul>
+        <li>Flutter モバイルアプリ</li>
+        <li>Next.js 管理画面</li>
+        <li>WebSocket クライアント</li>
+        <li>画像アップロードUI</li>
+      </ul>
+    </div>
+    <div class="arch-box api">
+      <h4>バックエンド API</h4>
+      <ul>
+        <li>Express.js + TypeScript</li>
+        <li>WebSocket サーバー</li>
+        <li>LINE Webhook受信</li>
+        <li>S3 画像アップロード</li>
+        <li>テンプレート管理API</li>
+      </ul>
+    </div>
+    <div class="arch-box ext">
+      <h4>外部サービス</h4>
+      <ul>
+        <li>LINE Messaging API</li>
+        <li>Firebase Cloud Messaging</li>
+        <li>AWS S3 (画像)</li>
+        <li>AWS SES (メール)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>DB スキーマ変更</h3>
+
+  <h4><span class="tag improve">変更</span> AppUser テーブル</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>カラム</th><th>型</th><th>説明</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>... (既存カラム)</td><td></td><td></td><td></td></tr>
+      <tr class="new"><td><span class="fk">lineUserId</span></td><td>String?</td><td>LINE User ID</td><td>LINE連携時に保存</td></tr>
+      <tr class="new"><td>lineLinkedAt</td><td>DateTime?</td><td>LINE連携日時</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag improve">変更</span> Message テーブル</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>カラム</th><th>型</th><th>説明</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>... (既存カラム)</td><td></td><td></td><td></td></tr>
+      <tr class="new"><td>messageChannel</td><td>Int (default: 0)</td><td>送信チャネル</td><td>0=アプリ, 1=LINE, 2=メール</td></tr>
+      <tr class="new"><td>attachmentUrl</td><td>String?</td><td>添付ファイルURL</td><td>S3パス</td></tr>
+      <tr class="new"><td>attachmentType</td><td>String?</td><td>添付ファイル種別</td><td>image/pdf/etc</td></tr>
+      <tr class="new"><td>lineMessageId</td><td>String?</td><td>LINE Message ID</td><td>LINE経由メッセージの場合</td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag new">新規</span> MessageTemplate テーブル</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>カラム</th><th>型</th><th>説明</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="pk">id</span></td><td>Int (autoincrement)</td><td>テンプレートID</td><td>PK</td></tr>
+      <tr><td><span class="fk">shopId</span></td><td>Int</td><td>店舗ID</td><td>FK → Shop</td></tr>
+      <tr><td>title</td><td>String</td><td>テンプレート名</td><td>例：「予約確認」</td></tr>
+      <tr><td>content</td><td>MediumText</td><td>テンプレート本文</td><td></td></tr>
+      <tr><td>category</td><td>String?</td><td>カテゴリ</td><td>予約/料金/案内 等</td></tr>
+      <tr><td>sortOrder</td><td>Int (default: 0)</td><td>表示順</td><td></td></tr>
+      <tr><td>isActive</td><td>Int (default: 1)</td><td>有効フラグ</td><td></td></tr>
+      <tr><td>createdAt</td><td>DateTime</td><td>作成日時</td><td></td></tr>
+      <tr><td>updatedAt</td><td>DateTime</td><td>更新日時</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag new">新規</span> QuickReply テーブル</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>カラム</th><th>型</th><th>説明</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="pk">id</span></td><td>Int (autoincrement)</td><td>クイック返信ID</td><td>PK</td></tr>
+      <tr><td><span class="fk">shopId</span></td><td>Int</td><td>店舗ID</td><td>FK → Shop</td></tr>
+      <tr><td>label</td><td>String</td><td>ボタン表示文</td><td>例：「空席はありますか？」</td></tr>
+      <tr><td>message</td><td>String</td><td>送信メッセージ</td><td></td></tr>
+      <tr><td>sortOrder</td><td>Int (default: 0)</td><td>表示順</td><td></td></tr>
+      <tr><td>isActive</td><td>Int (default: 1)</td><td>有効フラグ</td><td></td></tr>
+      <tr><td>createdAt</td><td>DateTime</td><td>作成日時</td><td></td></tr>
+      <tr><td>updatedAt</td><td>DateTime</td><td>更新日時</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag new">新規</span> MessageSchedule テーブル</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>カラム</th><th>型</th><th>説明</th><th>備考</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="pk">id</span></td><td>Int (autoincrement)</td><td>スケジュールID</td><td>PK</td></tr>
+      <tr><td><span class="fk">shopId</span></td><td>Int</td><td>店舗ID</td><td>FK → Shop</td></tr>
+      <tr><td>message</td><td>MediumText</td><td>送信メッセージ</td><td></td></tr>
+      <tr><td>targetSegment</td><td>String</td><td>送信対象セグメント</td><td>JSON: 契約タイプ/来店頻度等</td></tr>
+      <tr><td>channels</td><td>String</td><td>送信チャネル</td><td>JSON: [app, line, email]</td></tr>
+      <tr><td>scheduledAt</td><td>DateTime</td><td>送信予定日時</td><td></td></tr>
+      <tr><td>sentAt</td><td>DateTime?</td><td>送信完了日時</td><td></td></tr>
+      <tr><td>status</td><td>Int</td><td>ステータス</td><td>0=予約, 1=送信中, 2=完了, 3=キャンセル</td></tr>
+      <tr><td>createdAt</td><td>DateTime</td><td>作成日時</td><td></td></tr>
+      <tr><td>updatedAt</td><td>DateTime</td><td>更新日時</td><td></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>API エンドポイント設計</h3>
+
+  <h4><span class="tag new">新規</span> LINE連携 API</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>メソッド</th><th>エンドポイント</th><th>説明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>POST</td><td><code>app/linkLineAccount</code></td><td>LINE OAuth認証後、LINE User IDを紐付け</td></tr>
+      <tr><td>POST</td><td><code>app/unlinkLineAccount</code></td><td>LINE連携解除</td></tr>
+      <tr><td>POST</td><td><code>webhook/line</code></td><td>LINE Messaging API Webhook受信</td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag new">新規</span> テンプレート API</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>メソッド</th><th>エンドポイント</th><th>説明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>GET</td><td><code>company/messageTemplates</code></td><td>テンプレート一覧取得</td></tr>
+      <tr><td>POST</td><td><code>company/createMessageTemplate</code></td><td>テンプレート作成</td></tr>
+      <tr><td>PUT</td><td><code>company/updateMessageTemplate</code></td><td>テンプレート更新</td></tr>
+      <tr><td>DELETE</td><td><code>company/deleteMessageTemplate</code></td><td>テンプレート削除</td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag new">新規</span> 画像アップロード API</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>メソッド</th><th>エンドポイント</th><th>説明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>POST</td><td><code>app/uploadMessageAttachment</code></td><td>メッセージ添付ファイルアップロード（S3）</td></tr>
+      <tr><td>POST</td><td><code>company/uploadMessageAttachment</code></td><td>店舗側からの添付ファイルアップロード</td></tr>
+    </tbody>
+  </table>
+
+  <h4><span class="tag improve">拡張</span> 既存メッセージ API</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>メソッド</th><th>エンドポイント</th><th>変更内容</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>POST</td><td><code>app/appSendMessageInThread</code></td><td>attachmentUrl, attachmentType パラメータ追加</td></tr>
+      <tr><td>POST</td><td><code>company/companySendMessage</code></td><td>attachmentUrl, channels パラメータ追加</td></tr>
+      <tr><td>GET</td><td><code>company/companyMessages</code></td><td>未返信フィルタ、チャネル情報レスポンスに追加</td></tr>
+      <tr><td>GET</td><td><code>app/appMessageThreads</code></td><td>LINE連携情報をレスポンスに追加</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>主要な実装ファイル</h3>
+
+  <h4>バックエンド（studygo-api）</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>ファイル</th><th>変更内容</th><th>種別</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>prisma/schema.prisma</code></td><td>テーブル追加・カラム追加</td><td><span class="tag improve">変更</span></td></tr>
+      <tr><td><code>src/services/entities/MessageThreadService.ts</code></td><td>LINE送信・画像送信ロジック追加</td><td><span class="tag improve">変更</span></td></tr>
+      <tr><td><code>src/services/LineMessagingService.ts</code></td><td>LINE Messaging API連携</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/api/resolvers/webhook/lineWebhookResolver.ts</code></td><td>Webhook受信エンドポイント</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/api/resolvers/app/appLineResolver.ts</code></td><td>LINE連携・解除API</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/api/resolvers/company/companyTemplateResolver.ts</code></td><td>テンプレートCRUD API</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/services/S3UploadService.ts</code></td><td>画像アップロード処理</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/services/FCMService.ts</code></td><td>LINE通知との連携</td><td><span class="tag improve">変更</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>フロントエンド - 管理画面（studygo-front）</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>ファイル</th><th>変更内容</th><th>種別</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>src/components/features/MessageList.tsx</code></td><td>LINE経由表示・画像表示追加</td><td><span class="tag improve">変更</span></td></tr>
+      <tr><td><code>src/components/features/MessageTemplateManager.tsx</code></td><td>テンプレート管理UI</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/components/features/UnrepliedDashboard.tsx</code></td><td>未返信ダッシュボード</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>src/components/features/BroadcastMessage.tsx</code></td><td>一斉送信UI改善</td><td><span class="tag new">新規</span></td></tr>
+    </tbody>
+  </table>
+
+  <h4>モバイルアプリ（studygo-app）</h4>
+  <table class="db-table">
+    <thead>
+      <tr><th>ファイル</th><th>変更内容</th><th>種別</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>lib/src/screens/message/chat/chat_screen.dart</code></td><td>画像送受信・既読表示・クイック返信追加</td><td><span class="tag improve">変更</span></td></tr>
+      <tr><td><code>lib/src/screens/message/list/message_screen.dart</code></td><td>LINE連携バッジ・検索バー追加</td><td><span class="tag improve">変更</span></td></tr>
+      <tr><td><code>lib/src/screens/settings/line_link_screen.dart</code></td><td>LINE連携画面</td><td><span class="tag new">新規</span></td></tr>
+      <tr><td><code>lib/src/services/line_service.dart</code></td><td>LINE OAuth連携処理</td><td><span class="tag new">新規</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h3>セキュリティ考慮事項</h3>
+  <div class="issue-grid">
+    <div class="proposal-card">
+      <div class="prop-title">LINE Webhook署名検証</div>
+      <div class="prop-desc">LINE Messaging APIのWebhook受信時に、X-Line-Signatureヘッダーを検証し、正規のリクエストであることを確認する。Channel Secretを使用したHMAC-SHA256署名検証を必須とする。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">画像アップロードのバリデーション</div>
+      <div class="prop-desc">アップロード可能なファイル種別（JPEG, PNG, PDF）、サイズ上限（10MB）を設定。ファイル名のサニタイズ、S3のプライベートバケットでの保存、署名付きURLでのアクセス制御を実装。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">LINE User IDの安全な管理</div>
+      <div class="prop-desc">LINE User IDは個人情報に該当するため、暗号化保存を検討。連携解除時の完全削除、アクセスログの記録を実装。</div>
+    </div>
+    <div class="proposal-card">
+      <div class="prop-title">レート制限</div>
+      <div class="prop-desc">メッセージ送信APIにレート制限を設定。LINE Messaging APIの送信上限（1,000通/分）を考慮した送信キュー制御を実装。</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /tab-tech -->
+
+</div><!-- /.container -->
+
+<script>
+// タブ切り替え
+function switchTab(tabName) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tabName).classList.add('active');
+}
+
+// アプリ画面遷移
+function showScreen(screenId) {
+  const app = document.getElementById('customer-app');
+  app.querySelectorAll('.mock-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+// フィルタ切り替え
+function filterMessages(el, type) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ユーザー選択
+function selectUser(el) {
+  document.querySelectorAll('.user-list-item').forEach(u => u.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// テンプレート表示切替
+function toggleTemplate() {
+  const list = document.getElementById('templateList');
+  list.classList.toggle('show');
+}
+
+// テンプレート使用
+function useTemplate(text) {
+  document.getElementById('adminChatInput').value = text;
+  document.getElementById('templateList').classList.remove('show');
+}
+
+// テンプレートリスト外クリックで閉じる
+document.addEventListener('click', function(e) {
+  const templateList = document.getElementById('templateList');
+  if (templateList && !e.target.closest('.template-btn') && !e.target.closest('.template-list')) {
+    templateList.classList.remove('show');
+  }
+});
+</script>
+
+</body>
+</html>

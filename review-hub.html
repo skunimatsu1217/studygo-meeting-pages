@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO ドキュメントレビューハブ</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --danger: #ef4444;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI','Hiragino Sans','Meiryo',sans-serif; background: var(--gray-50); color: var(--gray-800); line-height: 1.6; }
+
+  .header {
+    background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    color: white; padding: 28px 24px; position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header-sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+  .header-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .header-btn {
+    padding: 8px 20px; border: none; border-radius: 8px; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-copy { background: white; color: var(--primary); }
+  .btn-copy:hover { background: var(--gray-100); }
+  .btn-reset { background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-reset:hover { background: rgba(255,255,255,0.25); }
+  .btn-save { background: var(--success); color: white; }
+  .btn-save:hover { background: #15803d; }
+  .btn-load { background: var(--warning); color: white; }
+  .btn-load:hover { background: #b45309; }
+
+  .progress-bar { background: rgba(255,255,255,0.2); border-radius: 6px; height: 6px; margin-top: 12px; }
+  .progress-fill { height: 100%; background: white; border-radius: 6px; transition: width 0.3s; }
+  .progress-text { font-size: 12px; margin-top: 4px; opacity: 0.8; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 20px 16px 100px; }
+
+  /* Category */
+  .category { margin-bottom: 32px; }
+  .category-title {
+    font-size: 16px; font-weight: 700; color: var(--gray-900);
+    padding: 12px 16px; background: white; border-radius: 10px 10px 0 0;
+    border: 1px solid var(--gray-200); border-bottom: 3px solid var(--primary);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .category-badge {
+    font-size: 11px; padding: 2px 10px; border-radius: 12px; font-weight: 600;
+  }
+  .cat-spec { background: #dbeafe; color: #1d4ed8; }
+  .cat-mock { background: #dcfce7; color: #15803d; }
+  .cat-3 { background: #fef3c7; color: #b45309; }
+
+  /* Document Card */
+  .doc-card {
+    background: white; border: 1px solid var(--gray-200); border-top: none;
+    padding: 0; overflow: hidden;
+  }
+  .doc-card:last-child { border-radius: 0 0 10px 10px; }
+
+  .doc-header {
+    padding: 14px 16px; display: flex; justify-content: space-between;
+    align-items: center; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .doc-header:hover { background: var(--gray-50); }
+  .doc-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .doc-link {
+    font-size: 12px; color: var(--primary); text-decoration: none;
+    padding: 4px 12px; border: 1px solid var(--primary); border-radius: 6px;
+    white-space: nowrap;
+  }
+  .doc-link:hover { background: var(--primary-light); }
+  .doc-arrow { font-size: 16px; color: var(--gray-400); transition: transform 0.2s; }
+  .doc-header.open .doc-arrow { transform: rotate(180deg); }
+  .doc-status {
+    font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  }
+  .status-no-comment { background: var(--gray-100); color: var(--gray-500); }
+  .status-has-comment { background: var(--warning-light); color: var(--warning); }
+  .status-done { background: var(--success-light); color: var(--success); }
+
+  .doc-body { display: none; padding: 0 16px 16px; }
+  .doc-body.open { display: block; }
+
+  /* Section Review */
+  .section-review { margin-bottom: 16px; }
+  .section-label {
+    font-size: 13px; font-weight: 600; color: var(--gray-700);
+    margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+  }
+  .section-num {
+    background: var(--primary); color: white; width: 20px; height: 20px;
+    border-radius: 50%; display: inline-flex; align-items: center;
+    justify-content: center; font-size: 10px; flex-shrink: 0;
+  }
+  .section-textarea {
+    width: 100%; padding: 10px 12px; border: 2px solid var(--gray-200);
+    border-radius: 8px; font-size: 13px; font-family: inherit;
+    resize: vertical; min-height: 60px; transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  .section-textarea:focus { outline: none; border-color: var(--primary); }
+  .section-textarea::placeholder { color: var(--gray-300); }
+  .section-textarea.has-content { border-color: var(--warning); background: #fffbeb; }
+
+  .section-hint { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+
+  /* General comment */
+  .general-comment {
+    margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--gray-200);
+  }
+  .general-label { font-size: 13px; font-weight: 600; color: var(--gray-500); margin-bottom: 6px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--gray-900); color: white; padding: 12px 24px;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 200;
+    display: none; animation: fadeIn 0.3s;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: white; border-radius: 12px; padding: 24px;
+    max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;
+  }
+  .modal h2 { margin-bottom: 12px; font-size: 18px; }
+  .modal pre {
+    background: var(--gray-100); padding: 16px; border-radius: 8px;
+    font-size: 12px; white-space: pre-wrap; word-break: break-all;
+    max-height: 50vh; overflow-y: auto; line-height: 1.8;
+  }
+  .modal-actions { margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn {
+    padding: 8px 20px; border: none; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn-primary { background: var(--primary); color: white; }
+  .modal-btn-secondary { background: var(--gray-200); color: var(--gray-700); }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 18px; }
+    .header-actions { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ドキュメントレビューハブ</h1>
+  <div class="header-sub">各ドキュメントの修正・改善コメントを入力し、まとめてコピーできます</div>
+  <div class="header-actions">
+    <button class="header-btn btn-copy" onclick="showPreview()">コメントをコピー</button>
+    <button class="header-btn btn-save" onclick="saveToStorage()">下書き保存</button>
+    <button class="header-btn btn-load" onclick="loadFromStorage()">下書き読込</button>
+    <button class="header-btn btn-reset" onclick="resetAll()">リセット</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">コメント入力: 0件</div>
+</div>
+
+<div class="container" id="reviewContainer"></div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">レビューコメント</h2>
+    <pre id="modalContent"></pre>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" onclick="closeModal()">閉じる</button>
+      <button class="modal-btn modal-btn-primary" onclick="copyToClipboard()">クリップボードにコピー</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DOCUMENT DEFINITIONS =====
+const documents = [
+  {
+    category: "カテゴリ3 モックアップ（自作）",
+    catClass: "cat-mock",
+    docs: [
+      {
+        id: "mock-3-1",
+        title: "3-1. チェックイン時メッセージ分離",
+        file: "mockup-3-1-checkin-message.html",
+        sections: [
+          { id: "app-all", label: "アプリ: すべて表示画面" },
+          { id: "app-notif", label: "アプリ: 通知フィルタ画面" },
+          { id: "app-chat", label: "アプリ: チャットフィルタ画面" },
+          { id: "company-edit", label: "法人画面: メッセージ編集" },
+          { id: "company-preview", label: "法人画面: プレビュー" },
+          { id: "admin-list", label: "管理画面: メッセージ一覧" },
+        ]
+      },
+      {
+        id: "mock-3-2",
+        title: "3-2. チェックイン履歴の分離",
+        file: "mockup-3-2-checkin-history.html",
+        sections: [
+          { id: "admin-stats", label: "管理画面: 統計カード" },
+          { id: "admin-tabs", label: "管理画面: プラン別タブ" },
+          { id: "admin-table", label: "管理画面: 履歴テーブル" },
+          { id: "admin-filter", label: "管理画面: フィルタ・CSV" },
+          { id: "company-view", label: "法人画面: 利用履歴" },
+        ]
+      },
+      {
+        id: "mock-3-3",
+        title: "3-3. メール一斉送信",
+        file: "mockup-3-3-bulk-email.html",
+        sections: [
+          { id: "compose-target", label: "メール作成: 送信対象選択" },
+          { id: "compose-content", label: "メール作成: 本文・HTMLエディタ" },
+          { id: "compose-preview", label: "メール作成: プレビュー" },
+          { id: "history-list", label: "送信履歴: 一覧テーブル" },
+          { id: "history-stats", label: "送信履歴: 開封率" },
+          { id: "app-optout", label: "アプリ: 配信停止設定" },
+        ]
+      },
+      {
+        id: "mock-3-4",
+        title: "3-4. 会員エクスポート",
+        file: "mockup-3-4-member-export.html",
+        sections: [
+          { id: "step1-filter", label: "Step1: 対象ユーザー絞り込み" },
+          { id: "step2-columns", label: "Step2: エクスポート項目選択" },
+          { id: "step3-preview", label: "Step3: CSVプレビュー・DL" },
+          { id: "audit-log", label: "管理画面: 監査ログ" },
+        ]
+      },
+      {
+        id: "mock-3-5",
+        title: "3-5. 自動チェックアウト通知",
+        file: "mockup-3-5-auto-checkout.html",
+        sections: [
+          { id: "flow", label: "通知フロー全体図" },
+          { id: "app-push-warning", label: "アプリ: 15分前警告Push" },
+          { id: "app-push-checkout", label: "アプリ: 自動C/O完了Push" },
+          { id: "app-message", label: "アプリ: メッセージスレッド" },
+          { id: "app-settings", label: "アプリ: 通知設定" },
+          { id: "admin-history", label: "管理画面: 自動C/O履歴" },
+          { id: "company-stats", label: "法人画面: 自動C/O状況" },
+        ]
+      },
+    ]
+  },
+  {
+    category: "仕様書・技術資料（既存）",
+    catClass: "cat-spec",
+    docs: [
+      {
+        id: "spec-coupon-tech",
+        title: "クーポン機能改修_技術提案書",
+        file: "クーポン機能改修_技術提案書.html",
+        sections: [
+          { id: "overview", label: "概要・背景" },
+          { id: "db-design", label: "DB設計（テーブル定義）" },
+          { id: "api-design", label: "API設計" },
+          { id: "logic", label: "ビジネスロジック" },
+          { id: "migration", label: "移行計画" },
+          { id: "ui", label: "UI/フロント側" },
+        ]
+      },
+      {
+        id: "spec-coupon-design",
+        title: "クーポン機能_設計イメージ",
+        file: "クーポン機能_設計イメージ.html",
+        sections: [
+          { id: "app-screens", label: "アプリ画面モック" },
+          { id: "db-schema", label: "DB設計図" },
+          { id: "discount-patterns", label: "割引パターン" },
+          { id: "flow", label: "適用フロー" },
+        ]
+      },
+      {
+        id: "spec-message",
+        title: "メッセージ機能改善_企画レポート",
+        file: "メッセージ機能改善_企画レポート.html",
+        sections: [
+          { id: "issues", label: "現状の課題" },
+          { id: "proposals", label: "改善提案" },
+          { id: "app-mock", label: "アプリ画面モック" },
+          { id: "roadmap", label: "ロードマップ" },
+        ]
+      },
+      {
+        id: "spec-push-mock",
+        title: "プッシュ通知_アプリ画面モック",
+        file: "プッシュ通知_アプリ画面モック.html",
+        sections: [
+          { id: "notification-types", label: "通知種別・カテゴリ" },
+          { id: "push-screens", label: "Push通知画面" },
+          { id: "settings", label: "通知設定画面" },
+          { id: "admin-ui", label: "管理画面送信UI" },
+        ]
+      },
+      {
+        id: "spec-dynamic-pricing",
+        title: "ダイナミックプライシング_クーポン設計",
+        file: "ダイナミックプライシング_クーポン設計.html",
+        sections: [
+          { id: "kpi", label: "KPI・データ分析" },
+          { id: "pricing-model", label: "料金モデル設計" },
+          { id: "coupon-integration", label: "クーポン連携" },
+          { id: "ui-display", label: "料金表示UI" },
+        ]
+      },
+      {
+        id: "spec-period-pass",
+        title: "スタディGO機能分析_期間パス検討",
+        file: "スタディGO機能分析_期間パス検討.html",
+        sections: [
+          { id: "analysis", label: "機能分析" },
+          { id: "plan-design", label: "パス設計（7/14/30日）" },
+          { id: "pricing", label: "料金体系" },
+          { id: "lifecycle", label: "ライフサイクル管理" },
+        ]
+      },
+      {
+        id: "spec-period-pass-mock",
+        title: "期間パス_アプリ画面モック",
+        file: "期間パス_アプリ画面モック.html",
+        sections: [
+          { id: "shop-select", label: "店舗詳細: パス選択" },
+          { id: "purchase", label: "購入フロー" },
+          { id: "mypage", label: "マイページ: パス管理" },
+          { id: "expiry-warning", label: "期限警告表示" },
+          { id: "checkin", label: "利用中画面" },
+        ]
+      },
+    ]
+  },
+];
+
+// ===== RENDER =====
+function renderAll() {
+  const container = document.getElementById('reviewContainer');
+  let html = '';
+
+  documents.forEach(cat => {
+    html += `<div class="category">`;
+    html += `<div class="category-title">
+      <span>${cat.category}</span>
+      <span class="category-badge ${cat.catClass}">${cat.docs.length}件</span>
+    </div>`;
+
+    cat.docs.forEach(doc => {
+      html += `<div class="doc-card" data-doc="${doc.id}">`;
+      html += `<div class="doc-header" onclick="toggleDoc('${doc.id}')">
+        <div class="doc-title">
+          <span class="doc-arrow" id="arrow-${doc.id}">▼</span>
+          ${doc.title}
+          <span class="doc-status" id="status-${doc.id}">未入力</span>
+        </div>
+        <a class="doc-link" href="${doc.file}" target="_blank" onclick="event.stopPropagation()">開く ↗</a>
+      </div>`;
+
+      html += `<div class="doc-body" id="body-${doc.id}">`;
+      doc.sections.forEach((sec, i) => {
+        html += `<div class="section-review">
+          <div class="section-label">
+            <span class="section-num">${i+1}</span>
+            ${sec.label}
+          </div>
+          <textarea class="section-textarea"
+            id="ta-${doc.id}-${sec.id}"
+            placeholder="この画面/セクションの修正点・改善点を記入..."
+            oninput="onInput()"></textarea>
+        </div>`;
+      });
+
+      // General comment
+      html += `<div class="general-comment">
+        <div class="general-label">その他・全体コメント</div>
+        <textarea class="section-textarea"
+          id="ta-${doc.id}-general"
+          placeholder="ドキュメント全体に関するコメント..."
+          oninput="onInput()"></textarea>
+      </div>`;
+
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+// ===== TOGGLE =====
+function toggleDoc(docId) {
+  const body = document.getElementById('body-' + docId);
+  const arrow = document.getElementById('arrow-' + docId);
+  const header = arrow.closest('.doc-header');
+  body.classList.toggle('open');
+  header.classList.toggle('open');
+}
+
+// ===== INPUT HANDLING =====
+function onInput() {
+  updateStatuses();
+  updateProgress();
+  autoResize(event.target);
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.max(60, el.scrollHeight) + 'px';
+  el.classList.toggle('has-content', el.value.trim() !== '');
+}
+
+function updateStatuses() {
+  documents.forEach(cat => {
+    cat.docs.forEach(doc => {
+      const badge = document.getElementById('status-' + doc.id);
+      let hasComment = false;
+      doc.sections.forEach(sec => {
+        const ta = document.getElementById(`ta-${doc.id}-${sec.id}`);
+        if (ta && ta.value.trim()) hasComment = true;
+      });
+      const generalTa = document.getElementById(`ta-${doc.id}-general`);
+      if (generalTa && generalTa.value.trim()) hasComment = true;
+
+      if (hasComment) {
+        badge.textContent = 'コメントあり';
+        badge.className = 'doc-status status-has-comment';
+      } else {
+        badge.textContent = '未入力';
+        badge.className = 'doc-status status-no-comment';
+      }
+    });
+  });
+}
+
+function updateProgress() {
+  let total = 0;
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.trim()) total++;
+  });
+  document.getElementById('progressText').textContent = `コメント入力: ${total}件`;
+  const allTextareas = document.querySelectorAll('.section-textarea').length;
+  const pct = allTextareas > 0 ? Math.round((total / allTextareas) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+// ===== COLLECT & COPY =====
+function collectComments() {
+  let result = `# スタディGO ドキュメントレビュー\n`;
+  result += `# 日付: ${new Date().toLocaleDateString('ja-JP')}\n\n`;
+  let hasAny = false;
+
+  documents.forEach(cat => {
+    let catHasComments = false;
+    let catText = `\n== ${cat.category} ==\n\n`;
+
+    cat.docs.forEach(doc => {
+      let docHasComments = false;
+      let docText = `### ${doc.title}\n`;
+      docText += `ファイル: ${doc.file}\n\n`;
+
+      doc.sections.forEach((sec, i) => {
+        const ta = document.getElementById(`ta-${doc.id}-${sec.id}`);
+        if (ta && ta.value.trim()) {
+          docText += `  [${sec.label}]\n`;
+          docText += `  → ${ta.value.trim()}\n\n`;
+          docHasComments = true;
+        }
+      });
+
+      const generalTa = document.getElementById(`ta-${doc.id}-general`);
+      if (generalTa && generalTa.value.trim()) {
+        docText += `  [全体コメント]\n`;
+        docText += `  → ${generalTa.value.trim()}\n\n`;
+        docHasComments = true;
+      }
+
+      if (docHasComments) {
+        catText += docText;
+        catHasComments = true;
+        hasAny = true;
+      }
+    });
+
+    if (catHasComments) {
+      result += catText;
+    }
+  });
+
+  if (!hasAny) {
+    result += '（コメントはまだ入力されていません）\n';
+  }
+
+  return result;
+}
+
+function showPreview() {
+  const text = collectComments();
+  document.getElementById('modalContent').textContent = text;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function copyToClipboard() {
+  const text = collectComments();
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('クリップボードにコピーしました');
+    closeModal();
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('クリップボードにコピーしました');
+    closeModal();
+  });
+}
+
+// ===== SAVE/LOAD =====
+function saveToStorage() {
+  const data = {};
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    if (ta.value.trim()) {
+      data[ta.id] = ta.value;
+    }
+  });
+  localStorage.setItem('studygo-review-data', JSON.stringify(data));
+  showToast('下書きを保存しました');
+}
+
+function loadFromStorage() {
+  const raw = localStorage.getItem('studygo-review-data');
+  if (!raw) {
+    showToast('保存済みの下書きがありません');
+    return;
+  }
+  const data = JSON.parse(raw);
+  let count = 0;
+  Object.entries(data).forEach(([id, val]) => {
+    const ta = document.getElementById(id);
+    if (ta) {
+      ta.value = val;
+      autoResize(ta);
+      count++;
+    }
+  });
+  updateStatuses();
+  updateProgress();
+  showToast(`${count}件のコメントを読み込みました`);
+}
+
+function resetAll() {
+  if (!confirm('すべてのコメントをリセットしますか？')) return;
+  document.querySelectorAll('.section-textarea').forEach(ta => {
+    ta.value = '';
+    ta.style.height = '60px';
+    ta.classList.remove('has-content');
+  });
+  updateStatuses();
+  updateProgress();
+  showToast('リセットしました');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 2500);
+}
+
+// ===== INIT =====
+renderAll();
+updateStatuses();
+updateProgress();
+
+// Auto-load saved data
+const saved = localStorage.getItem('studygo-review-data');
+if (saved) {
+  try {
+    const data = JSON.parse(saved);
+    if (Object.keys(data).length > 0) {
+      loadFromStorage();
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 機能開発 決定事項フォーム</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --success: #16a34a;
+    --success-light: #dcfce7;
+    --warning: #d97706;
+    --warning-light: #fef3c7;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    padding: 32px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .header .progress-bar {
+    background: rgba(255,255,255,0.3);
+    border-radius: 8px;
+    height: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+
+  .header .progress-fill {
+    background: white;
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .header .progress-text {
+    font-size: 13px;
+    margin-top: 6px;
+    opacity: 0.9;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 120px;
+  }
+
+  .category-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 120px;
+    z-index: 50;
+    background: var(--gray-50);
+    padding: 12px 0;
+  }
+
+  .category-nav button {
+    padding: 8px 20px;
+    border: 2px solid var(--primary);
+    background: white;
+    color: var(--primary);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+
+  .category-nav button.active,
+  .category-nav button:hover {
+    background: var(--primary);
+    color: white;
+  }
+
+  .category-section {
+    display: none;
+  }
+
+  .category-section.active {
+    display: block;
+  }
+
+  .feature-card {
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+  }
+
+  .feature-header {
+    padding: 16px 20px;
+    background: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+  }
+
+  .feature-header:hover {
+    background: var(--gray-200);
+  }
+
+  .feature-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+
+  .feature-header .badge {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+
+  .badge-pending {
+    background: var(--warning-light);
+    color: var(--warning);
+  }
+
+  .badge-done {
+    background: var(--success-light);
+    color: var(--success);
+  }
+
+  .feature-header .arrow {
+    transition: transform 0.3s;
+    font-size: 18px;
+    color: var(--gray-600);
+  }
+
+  .feature-header.open .arrow {
+    transform: rotate(180deg);
+  }
+
+  .feature-body {
+    display: none;
+    padding: 20px;
+  }
+
+  .feature-body.open {
+    display: block;
+  }
+
+  .question-group {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .question-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .question-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .question-label .q-num {
+    background: var(--primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+  }
+
+  .option-item:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .option-item input[type="radio"],
+  .option-item input[type="checkbox"] {
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .option-item.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+
+  .text-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    resize: vertical;
+    min-height: 60px;
+  }
+
+  .text-input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+
+  .text-input::placeholder {
+    color: var(--gray-300);
+  }
+
+  .footer-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--gray-200);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 100;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  }
+
+  .btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #1d4ed8;
+  }
+
+  .btn-secondary {
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+  }
+
+  .btn-secondary:hover {
+    background: var(--gray-200);
+  }
+
+  .btn-success {
+    background: var(--success);
+    color: white;
+  }
+
+  .btn-success:hover {
+    background: #15803d;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal {
+    background: white;
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+
+  .modal pre {
+    background: var(--gray-100);
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 50vh;
+    overflow-y: auto;
+    line-height: 1.8;
+  }
+
+  .modal .modal-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 18px; }
+    .container { padding: 16px 12px 120px; }
+    .category-nav { top: 105px; }
+    .category-nav button { padding: 6px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>スタディGO 機能開発 決定事項フォーム</h1>
+  <div style="font-size:14px; opacity:0.9;">カテゴリ3 → 4 → 5 の順で各機能の決定事項を選択してください</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-text" id="progressText">回答済み: 0 / 0</div>
+</div>
+
+<div class="container">
+  <div class="category-nav" id="categoryNav">
+    <button class="active" onclick="showCategory('cat3')">カテゴリ3（高）</button>
+    <button onclick="showCategory('cat4')">カテゴリ4（中）</button>
+    <button onclick="showCategory('cat5')">カテゴリ5（低）</button>
+  </div>
+
+  <!-- ===== CATEGORY 3 ===== -->
+  <div class="category-section active" id="cat3">
+
+    <!-- 3-1 -->
+    <div class="feature-card" data-feature="3-1">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div>
+          <h3>3-1. チェックイン時メッセージ分離</h3>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-3-1">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 分離方法</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-1-1" value="既存Messageテーブルにtype列追加"> 既存Messageテーブルにtype列追加（軽量な変更）</label>
+            <label class="option-item"><input type="radio" name="q3-1-1" value="新テーブル作成（CheckInNotification）"> 新テーブル作成（CheckInNotification）</label>
+            <label class="option-item"><input type="radio" name="q3-1-1" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 必要なメッセージ種別（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-1-2" value="チェックイン確認"> チェックイン確認</label>
+            <label class="option-item"><input type="checkbox" name="q3-1-2" value="利用案内（料金・ルール）"> 利用案内（料金・ルール）</label>
+            <label class="option-item"><input type="checkbox" name="q3-1-2" value="注意事項"> 注意事項</label>
+            <label class="option-item"><input type="checkbox" name="q3-1-2" value="店舗からのお知らせ"> 店舗からのお知らせ</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> アプリ側の表示方法</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-1-3" value="通知タブとチャットタブを分離"> 通知タブとチャットタブを完全分離</label>
+            <label class="option-item"><input type="radio" name="q3-1-3" value="同一画面でフィルタ切替"> 同一画面でフィルタ切替</label>
+            <label class="option-item"><input type="radio" name="q3-1-3" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> 店舗がチェックインメッセージをカスタマイズできるか？</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-1-4" value="はい、店舗ごとに自由に設定可能"> はい、店舗ごとに自由に設定可能</label>
+            <label class="option-item"><input type="radio" name="q3-1-4" value="テンプレートから選択のみ"> テンプレートから選択のみ</label>
+            <label class="option-item"><input type="radio" name="q3-1-4" value="いいえ、システム共通メッセージのみ"> いいえ、システム共通メッセージのみ</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> デフォルトメッセージの文面（任意）</div>
+          <textarea class="text-input" name="q3-1-5" placeholder="例：「チェックインありがとうございます。ご利用中のルール：...」"></textarea>
+          <div class="hint">未記入でもOK。後から設定できます。</div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 既存メッセージデータの扱い</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-1-6" value="そのまま残す（新規分から分離）"> そのまま残す（新規分から分離）</label>
+            <label class="option-item"><input type="radio" name="q3-1-6" value="既存データも分類し直す"> 既存データも分類し直す</label>
+            <label class="option-item"><input type="radio" name="q3-1-6" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3-2 -->
+    <div class="feature-card" data-feature="3-2">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>3-2. チェックイン履歴の分離</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-3-2">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 「分離」の具体的な意味</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-2-1" value="決済履歴と利用履歴を別画面に分ける"> 決済履歴と利用履歴を別画面に分ける</label>
+            <label class="option-item"><input type="radio" name="q3-2-1" value="店舗別に履歴を表示する"> 店舗別に履歴を表示する</label>
+            <label class="option-item"><input type="radio" name="q3-2-1" value="プラン種別ごとに履歴を分離する"> プラン種別ごとに履歴を分離する</label>
+          </div>
+          <textarea class="text-input" name="q3-2-1-other" placeholder="上記以外の場合、詳細を記入" style="margin-top:8px;"></textarea>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 表示対象（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-2-2" value="アプリユーザー"> アプリユーザー</label>
+            <label class="option-item"><input type="checkbox" name="q3-2-2" value="管理画面（Admin）"> 管理画面（Admin）</label>
+            <label class="option-item"><input type="checkbox" name="q3-2-2" value="加盟法人画面（Company）"> 加盟法人画面（Company）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 必要なフィルタ（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-2-3" value="期間（日付範囲）"> 期間（日付範囲）</label>
+            <label class="option-item"><input type="checkbox" name="q3-2-3" value="店舗"> 店舗</label>
+            <label class="option-item"><input type="checkbox" name="q3-2-3" value="プラン種別"> プラン種別（月額/ドロップイン/期間パス）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> データ保持期間</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-2-4" value="無期限"> 無期限</label>
+            <label class="option-item"><input type="radio" name="q3-2-4" value="1年"> 1年</label>
+            <label class="option-item"><input type="radio" name="q3-2-4" value="3年"> 3年</label>
+            <label class="option-item"><input type="radio" name="q3-2-4" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> 履歴のCSVエクスポートは必要か？</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-2-5" value="はい"> はい</label>
+            <label class="option-item"><input type="radio" name="q3-2-5" value="いいえ"> いいえ</label>
+            <label class="option-item"><input type="radio" name="q3-2-5" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3-3 -->
+    <div class="feature-card" data-feature="3-3">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>3-3. 加盟法人 → ユーザーメール一斉送信</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-3-3">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 送信対象</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-3-1" value="自社店舗の契約者のみ"> 自社店舗の契約者のみ</label>
+            <label class="option-item"><input type="radio" name="q3-3-1" value="自社店舗のチェックイン履歴ありユーザー"> 自社店舗のチェックイン履歴ありユーザー</label>
+            <label class="option-item"><input type="radio" name="q3-3-1" value="全会員"> 全会員</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 送信先の絞り込み条件（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-3-2" value="プラン種別"> プラン種別（月額/ドロップイン/期間パス）</label>
+            <label class="option-item"><input type="checkbox" name="q3-3-2" value="最終利用日"> 最終利用日</label>
+            <label class="option-item"><input type="checkbox" name="q3-3-2" value="契約状態"> 契約状態（契約中/解約済み）</label>
+            <label class="option-item"><input type="checkbox" name="q3-3-2" value="絞り込み不要"> 絞り込み不要</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> メール形式</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-3-3" value="HTMLメール（リッチ）"> HTMLメール（リッチ）</label>
+            <label class="option-item"><input type="radio" name="q3-3-3" value="プレーンテキスト"> プレーンテキスト</label>
+            <label class="option-item"><input type="radio" name="q3-3-3" value="テンプレート選択 + 自由入力"> テンプレート選択 + 自由入力</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> 承認フロー</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-3-4" value="法人が自由に送信可能"> 法人が自由に送信可能</label>
+            <label class="option-item"><input type="radio" name="q3-3-4" value="スタディGO管理者の承認が必要"> スタディGO管理者の承認が必要</label>
+            <label class="option-item"><input type="radio" name="q3-3-4" value="初回のみ承認、以降は自由"> 初回のみ承認、以降は自由</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> 月間送信回数の上限</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-3-5" value="月3回"> 月3回</label>
+            <label class="option-item"><input type="radio" name="q3-3-5" value="月5回"> 月5回</label>
+            <label class="option-item"><input type="radio" name="q3-3-5" value="月10回"> 月10回</label>
+            <label class="option-item"><input type="radio" name="q3-3-5" value="無制限"> 無制限</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> ユーザーの配信停止（オプトアウト）機能</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-3-6" value="必要（メール内に配信停止リンク）"> 必要（メール内に配信停止リンク）</label>
+            <label class="option-item"><input type="radio" name="q3-3-6" value="必要（アプリ内設定）"> 必要（アプリ内設定）</label>
+            <label class="option-item"><input type="radio" name="q3-3-6" value="不要"> 不要</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">7</span> 送信履歴・効果測定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-3-7" value="送信ログ閲覧"> 送信ログ閲覧</label>
+            <label class="option-item"><input type="checkbox" name="q3-3-7" value="開封率トラッキング"> 開封率トラッキング</label>
+            <label class="option-item"><input type="checkbox" name="q3-3-7" value="不要"> 不要</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3-4 -->
+    <div class="feature-card" data-feature="3-4">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>3-4. 加盟法人管理画面の会員エクスポート</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-3-4">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> エクスポートに含める項目（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="氏名"> 氏名</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="メールアドレス"> メールアドレス</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="電話番号"> 電話番号</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="契約状態"> 契約状態</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="プラン種別"> プラン種別</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="利用回数"> 利用回数</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="最終利用日"> 最終利用日</label>
+            <label class="option-item"><input type="checkbox" name="q3-4-1" value="契約開始日"> 契約開始日</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 個人情報の開示制限</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-2" value="住所・電話番号は除外"> 住所・電話番号は除外</label>
+            <label class="option-item"><input type="radio" name="q3-4-2" value="メール・電話のみ開示"> メール・電話のみ開示（住所は除外）</label>
+            <label class="option-item"><input type="radio" name="q3-4-2" value="上で選択した項目すべて開示"> 上で選択した項目すべて開示</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 対象ユーザーの範囲</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-3" value="自社店舗の契約中ユーザーのみ"> 自社店舗の契約中ユーザーのみ</label>
+            <label class="option-item"><input type="radio" name="q3-4-3" value="過去利用者も含む"> 過去利用者も含む</label>
+            <label class="option-item"><input type="radio" name="q3-4-3" value="フィルタで選択可能にする"> フィルタで選択可能にする</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> ファイル形式</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-4" value="CSV（UTF-8）"> CSV（UTF-8）</label>
+            <label class="option-item"><input type="radio" name="q3-4-4" value="CSV（Shift-JIS）"> CSV（Shift-JIS）※Excelで文字化けしにくい</label>
+            <label class="option-item"><input type="radio" name="q3-4-4" value="Excel（.xlsx）"> Excel（.xlsx）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> ダウンロード方式</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-5" value="即時ダウンロード"> 即時ダウンロード</label>
+            <label class="option-item"><input type="radio" name="q3-4-5" value="非同期（完了後メール通知）"> 非同期（完了後メール通知）※既存ExportJobパターン</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 実行権限</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-6" value="法人内の全CompanyUserが可能"> 法人内の全CompanyUserが可能</label>
+            <label class="option-item"><input type="radio" name="q3-4-6" value="管理者権限を持つCompanyUserのみ"> 管理者権限を持つCompanyUserのみ</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">7</span> エクスポート実行の監査ログ</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-4-7" value="必要"> 必要（誰がいつエクスポートしたか記録）</label>
+            <label class="option-item"><input type="radio" name="q3-4-7" value="不要"> 不要</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3-5 -->
+    <div class="feature-card" data-feature="3-5">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>3-5. 自動チェックアウト時のアプリ内通知</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-3-5">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 自動チェックアウトの発動条件</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-5-1" value="営業時間終了時"> 営業時間終了時</label>
+            <label class="option-item"><input type="radio" name="q3-5-1" value="一定時間経過後（例：12時間）"> 一定時間経過後（例：12時間）</label>
+            <label class="option-item"><input type="radio" name="q3-5-1" value="店舗ごとに設定可能"> 店舗ごとに設定可能</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 事前警告の通知</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-5-2" value="チェックアウト30分前"> チェックアウト30分前</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-2" value="チェックアウト15分前"> チェックアウト15分前</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-2" value="チェックアウト実行時のみ"> チェックアウト実行時のみ（事前警告なし）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 通知手段（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-5-3" value="Push通知"> Push通知</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-3" value="アプリ内通知"> アプリ内通知（通知一覧に表示）</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-3" value="メール"> メール</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> 通知に含める情報（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q3-5-4" value="店舗名"> 店舗名</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-4" value="利用時間"> 利用時間</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-4" value="料金"> 料金</label>
+            <label class="option-item"><input type="checkbox" name="q3-5-4" value="チェックアウト理由"> チェックアウト理由（営業時間終了等）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> 自動チェックアウト時の料金計算</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-5-5" value="通常チェックアウトと同じ"> 通常チェックアウトと同じ</label>
+            <label class="option-item"><input type="radio" name="q3-5-5" value="営業時間終了時点までの料金"> 営業時間終了時点までの料金（超過分は無料）</label>
+            <label class="option-item"><input type="radio" name="q3-5-5" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 自動チェックアウト時の決済失敗フロー</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-5-6" value="既存の決済失敗フローと同じ"> 既存の決済失敗フローと同じ（リトライ通知）</label>
+            <label class="option-item"><input type="radio" name="q3-5-6" value="未払い状態にして次回チェックイン時に請求"> 未払い状態にして次回チェックイン時に請求</label>
+            <label class="option-item"><input type="radio" name="q3-5-6" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">7</span> ユーザーの通知ON/OFF設定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q3-5-7" value="切替可能"> 切替可能（アプリ内設定）</label>
+            <label class="option-item"><input type="radio" name="q3-5-7" value="常にON（切替不可）"> 常にON（切替不可）</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CATEGORY 4 ===== -->
+  <div class="category-section" id="cat4">
+
+    <!-- 4-1 -->
+    <div class="feature-card" data-feature="4-1">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>4-1. ダイナミックプライシング機能</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-4-1">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 価格変動の軸（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q4-1-1" value="時間帯別"> 時間帯別（例：朝割、夜割）</label>
+            <label class="option-item"><input type="checkbox" name="q4-1-1" value="曜日別"> 曜日別（例：平日/休日）</label>
+            <label class="option-item"><input type="checkbox" name="q4-1-1" value="混雑度別"> 混雑度別（リアルタイム在席率連動）</label>
+            <label class="option-item"><input type="checkbox" name="q4-1-1" value="季節・期間別"> 季節・期間別（繁忙期/閑散期）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 対象プラン</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-1-2" value="ドロップインのみ"> ドロップインのみ</label>
+            <label class="option-item"><input type="radio" name="q4-1-2" value="ドロップイン + 期間パス"> ドロップイン + 期間パス</label>
+            <label class="option-item"><input type="radio" name="q4-1-2" value="全プラン"> 全プラン（月額含む）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 料金ルールの設定方法</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-1-3" value="店舗が自由に設定"> 店舗が自由に設定</label>
+            <label class="option-item"><input type="radio" name="q4-1-3" value="テンプレートから選択"> テンプレートから選択</label>
+            <label class="option-item"><input type="radio" name="q4-1-3" value="管理者が一括設定"> スタディGO管理者が一括設定</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> アプリ上での料金表示</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-1-4" value="リアルタイムで現在料金を表示"> リアルタイムで現在料金を表示</label>
+            <label class="option-item"><input type="radio" name="q4-1-4" value="時間帯別料金表を表示"> 時間帯別料金表を表示</label>
+            <label class="option-item"><input type="radio" name="q4-1-4" value="両方"> 両方</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> 最低料金・最高料金の設定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-1-5" value="上限・下限を設定する"> 上限・下限を設定する</label>
+            <label class="option-item"><input type="radio" name="q4-1-5" value="上限のみ設定"> 上限のみ設定</label>
+            <label class="option-item"><input type="radio" name="q4-1-5" value="制限なし"> 制限なし（店舗の裁量）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 料金変動時のユーザーへの通知</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-1-6" value="通知する"> 通知する（利用中に料金帯が変わった時）</label>
+            <label class="option-item"><input type="radio" name="q4-1-6" value="通知しない"> 通知しない（チェックアウト時に確認）</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4-2 -->
+    <div class="feature-card" data-feature="4-2">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>4-2. Push通知基盤</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-4-2">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 通知種別の定義（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q4-2-1" value="システム通知"> システム通知（メンテナンス、アップデート）</label>
+            <label class="option-item"><input type="checkbox" name="q4-2-1" value="チェックイン関連"> チェックイン関連（入退室、自動チェックアウト）</label>
+            <label class="option-item"><input type="checkbox" name="q4-2-1" value="決済関連"> 決済関連（支払完了、失敗、リマインド）</label>
+            <label class="option-item"><input type="checkbox" name="q4-2-1" value="マーケティング"> マーケティング（キャンペーン、お知らせ）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> セグメント配信（ユーザー属性での絞り込み）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-2" value="必要"> 必要（契約種別、利用頻度、地域などで絞り込み）</label>
+            <label class="option-item"><input type="radio" name="q4-2-2" value="全体配信のみ"> 全体配信のみ（絞り込み不要）</label>
+            <label class="option-item"><input type="radio" name="q4-2-2" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 管理画面からのPush送信UI</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-3" value="管理者のみ"> スタディGO管理者のみ送信可能</label>
+            <label class="option-item"><input type="radio" name="q4-2-3" value="管理者 + 法人"> 管理者 + 加盟法人も送信可能</label>
+            <label class="option-item"><input type="radio" name="q4-2-3" value="システム自動のみ"> 管理画面不要（システム自動通知のみ）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> スケジュール（予約）配信</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-4" value="必要"> 必要</label>
+            <label class="option-item"><input type="radio" name="q4-2-4" value="不要（即時配信のみ）"> 不要（即時配信のみ）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> ユーザー側の通知設定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-5" value="カテゴリ別ON/OFF"> カテゴリ別にON/OFF可能</label>
+            <label class="option-item"><input type="radio" name="q4-2-5" value="一括ON/OFFのみ"> 一括ON/OFFのみ</label>
+            <label class="option-item"><input type="radio" name="q4-2-5" value="設定不可（常にON）"> 設定不可（常にON）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 配信基盤</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-6" value="FCM直接（既存拡張）"> FCM直接（既存FCMServiceを拡張）</label>
+            <label class="option-item"><input type="radio" name="q4-2-6" value="Amazon SNS"> Amazon SNS</label>
+            <label class="option-item"><input type="radio" name="q4-2-6" value="OneSignal"> OneSignal</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">7</span> 開封率・効果測定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-2-7" value="必要"> 必要</label>
+            <label class="option-item"><input type="radio" name="q4-2-7" value="不要"> 不要</label>
+            <label class="option-item"><input type="radio" name="q4-2-7" value="後で対応"> 後で対応</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4-3 -->
+    <div class="feature-card" data-feature="4-3">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>4-3. 期間パス（短期パス）の実装</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-4-3">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> パス期間のバリエーション（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q4-3-1" value="7日間"> 7日間</label>
+            <label class="option-item"><input type="checkbox" name="q4-3-1" value="14日間"> 14日間</label>
+            <label class="option-item"><input type="checkbox" name="q4-3-1" value="30日間"> 30日間</label>
+            <label class="option-item"><input type="checkbox" name="q4-3-1" value="カスタム日数"> カスタム日数（店舗が自由に設定）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 料金体系</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-2" value="固定料金（期間ごと）"> 固定料金（期間ごと）</label>
+            <label class="option-item"><input type="radio" name="q4-3-2" value="店舗ごとに自由設定"> 店舗ごとに自由設定</label>
+            <label class="option-item"><input type="radio" name="q4-3-2" value="日割り計算"> 日割り計算</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 1日の利用制限</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-3" value="制限なし（使い放題）"> 制限なし（使い放題）</label>
+            <label class="option-item"><input type="radio" name="q4-3-3" value="1日の時間上限あり"> 1日の時間上限あり</label>
+            <label class="option-item"><input type="radio" name="q4-3-3" value="1日の回数上限あり"> 1日の回数上限あり</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> 購入フロー</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-4" value="アプリ内購入"> アプリ内購入</label>
+            <label class="option-item"><input type="radio" name="q4-3-4" value="管理画面から付与"> 管理画面から付与</label>
+            <label class="option-item"><input type="radio" name="q4-3-4" value="両方"> 両方</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> 開始日の設定</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-5" value="購入日から即開始"> 購入日から即開始</label>
+            <label class="option-item"><input type="radio" name="q4-3-5" value="任意の開始日を選択可能"> 任意の開始日を選択可能</label>
+            <label class="option-item"><input type="radio" name="q4-3-5" value="初回チェックイン日から開始"> 初回チェックイン日から開始</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 更新・延長</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-6" value="手動更新（再購入）"> 手動更新（再購入）</label>
+            <label class="option-item"><input type="radio" name="q4-3-6" value="自動更新"> 自動更新（期限前に自動課金）</label>
+            <label class="option-item"><input type="radio" name="q4-3-6" value="選択可能"> ユーザーが自動/手動を選択可能</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">7</span> 途中解約・返金</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-7" value="解約不可（返金なし）"> 解約不可（返金なし）</label>
+            <label class="option-item"><input type="radio" name="q4-3-7" value="日割り返金"> 日割り返金</label>
+            <label class="option-item"><input type="radio" name="q4-3-7" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">8</span> 他プランとの併用</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-3-8" value="併用可能"> 併用可能（月額+期間パスなど）</label>
+            <label class="option-item"><input type="radio" name="q4-3-8" value="併用不可"> 併用不可（1つのプランのみ）</label>
+            <label class="option-item"><input type="radio" name="q4-3-8" value="同一店舗では不可、別店舗は可"> 同一店舗では不可、別店舗は可</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 4-4 -->
+    <div class="feature-card" data-feature="4-4">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>4-4. PayPay導入</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-4-4">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> PayPay対象の利用シーン（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q4-4-1" value="ドロップイン決済"> ドロップイン決済</label>
+            <label class="option-item"><input type="checkbox" name="q4-4-1" value="月額プラン"> 月額プラン</label>
+            <label class="option-item"><input type="checkbox" name="q4-4-1" value="期間パス"> 期間パス</label>
+            <label class="option-item"><input type="checkbox" name="q4-4-1" value="追加請求"> 追加請求</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> 決済方式</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-4-2" value="PayPay API直接連携"> PayPay API直接連携</label>
+            <label class="option-item"><input type="radio" name="q4-4-2" value="Stripe経由のPayPay連携"> Stripe経由のPayPay連携</label>
+            <label class="option-item"><input type="radio" name="q4-4-2" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> クレカとの併用ルール</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-4-3" value="ユーザーがデフォルト決済手段を選択"> ユーザーがデフォルト決済手段を選択</label>
+            <label class="option-item"><input type="radio" name="q4-4-3" value="チェックアウト時に毎回選択"> チェックアウト時に毎回選択</label>
+            <label class="option-item"><input type="radio" name="q4-4-3" value="プランごとに決済手段を固定"> プランごとに決済手段を固定</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> PayPayでの定期課金（月額プラン）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-4-4" value="対応する"> 対応する</label>
+            <label class="option-item"><input type="radio" name="q4-4-4" value="対応しない（クレカのみ）"> 対応しない（月額はクレカのみ）</label>
+            <label class="option-item"><input type="radio" name="q4-4-4" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">5</span> PayPay返金処理</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-4-5" value="PayPay残高に返金"> PayPay残高に返金</label>
+            <label class="option-item"><input type="radio" name="q4-4-5" value="管理者が手動対応"> 管理者が手動対応</label>
+            <label class="option-item"><input type="radio" name="q4-4-5" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">6</span> 法人への入金（Zengin CSV）への影響</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q4-4-6" value="PayPay分も既存CSVに統合"> PayPay分も既存CSVに統合</label>
+            <label class="option-item"><input type="radio" name="q4-4-6" value="PayPay分は別レポート"> PayPay分は別レポート</label>
+            <label class="option-item"><input type="radio" name="q4-4-6" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CATEGORY 5 ===== -->
+  <div class="category-section" id="cat5">
+
+    <!-- 5-1 -->
+    <div class="feature-card" data-feature="5-1">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>5-1. 検索条件変更</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-5-1">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 追加・変更したい検索条件（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q5-1-1" value="料金範囲"> 料金範囲（スライダー）</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-1" value="営業時間"> 営業時間（今開いている店舗）</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-1" value="設備・タグ"> 設備・タグ（Wi-Fi、電源、個室など）</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-1" value="空席状況"> 空席状況（リアルタイム）</label>
+          </div>
+          <textarea class="text-input" name="q5-1-1-other" placeholder="上記以外に追加したい検索条件があれば記入" style="margin-top:8px;"></textarea>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> ソート条件（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q5-1-2" value="距離順"> 距離順</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-2" value="料金順"> 料金順</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-2" value="評価順"> 評価順</label>
+            <label class="option-item"><input type="checkbox" name="q5-1-2" value="空席率順"> 空席率順</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 検索結果の表示形式</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q5-1-3" value="リスト表示のみ"> リスト表示のみ</label>
+            <label class="option-item"><input type="radio" name="q5-1-3" value="マップ表示のみ"> マップ表示のみ</label>
+            <label class="option-item"><input type="radio" name="q5-1-3" value="リスト + マップ切替"> リスト + マップ切替</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> 検索条件の保存機能</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q5-1-4" value="必要"> 必要（お気に入り検索条件を保存）</label>
+            <label class="option-item"><input type="radio" name="q5-1-4" value="不要"> 不要</label>
+            <label class="option-item"><input type="radio" name="q5-1-4" value="後で決める"> 後で決める</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5-2 -->
+    <div class="feature-card" data-feature="5-2">
+      <div class="feature-header" onclick="toggleFeature(this)">
+        <div><h3>5-2. UI・UX変更</h3></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-pending" id="badge-5-2">未回答</span>
+          <span class="arrow">▼</span>
+        </div>
+      </div>
+      <div class="feature-body">
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">1</span> 変更対象の画面（複数選択可）</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q5-2-1" value="アプリ（ユーザー向け）"> アプリ（ユーザー向け）</label>
+            <label class="option-item"><input type="checkbox" name="q5-2-1" value="管理画面（Admin）"> 管理画面（Admin）</label>
+            <label class="option-item"><input type="checkbox" name="q5-2-1" value="加盟法人画面（Company）"> 加盟法人画面（Company）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">2</span> デザインデータの有無</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q5-2-2" value="Figma等のデザインデータあり"> Figma等のデザインデータあり</label>
+            <label class="option-item"><input type="radio" name="q5-2-2" value="ラフスケッチ・ワイヤーフレームあり"> ラフスケッチ・ワイヤーフレームあり</label>
+            <label class="option-item"><input type="radio" name="q5-2-2" value="なし（開発側で提案）"> なし（開発側で提案）</label>
+          </div>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">3</span> 変更の方向性</div>
+          <div class="option-list">
+            <label class="option-item"><input type="checkbox" name="q5-2-3" value="カラー・ブランディング変更"> カラー・ブランディング変更</label>
+            <label class="option-item"><input type="checkbox" name="q5-2-3" value="ナビゲーション改善"> ナビゲーション改善</label>
+            <label class="option-item"><input type="checkbox" name="q5-2-3" value="レスポンシブ対応強化"> レスポンシブ対応強化</label>
+            <label class="option-item"><input type="checkbox" name="q5-2-3" value="パフォーマンス改善"> パフォーマンス改善（表示速度）</label>
+          </div>
+          <textarea class="text-input" name="q5-2-3-other" placeholder="具体的な改善したい点があれば記入" style="margin-top:8px;"></textarea>
+        </div>
+
+        <div class="question-group">
+          <div class="question-label"><span class="q-num">4</span> ユーザーテスト</div>
+          <div class="option-list">
+            <label class="option-item"><input type="radio" name="q5-2-4" value="テスト実施予定"> テスト実施予定（リリース前にフィードバック収集）</label>
+            <label class="option-item"><input type="radio" name="q5-2-4" value="A/Bテスト"> A/Bテスト（段階的にリリース）</label>
+            <label class="option-item"><input type="radio" name="q5-2-4" value="テストなし"> テストなし（そのままリリース）</label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer-actions">
+  <button class="btn btn-secondary" onclick="resetAll()">リセット</button>
+  <button class="btn btn-primary" onclick="showSummary()">回答を確認</button>
+  <button class="btn btn-success" onclick="exportResult()">結果をコピー</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">回答サマリー</h2>
+    <pre id="modalContent"></pre>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">閉じる</button>
+      <button class="btn btn-primary" onclick="copyToClipboard()">クリップボードにコピー</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const featureNames = {
+  '3-1': 'チェックイン時メッセージ分離',
+  '3-2': 'チェックイン履歴の分離',
+  '3-3': '加盟法人→ユーザーメール一斉送信',
+  '3-4': '加盟法人管理画面の会員エクスポート',
+  '3-5': '自動チェックアウト時のアプリ内通知',
+  '4-1': 'ダイナミックプライシング機能',
+  '4-2': 'Push通知基盤',
+  '4-3': '期間パス（短期パス）の実装',
+  '4-4': 'PayPay導入',
+  '5-1': '検索条件変更',
+  '5-2': 'UI・UX変更'
+};
+
+function showCategory(catId) {
+  document.querySelectorAll('.category-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(catId).classList.add('active');
+  document.querySelectorAll('.category-nav button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function toggleFeature(header) {
+  header.classList.toggle('open');
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// Track selections
+document.addEventListener('change', function(e) {
+  if (e.target.matches('input[type="radio"], input[type="checkbox"]')) {
+    const item = e.target.closest('.option-item');
+    if (e.target.type === 'radio') {
+      const name = e.target.name;
+      document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+        r.closest('.option-item').classList.remove('selected');
+      });
+    }
+    if (e.target.checked) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+    updateProgress();
+    updateBadges();
+  }
+});
+
+function getQuestionGroups(featureId) {
+  const card = document.querySelector(`[data-feature="${featureId}"]`);
+  if (!card) return [];
+  return card.querySelectorAll('.question-group');
+}
+
+function isGroupAnswered(group) {
+  const radios = group.querySelectorAll('input[type="radio"]');
+  const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+  const textarea = group.querySelector('textarea');
+
+  if (radios.length > 0) {
+    return Array.from(radios).some(r => r.checked);
+  }
+  if (checkboxes.length > 0) {
+    return Array.from(checkboxes).some(c => c.checked);
+  }
+  if (textarea) {
+    return textarea.value.trim() !== '';
+  }
+  return false;
+}
+
+function updateProgress() {
+  let total = 0, answered = 0;
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.querySelectorAll('.question-group').forEach(group => {
+      const radios = group.querySelectorAll('input[type="radio"]');
+      const checkboxes = group.querySelectorAll('input[type="checkbox"]');
+      if (radios.length > 0 || checkboxes.length > 0) {
+        total++;
+        if (isGroupAnswered(group)) answered++;
+      }
+    });
+  });
+  const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `回答済み: ${answered} / ${total} (${pct}%)`;
+}
+
+function updateBadges() {
+  Object.keys(featureNames).forEach(fid => {
+    const card = document.querySelector(`[data-feature="${fid}"]`);
+    if (!card) return;
+    const groups = card.querySelectorAll('.question-group');
+    let total = 0, answered = 0;
+    groups.forEach(g => {
+      const radios = g.querySelectorAll('input[type="radio"]');
+      const checkboxes = g.querySelectorAll('input[type="checkbox"]');
+      if (radios.length > 0 || checkboxes.length > 0) {
+        total++;
+        if (isGroupAnswered(g)) answered++;
+      }
+    });
+    const badge = document.getElementById(`badge-${fid}`);
+    if (badge) {
+      if (answered === 0) {
+        badge.textContent = '未回答';
+        badge.className = 'badge badge-pending';
+      } else if (answered >= total) {
+        badge.textContent = '回答済';
+        badge.className = 'badge badge-done';
+      } else {
+        badge.textContent = `${answered}/${total}`;
+        badge.className = 'badge badge-pending';
+      }
+    }
+  });
+}
+
+function collectAnswers() {
+  let result = '# スタディGO 機能開発 決定事項 回答結果\n';
+  result += `# 回答日: ${new Date().toLocaleDateString('ja-JP')}\n\n`;
+
+  const categories = {
+    'カテゴリ3（優先度：高）': ['3-1','3-2','3-3','3-4','3-5'],
+    'カテゴリ4（優先度：中）': ['4-1','4-2','4-3','4-4'],
+    'カテゴリ5（優先度：低）': ['5-1','5-2']
+  };
+
+  for (const [catName, features] of Object.entries(categories)) {
+    result += `\n== ${catName} ==\n\n`;
+
+    for (const fid of features) {
+      result += `--- ${fid}. ${featureNames[fid]} ---\n`;
+      const card = document.querySelector(`[data-feature="${fid}"]`);
+      if (!card) continue;
+
+      const groups = card.querySelectorAll('.question-group');
+      groups.forEach((group, idx) => {
+        const label = group.querySelector('.question-label');
+        const qText = label ? label.textContent.trim() : `質問${idx+1}`;
+
+        // Collect radio
+        const radios = group.querySelectorAll('input[type="radio"]:checked');
+        const checkboxes = group.querySelectorAll('input[type="checkbox"]:checked');
+        const textarea = group.querySelector('textarea');
+
+        let answer = '';
+        if (radios.length > 0) {
+          answer = radios[0].value;
+        }
+        if (checkboxes.length > 0) {
+          answer = Array.from(checkboxes).map(c => c.value).join(', ');
+        }
+        if (textarea && textarea.value.trim()) {
+          answer += (answer ? ' | 補足: ' : '') + textarea.value.trim();
+        }
+
+        result += `  ${qText}\n`;
+        result += `  → ${answer || '（未回答）'}\n\n`;
+      });
+    }
+  }
+  return result;
+}
+
+function showSummary() {
+  const result = collectAnswers();
+  document.getElementById('modalTitle').textContent = '回答サマリー';
+  document.getElementById('modalContent').textContent = result;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function exportResult() {
+  const result = collectAnswers();
+  document.getElementById('modalTitle').textContent = '結果をコピー';
+  document.getElementById('modalContent').textContent = result;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function copyToClipboard() {
+  const text = document.getElementById('modalContent').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('クリップボードにコピーしました！');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('クリップボードにコピーしました！');
+  });
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function resetAll() {
+  if (!confirm('すべての回答をリセットしますか？')) return;
+  document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(i => {
+    i.checked = false;
+    i.closest('.option-item')?.classList.remove('selected');
+  });
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  updateProgress();
+  updateBadges();
+}
+
+// Initial
+updateProgress();
+updateBadges();
+</script>
+
+</body>
+</html>

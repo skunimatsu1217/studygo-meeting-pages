@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>店舗検索・地図機能 現状と変更提案書</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #fff; color: #333; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 24px; background: linear-gradient(135deg, #1a5276 0%, #154360 50%, #0e2f44 100%); color: white; margin: -32px -24px 40px; border-radius: 0 0 24px 24px; }
+  .cover h1 { font-size: 32px; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .sub { font-size: 16px; color: #85c1e9; margin-bottom: 32px; }
+  .cover-meta { display: flex; justify-content: center; gap: 40px; font-size: 13px; color: #aaa; }
+  .cover-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* TOC */
+  .toc { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px 32px; margin-bottom: 40px; }
+  .toc h2 { font-size: 16px; margin-bottom: 12px; color: #1a5276; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 4px 0; font-size: 14px; }
+  .toc li a { color: #1a73e8; text-decoration: none; }
+  .toc li a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section { margin-bottom: 56px; page-break-inside: avoid; }
+  h2.section-title { font-size: 22px; color: #1a5276; border-left: 5px solid #1a5276; padding-left: 16px; margin-bottom: 20px; }
+  h3 { font-size: 16px; color: #154360; margin: 24px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+  h4 { font-size: 14px; color: #333; margin: 16px 0 8px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 20px; }
+  th { background: #1a5276; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+  tr:hover { background: #f5f8ff; }
+  tr.new-row { background: #e8f5e9; }
+  th.center, td.center { text-align: center; }
+
+  /* Alerts */
+  .alert { padding: 14px 18px; border-radius: 8px; margin: 12px 0 20px; font-size: 13px; }
+  .alert-info { background: #e3f2fd; border-left: 4px solid #1a73e8; color: #0d47a1; }
+  .alert-warn { background: #fff3e0; border-left: 4px solid #ff9800; color: #e65100; }
+  .alert-success { background: #e8f5e9; border-left: 4px solid #4caf50; color: #1b5e20; }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 4px; }
+  .tag-ok { background: #e8f5e9; color: #2e7d32; }
+  .tag-ng { background: #fce4ec; color: #c62828; }
+  .tag-partial { background: #fff3e0; color: #e65100; }
+  .tag-new { background: #e8f5e9; color: #2e7d32; }
+  .tag-phase { background: #ede7f6; color: #4527a0; }
+
+  /* Phone mockup */
+  .phone-mock { background: #1a1a1a; border-radius: 32px; padding: 12px; max-width: 340px; margin: 16px auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+  .phone-screen { background: #fff; border-radius: 22px; overflow: hidden; min-height: 500px; font-size: 12px; }
+  .phone-statusbar { background: #f8f8f8; padding: 4px 16px; font-size: 10px; color: #666; text-align: center; border-bottom: 1px solid #eee; }
+  .phone-header { background: #5BA650; color: white; padding: 12px 16px; font-size: 14px; font-weight: bold; }
+  .phone-body { padding: 0; }
+  .phone-nav { display: flex; border-top: 1px solid #ddd; background: #fafafa; }
+  .phone-nav-item { flex: 1; text-align: center; padding: 8px 4px; font-size: 9px; color: #999; }
+  .phone-nav-item.active { color: #5BA650; font-weight: bold; }
+
+  /* Screen sections inside mockup */
+  .mock-section { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
+  .mock-section-title { font-size: 11px; font-weight: bold; color: #333; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .mock-card { background: #f5f5f5; border-radius: 8px; padding: 8px; margin: 4px 0; font-size: 11px; }
+  .mock-card-row { display: flex; gap: 8px; }
+  .mock-img-placeholder { width: 60px; height: 60px; background: #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .mock-card-info { flex: 1; }
+  .mock-card-info .name { font-weight: bold; font-size: 12px; }
+  .mock-card-info .sub { color: #888; font-size: 10px; }
+  .mock-badge { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 9px; font-weight: bold; }
+  .mock-badge-green { background: #e8f5e9; color: #2e7d32; }
+  .mock-badge-red { background: #fce4ec; color: #c62828; }
+  .mock-badge-gray { background: #eee; color: #888; }
+  .mock-map { background: #e8f0e8; height: 180px; display: flex; align-items: center; justify-content: center; color: #5BA650; font-size: 14px; position: relative; }
+  .mock-marker { position: absolute; font-size: 20px; }
+  .mock-btn { background: #5BA650; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 10px; display: inline-block; }
+  .mock-btn-outline { background: white; color: #5BA650; border: 1px solid #5BA650; border-radius: 6px; padding: 6px 12px; font-size: 10px; display: inline-block; }
+  .mock-price { background: #292929; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; display: inline-block; margin-top: 2px; }
+  .mock-filter-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .mock-filter-tag { background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; padding: 2px 8px; font-size: 9px; }
+  .mock-filter-tag.active { background: #e8f5e9; border-color: #5BA650; color: #2e7d32; }
+  .mock-scroll-hint { display: flex; gap: 8px; overflow: hidden; }
+
+  /* Web mockup */
+  .web-mock { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; margin: 16px 0; }
+  .web-mock .titlebar { background: #e0e0e0; padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .web-mock .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .web-mock .content { padding: 16px; background: white; }
+  .web-table-mock { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .web-table-mock th { background: #1a5276; color: white; padding: 6px 8px; font-size: 10px; }
+  .web-table-mock td { padding: 6px 8px; border-bottom: 1px solid #eee; font-size: 10px; }
+
+  /* Data flow diagram */
+  .data-flow { display: flex; align-items: stretch; gap: 0; margin: 20px 0; flex-wrap: wrap; }
+  .data-flow-item { flex: 1; min-width: 180px; padding: 16px; text-align: center; position: relative; }
+  .data-flow-item .df-icon { font-size: 32px; margin-bottom: 8px; }
+  .data-flow-item .df-title { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+  .data-flow-item .df-desc { font-size: 11px; color: #666; }
+  .data-flow-item .df-data { font-size: 10px; background: #f8f8f8; border-radius: 6px; padding: 6px; margin-top: 8px; text-align: left; }
+  .data-flow-item .df-data li { list-style: none; padding: 1px 0; }
+  .data-flow-arrow { display: flex; align-items: center; font-size: 24px; color: #1a5276; padding: 0 4px; }
+  .df-db { background: #e3f2fd; border-radius: 12px; }
+  .df-api { background: #fff3e0; border-radius: 12px; }
+  .df-app { background: #e8f5e9; border-radius: 12px; }
+  .df-web { background: #fce4ec; border-radius: 12px; }
+
+  /* Comparison layout */
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  .compare-col { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; }
+  .compare-col.col-app { border-top: 4px solid #5BA650; }
+  .compare-col.col-web { border-top: 4px solid #c62828; }
+  .compare-col.col-proposal { border-top: 4px solid #1a73e8; }
+
+  /* Screen list */
+  .screen-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 12px 0; }
+  .screen-item { border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; font-size: 12px; }
+  .screen-item .si-name { font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+  .screen-item .si-data { color: #666; }
+  .screen-item.si-ok { border-left: 4px solid #4caf50; }
+  .screen-item.si-ng { border-left: 4px solid #e53935; }
+
+  /* Print */
+  @media print {
+    .cover { background: #1a5276 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    th { background: #1a5276 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .phone-mock { box-shadow: none; border: 1px solid #ccc; }
+  }
+  @media (max-width: 700px) {
+    .compare-row { grid-template-columns: 1fr; }
+    .data-flow { flex-direction: column; align-items: center; }
+    .data-flow-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Cover -->
+  <div class="cover">
+    <div style="font-size:48px; margin-bottom:20px;">&#x1F4F1; &#x1F5FA;</div>
+    <h1>店舗検索・地図機能 現状と変更提案書</h1>
+    <div class="sub">アプリ画面ごとの表示データ整理 / WEBとの機能差 / 改善提案</div>
+    <div class="cover-meta">
+      <span>&#x1F4C5; 2026年3月</span>
+      <span>&#x1F3E2; スタディGO</span>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>目次</h2>
+    <ol>
+      <li><a href="#sec1">アプリ画面と表示データの全体像</a></li>
+      <li><a href="#sec2">ホーム画面 ― 店舗情報の表示</a></li>
+      <li><a href="#sec3">検索画面 ― 地図と店舗一覧</a></li>
+      <li><a href="#sec4">店舗詳細画面 ― すべての情報が集まる場所</a></li>
+      <li><a href="#sec5">地図画面（MAP） ― Google Maps表示の仕組み</a></li>
+      <li><a href="#sec6">アプリとWordPressの機能比較</a></li>
+      <li><a href="#sec7">データの流れ ― どこから何が参照されるか</a></li>
+      <li><a href="#sec8">変更提案</a></li>
+      <li><a href="#sec9">実装スケジュール</a></li>
+    </ol>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 1 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec1">
+    <h2 class="section-title">1. アプリ画面と表示データの全体像</h2>
+
+    <p>アプリには店舗情報が表示される画面が<strong>4つ</strong>あります。それぞれの画面で「どのデータが使われているか」を整理しました。</p>
+
+    <h3>1.1 画面の遷移フロー</h3>
+    <div style="text-align:center; margin: 20px 0; font-size: 14px;">
+      <div style="display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;">
+        <div style="background:#e8f5e9; border:2px solid #5BA650; border-radius:12px; padding:12px 20px;">
+          <strong>ホーム画面</strong><br><span style="font-size:11px; color:#666;">おすすめ店舗</span>
+        </div>
+        <div style="font-size:20px;">&#8594;</div>
+        <div style="background:#e8f5e9; border:2px solid #5BA650; border-radius:12px; padding:12px 20px;">
+          <strong>検索画面</strong><br><span style="font-size:11px; color:#666;">地図+リスト</span>
+        </div>
+        <div style="font-size:20px;">&#8594;</div>
+        <div style="background:#e8f5e9; border:2px solid #5BA650; border-radius:12px; padding:12px 20px;">
+          <strong>店舗詳細画面</strong><br><span style="font-size:11px; color:#666;">全情報表示</span>
+        </div>
+        <div style="font-size:20px;">&#8594;</div>
+        <div style="background:#e8f5e9; border:2px solid #5BA650; border-radius:12px; padding:12px 20px;">
+          <strong>地図画面 (MAP)</strong><br><span style="font-size:11px; color:#666;">Google Maps</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>1.2 各画面で表示されるデータ一覧</h3>
+    <table>
+      <tr>
+        <th>表示データ</th>
+        <th class="center">ホーム</th>
+        <th class="center">検索</th>
+        <th class="center">店舗詳細</th>
+        <th class="center">地図(MAP)</th>
+      </tr>
+      <tr>
+        <td>店舗画像</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>店舗名・サブ名</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td>営業状態（受付中/満席/受付外）</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td>営業時間（○○時～××時）</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>アクセス方法（駅から○分）</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>料金（ドロップイン / 月額）</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>都道府県・市区町村</td>
+        <td class="center">-</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>地図上のマーカー表示</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td>Google Maps地図</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+      </tr>
+      <tr>
+        <td>経路案内（ルート・乗換）</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>お気に入り</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+      <tr>
+        <td>レビュー・評価</td>
+        <td class="center">-</td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center"><span class="tag tag-ok">&#10003;</span></td>
+        <td class="center">-</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 2 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec2">
+    <h2 class="section-title">2. ホーム画面 ― 店舗情報の表示</h2>
+
+    <div class="compare-row">
+      <div>
+        <!-- Phone mockup -->
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-statusbar">9:41</div>
+            <div class="phone-header">StudyGO</div>
+            <div class="phone-body">
+              <!-- Member card -->
+              <div class="mock-section" style="background:#f1eee7; padding:16px;">
+                <div style="background:#292929; color:white; border-radius:10px; padding:12px; font-size:11px;">
+                  <div style="font-weight:bold;">&#x1F4B3; 会員カード</div>
+                  <div style="color:#aaa; font-size:9px; margin-top:4px;">契約中: StudyGO 渋谷店（サブ名）<br>プラン: 月額フルタイムプラン</div>
+                </div>
+              </div>
+
+              <!-- Near home -->
+              <div class="mock-section">
+                <div class="mock-section-title">&#x1F3E0; お住まいの登録住所近くの店舗</div>
+                <div class="mock-scroll-hint">
+                  <div style="min-width:120px;">
+                    <div style="background:#ddd; height:70px; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="font-size:10px; font-weight:bold;">StudyGO 渋谷店</div>
+                    <div style="font-size:9px; color:#888;">(道玄坂)</div>
+                  </div>
+                  <div style="min-width:120px;">
+                    <div style="background:#ddd; height:70px; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="font-size:10px; font-weight:bold;">StudyGO 新宿店</div>
+                    <div style="font-size:9px; color:#888;">(西新宿)</div>
+                  </div>
+                  <div style="min-width:60px; opacity:0.3;">
+                    <div style="background:#ddd; height:70px; border-radius:6px;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Near current -->
+              <div class="mock-section">
+                <div class="mock-section-title">&#x1F4CD; 近くの店舗</div>
+                <div class="mock-scroll-hint">
+                  <div style="min-width:120px;">
+                    <div style="background:#ddd; height:70px; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="font-size:10px; font-weight:bold;">StudyGO 池袋店</div>
+                    <div style="font-size:9px; color:#888;">(東口)</div>
+                  </div>
+                  <div style="min-width:120px;">
+                    <div style="background:#ddd; height:70px; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="font-size:10px; font-weight:bold;">StudyGO 恵比寿店</div>
+                    <div style="font-size:9px; color:#888;">(恵比寿西)</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Favorites -->
+              <div class="mock-section">
+                <div class="mock-section-title">&#x2764; お気に入りの店舗</div>
+                <div class="mock-scroll-hint">
+                  <div style="min-width:120px;">
+                    <div style="background:#ddd; height:70px; border-radius:6px; margin-bottom:4px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="font-size:10px; font-weight:bold;">StudyGO 横浜店</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-nav">
+              <div class="phone-nav-item active">&#x1F3E0;<br>ホーム</div>
+              <div class="phone-nav-item">&#x1F50D;<br>検索</div>
+              <div class="phone-nav-item">&#x1F4F7;<br>QR</div>
+              <div class="phone-nav-item">&#x1F4AC;<br>メッセージ</div>
+              <div class="phone-nav-item">&#x1F464;<br>マイページ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="border:none; margin-top:0;">ホーム画面に表示される店舗データ</h3>
+
+        <p>ホーム画面では<strong>3種類の店舗リスト</strong>が横スクロールで表示されます。</p>
+
+        <h4>&#x2460; 登録住所近くの店舗</h4>
+        <div class="mock-card">
+          <strong>参照データ:</strong> ユーザーが登録した住所<br>
+          <strong>仕組み:</strong> 登録住所をGoogle Geocoding APIで緯度経度に変換 → 近い店舗を距離順で表示<br>
+          <strong>表示項目:</strong> 店舗画像、店舗名、サブ名<br>
+          <strong>タップ:</strong> 店舗詳細画面へ遷移
+        </div>
+
+        <h4>&#x2461; 近くの店舗（現在地ベース）</h4>
+        <div class="mock-card">
+          <strong>参照データ:</strong> スマホのGPS（現在地の緯度経度）<br>
+          <strong>仕組み:</strong> 現在地からの距離を計算 → 近い順に表示<br>
+          <strong>表示項目:</strong> 店舗画像、店舗名、サブ名<br>
+          <strong>タップ:</strong> 店舗詳細画面へ遷移
+        </div>
+
+        <h4>&#x2462; お気に入り店舗</h4>
+        <div class="mock-card">
+          <strong>参照データ:</strong> ユーザーがお気に入り登録した店舗<br>
+          <strong>表示項目:</strong> 店舗画像、店舗名、サブ名<br>
+          <strong>タップ:</strong> 店舗詳細画面へ遷移
+        </div>
+
+        <div class="alert alert-warn" style="margin-top:16px;">
+          <strong>現在の問題</strong>
+          「登録住所近くの店舗」はGoogle Geocoding APIで住所→座標変換していますが、<strong>APIキーが未設定のため動作しない状態</strong>です。結果として「近くの店舗」（GPS）のみが機能しています。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 3 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec3">
+    <h2 class="section-title">3. 検索画面 ― 地図と店舗一覧</h2>
+
+    <div class="compare-row">
+      <div>
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-statusbar">9:41</div>
+            <div class="phone-body">
+              <!-- Search bar -->
+              <div style="background:white; padding:8px 12px; display:flex; gap:8px; align-items:center; border-bottom:1px solid #eee;">
+                <div style="flex:1; background:#f0f0f0; border-radius:16px; padding:6px 12px; font-size:10px; color:#999;">&#x1F50D; 店舗名・エリアで検索...</div>
+                <div style="font-size:14px; color:#5BA650;">&#x2699;</div>
+                <div style="font-size:14px; color:#ccc;">&#x2764;</div>
+              </div>
+
+              <!-- Map -->
+              <div class="mock-map">
+                <div style="font-size:11px; color:#666;">Google Maps 地図エリア</div>
+                <div class="mock-marker" style="top:40px; left:100px; color:#016F0C;">&#x1F4CD;</div>
+                <div class="mock-marker" style="top:70px; left:180px; color:#8EBE1E;">&#x1F4CD;</div>
+                <div class="mock-marker" style="top:90px; left:130px; color:#FA201D; font-size:26px;">&#x1F4CD;</div>
+                <div class="mock-marker" style="top:50px; left:220px; color:#FA201D;">&#x1F4CD;</div>
+                <!-- Search button -->
+                <div style="position:absolute; bottom:12px; left:50%; transform:translateX(-50%);">
+                  <div style="background:white; border-radius:20px; padding:4px 12px; font-size:9px; box-shadow:0 2px 6px rgba(0,0,0,0.15); display:flex; align-items:center; gap:4px;">
+                    &#x1F4CD; 現在地で検索
+                  </div>
+                </div>
+              </div>
+
+              <!-- Store slide -->
+              <div style="padding:8px 12px; background:white;">
+                <div style="background:white; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1); overflow:hidden;">
+                  <div style="display:flex;">
+                    <div style="width:100px; height:90px; background:#ddd; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;">&#x1F3E2;</div>
+                    <div style="padding:8px; flex:1;">
+                      <div style="font-size:11px; font-weight:bold;">StudyGO 渋谷店</div>
+                      <div style="font-size:9px; color:#888;">(道玄坂)</div>
+                      <div style="font-size:9px; color:#888; margin-top:2px;">渋谷駅 徒歩5分</div>
+                      <div style="margin-top:4px;">
+                        <span class="mock-price">&#x23F0; 330円～</span>
+                        <span class="mock-price">&#x1F4C5; 9,800円～</span>
+                      </div>
+                      <div style="text-align:right; margin-top:4px;">
+                        <span class="mock-btn" style="font-size:9px; padding:3px 8px;">ルート・乗換</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="phone-nav">
+              <div class="phone-nav-item">&#x1F3E0;<br>ホーム</div>
+              <div class="phone-nav-item active">&#x1F50D;<br>検索</div>
+              <div class="phone-nav-item">&#x1F4F7;<br>QR</div>
+              <div class="phone-nav-item">&#x1F4AC;<br>メッセージ</div>
+              <div class="phone-nav-item">&#x1F464;<br>マイページ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="border:none; margin-top:0;">検索画面の構成と表示データ</h3>
+
+        <h4>&#x2460; 上部: 検索バー + フィルターボタン</h4>
+        <div class="mock-card">
+          <strong>キーワード検索で参照されるデータ:</strong><br>
+          店舗名 / サブ名 / 説明 / 市区町村 / 住所 / アクセス方法<br>
+          <span style="font-size:11px; color:#888;">※ 入力した文字が上記のどれかに含まれていれば該当する</span>
+        </div>
+
+        <h4>&#x2461; フィルター（絞り込み条件）</h4>
+        <div class="mock-card">
+          <strong>単一選択の条件:</strong><br>
+          <div class="mock-filter-tags" style="margin:4px 0;">
+            <span class="mock-filter-tag">利用タイプ</span>
+            <span class="mock-filter-tag">店舗タイプ</span>
+            <span class="mock-filter-tag">サイズ</span>
+            <span class="mock-filter-tag">雰囲気</span>
+            <span class="mock-filter-tag">トイレ</span>
+            <span class="mock-filter-tag">スタッフ</span>
+            <span class="mock-filter-tag">駅からの距離</span>
+            <span class="mock-filter-tag active">立地タイプ</span>
+          </div>
+          <strong>複数選択のタグ条件:</strong><br>
+          <div class="mock-filter-tags" style="margin:4px 0;">
+            <span class="mock-filter-tag active">Wi-Fi</span>
+            <span class="mock-filter-tag active">電源あり</span>
+            <span class="mock-filter-tag">個室</span>
+            <span class="mock-filter-tag">ドリンク無料</span>
+          </div>
+          <span style="font-size:11px; color:#888;">※ タグは「すべて満たす」店舗のみ表示（AND条件）</span>
+        </div>
+
+        <h4>&#x2462; 中央: Google Maps 地図</h4>
+        <div class="mock-card">
+          <strong>地図上に表示されるもの:</strong><br>
+          マーカーは<strong>店舗タイプ別の色</strong>と<strong>赤色</strong>の2パターンがあります。<br><br>
+
+          <strong>【通常マーカー】営業中 かつ 空席あり かつ 未選択:</strong><br>
+          <span style="display:inline-block; width:12px; height:12px; background:#016F0C; border-radius:50%; vertical-align:middle;"></span> <span style="color:#016F0C; font-weight:bold;">濃い緑</span> = コワーキングスペース<br>
+          <span style="display:inline-block; width:12px; height:12px; background:#8EBE1E; border-radius:50%; vertical-align:middle;"></span> <span style="color:#8EBE1E; font-weight:bold;">黄緑</span> = 個室ブース<br>
+          <span style="display:inline-block; width:12px; height:12px; background:#59BBA3; border-radius:50%; vertical-align:middle;"></span> <span style="color:#59BBA3; font-weight:bold;">青緑</span> = 自習室<br>
+          <span style="display:inline-block; width:12px; height:12px; background:#20ACCE; border-radius:50%; vertical-align:middle;"></span> <span style="color:#20ACCE; font-weight:bold;">水色</span> = その他<br><br>
+
+          <strong style="color:#FA201D;">【赤マーカー】以下のいずれかに該当:</strong><br>
+          &#x1F534; ユーザーがタップして<strong>選択中</strong>（大きいサイズで表示）<br>
+          &#x1F534; 営業中だが<strong>満席</strong>（利用者数 ≧ 割当座席数）<br>
+          &#x1F534; <strong>営業時間外</strong><br><br>
+
+          <strong>マーカーの判定に使うデータ:</strong><br>
+          ・店舗タイプ（shopType） → マーカーの色（タイプ別4色）<br>
+          ・営業中かどうか → 営業時間ルールから自動計算<br>
+          ・満席かどうか → 割当座席数 vs 現在利用者数<br>
+          ・選択中かどうか → ユーザーの操作（タップ）
+        </div>
+
+        <h4>&#x2463; 下部: 店舗カード（横スワイプ）</h4>
+        <div class="mock-card">
+          <strong>カードに表示されるデータ:</strong><br>
+          ・店舗画像<br>
+          ・店舗名 / サブ名<br>
+          ・アクセス方法（例: 渋谷駅 徒歩5分）<br>
+          ・ドロップイン料金（○○円～）<br>
+          ・月額料金（○○円～）<br>
+          ・「ルート・乗換」ボタン → Google Mapsアプリで経路案内
+        </div>
+      </div>
+    </div>
+
+    <h3>3.1 検索結果の並び順</h3>
+    <div class="alert alert-info">
+      <strong>距離順ソート</strong>
+      ユーザーの現在地（GPS）または入力したエリアの中心座標からの距離を計算し、<strong>近い順</strong>に並びます。距離の計算には地球の丸みを考慮した「ハーバーサインの公式」が使われています。ただし、計算された距離（○○m）はユーザーに表示されていません。
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 4 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec4">
+    <h2 class="section-title">4. 店舗詳細画面 ― すべての情報が集まる場所</h2>
+
+    <div class="compare-row">
+      <div>
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-statusbar">9:41</div>
+            <div class="phone-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>&#x2190;</span>
+              <span>StudyGO 渋谷店（道玄坂）</span>
+              <span style="color:#FFC200;">&#x2764;</span>
+            </div>
+            <div class="phone-body">
+              <!-- Slide images -->
+              <div style="height:120px; background:#ddd; display:flex; align-items:center; justify-content:center; position:relative;">
+                <span style="font-size:24px;">&#x1F3E2;</span>
+                <div style="position:absolute; bottom:8px; left:12px;">
+                  <div style="font-size:14px; font-weight:bold; color:white; text-shadow:0 1px 3px rgba(0,0,0,0.7);">StudyGO 渋谷店</div>
+                  <div style="font-size:10px; color:white; text-shadow:0 1px 3px rgba(0,0,0,0.7);">(道玄坂)</div>
+                </div>
+                <div style="position:absolute; bottom:6px; right:12px; display:flex; gap:3px;">
+                  <span style="width:6px; height:6px; border-radius:50%; background:#5BA650; display:inline-block;"></span>
+                  <span style="width:6px; height:6px; border-radius:50%; background:#ccc; display:inline-block;"></span>
+                  <span style="width:6px; height:6px; border-radius:50%; background:#ccc; display:inline-block;"></span>
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="mock-section">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                  <div>
+                    <div style="font-size:10px; color:#666;">東京都 渋谷区</div>
+                    <div style="margin:4px 0;"><span class="mock-badge mock-badge-green">受付中</span></div>
+                    <div style="font-size:10px; color:#666;">9:00 ～ 22:00</div>
+                  </div>
+                  <div style="display:flex; gap:12px; text-align:center;">
+                    <div>
+                      <div style="width:36px; height:36px; background:#f0f0f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px;">&#x1F4DE;</div>
+                      <div style="font-size:8px; color:#666;">TEL</div>
+                    </div>
+                    <div>
+                      <div style="width:36px; height:36px; background:#f0f0f0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px;">&#x1F4CD;</div>
+                      <div style="font-size:8px; color:#666;">MAP</div>
+                    </div>
+                  </div>
+                </div>
+                <div style="font-size:10px; color:#666; margin-top:8px; padding:6px; background:#f8f8f8; border-radius:4px;">集中できる快適な自習スペース。Wi-Fi完備、電源あり...</div>
+              </div>
+
+              <!-- Tabs -->
+              <div style="display:flex; border-bottom:2px solid #eee; font-size:10px;">
+                <div style="flex:1; text-align:center; padding:8px; border-bottom:2px solid #5BA650; color:#5BA650; font-weight:bold;">施設情報</div>
+                <div style="flex:1; text-align:center; padding:8px; color:#999;">月額プラン</div>
+                <div style="flex:1; text-align:center; padding:8px; color:#999;">利用料金</div>
+                <div style="flex:1; text-align:center; padding:8px; color:#999;">住所</div>
+              </div>
+
+              <!-- Facilities -->
+              <div class="mock-section" style="background:#f1eee7;">
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <div style="text-align:center; width:50px;">
+                    <div style="width:40px; height:40px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 auto;">&#x1F4F6;</div>
+                    <div style="font-size:8px; margin-top:2px;">Wi-Fi</div>
+                  </div>
+                  <div style="text-align:center; width:50px;">
+                    <div style="width:40px; height:40px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 auto;">&#x1F50C;</div>
+                    <div style="font-size:8px; margin-top:2px;">電源</div>
+                  </div>
+                  <div style="text-align:center; width:50px;">
+                    <div style="width:40px; height:40px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 auto;">&#x2615;</div>
+                    <div style="font-size:8px; margin-top:2px;">ドリンク</div>
+                  </div>
+                  <div style="text-align:center; width:50px;">
+                    <div style="width:40px; height:40px; background:white; border-radius:8px; display:flex; align-items:center; justify-content:center; margin:0 auto;">&#x1F6AA;</div>
+                    <div style="font-size:8px; margin-top:2px;">個室</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom button -->
+              <div style="padding:8px 12px; border-top:1px solid #eee;">
+                <div class="mock-btn" style="width:100%; text-align:center; padding:10px; font-size:12px; border-radius:8px;">予約・チェックイン</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="border:none; margin-top:0;">店舗詳細画面のタブ別表示データ</h3>
+
+        <h4>&#x2460; タブ「施設情報」</h4>
+        <div class="mock-card">
+          ・画像スライドショー（メイン画像 複数枚）<br>
+          ・店舗名 / サブ名<br>
+          ・都道府県 + 市区町村<br>
+          ・営業状態バッジ（<span style="color:#5BA650;">受付中</span> / <span style="color:#c62828;">満席</span> / <span style="color:#888;">受付外</span>）<br>
+          ・営業時間（○○時 ～ ××時）<br>
+          ・TELボタン → 電話発信<br>
+          ・MAPボタン → <strong>地図画面へ遷移</strong><br>
+          ・キャッチコピー / 説明文<br>
+          ・設備写真（横スクロール）<br>
+          ・施設アイコン一覧（Wi-Fi、電源、個室 等）
+        </div>
+
+        <h4>&#x2461; タブ「月額プラン」</h4>
+        <div class="mock-card">
+          ・プラン名 / 料金のテーブル<br>
+          ・オプション一覧<br>
+          ・営業スケジュール（曜日別の営業時間）<br>
+          <span style="font-size:11px; color:#888;">※ canApplyMonthly=有効の店舗のみこのタブが表示される</span>
+        </div>
+
+        <h4>&#x2462; タブ「利用料金」（ドロップイン）</h4>
+        <div class="mock-card">
+          ・パック名 / 利用時間 / 料金 / 超過料金 のテーブル<br>
+          ・営業スケジュール<br>
+          ・利用方法ガイド（QR読み込み → 時間選択 → チェックアウト）<br>
+          <span style="font-size:11px; color:#888;">※ canUseHourly=有効の店舗のみこのタブが表示される</span>
+        </div>
+
+        <h4>&#x2463; タブ「住所」</h4>
+        <div class="mock-card">
+          ・住所（都道府県 + 市区町村 + 番地）<br>
+          ・電話番号<br>
+          ・アクセス方法<br>
+          ・定休日<br>
+          ・<strong>Google Maps 小型地図</strong>（マーカー1つ表示、スクロール無効）<br>
+          ・「地図アプリで見る」ボタン<br>
+          ・利用ルール / 座席情報
+        </div>
+
+        <h4>画面下部（固定表示）</h4>
+        <div class="mock-card">
+          ・「予約・チェックイン」ボタン<br>
+          <span style="font-size:11px; color:#888;">※ スクロール方向に応じて表示/非表示がアニメーション</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 5 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec5">
+    <h2 class="section-title">5. 地図画面（MAP） ― Google Maps表示の仕組み</h2>
+
+    <p>店舗詳細画面の「MAP」ボタンをタップすると表示される画面です。</p>
+
+    <div class="compare-row">
+      <div>
+        <div class="phone-mock">
+          <div class="phone-screen">
+            <div class="phone-statusbar">9:41</div>
+            <div class="phone-header" style="display:flex; justify-content:space-between;">
+              <span>&#x2190;</span>
+              <span>地図</span>
+              <span></span>
+            </div>
+            <div class="phone-body">
+              <div style="height:360px; background:#e8f0e8; position:relative; display:flex; align-items:center; justify-content:center;">
+                <div style="font-size:11px; color:#5BA650; opacity:0.6;">Google Maps</div>
+                <!-- Road lines -->
+                <div style="position:absolute; top:0; left:0; right:0; bottom:0;">
+                  <div style="position:absolute; top:50%; left:0; right:0; height:2px; background:#ccc;"></div>
+                  <div style="position:absolute; top:0; left:40%; bottom:0; width:2px; background:#ccc;"></div>
+                </div>
+                <!-- Marker -->
+                <div style="position:absolute; top:45%; left:40%; transform:translate(-50%,-100%); text-align:center;">
+                  <div style="font-size:32px;">&#x1F4CD;</div>
+                </div>
+                <!-- Slide at bottom -->
+                <div style="position:absolute; bottom:0; left:0; right:0; background:white; border-radius:16px 16px 0 0; padding:12px 16px; box-shadow:0 -2px 8px rgba(0,0,0,0.1);">
+                  <div style="display:flex; gap:10px;">
+                    <div style="width:60px; height:60px; background:#ddd; border-radius:8px; display:flex; align-items:center; justify-content:center;">&#x1F3E2;</div>
+                    <div style="flex:1;">
+                      <div style="font-size:12px; font-weight:bold;">StudyGO 渋谷店</div>
+                      <div style="font-size:10px; color:#888;">(道玄坂)</div>
+                      <div style="font-size:10px; color:#888;">渋谷区道玄坂 1-2-3</div>
+                      <div style="margin-top:4px;">
+                        <span class="mock-badge mock-badge-green">受付中</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="border:none; margin-top:0;">地図画面で使われるデータ</h3>
+
+        <h4>&#x2460; 地図の表示位置</h4>
+        <div class="mock-card">
+          <strong>参照データ:</strong> 店舗の<strong>緯度・経度</strong>（DBに登録済み）<br>
+          <strong>表示位置:</strong> 店舗座標のやや北側にカメラを配置<br>
+          <strong>ズームレベル:</strong> 16.69（建物が見える程度の拡大）<br>
+          <strong>地図スタイル:</strong> コンビニ・病院等のアイコンを非表示にしたシンプルな表示
+        </div>
+
+        <h4>&#x2461; マーカー（ピン）</h4>
+        <div class="mock-card">
+          <strong>参照データ:</strong><br>
+          ・店舗の緯度・経度 → マーカーの位置<br>
+          ・店舗タイプ → マーカーの色（4種類）<br>
+          ・営業状態 + 座席の空き + 選択状態 → 赤に切り替わる条件<br><br>
+          <strong>色分けルール:</strong><br>
+          <table style="margin:4px 0; font-size:12px;">
+            <tr>
+              <td style="text-align:center; width:60px;"><span style="display:inline-block; width:14px; height:14px; background:#016F0C; border-radius:50;"></span></td>
+              <td><strong>店舗タイプ別の色</strong>（濃い緑/黄緑/青緑/水色）<br>→ 営業中・空席あり・未選択のとき表示</td>
+            </tr>
+            <tr>
+              <td style="text-align:center;"><span style="display:inline-block; width:14px; height:14px; background:#FA201D; border-radius:50%;"></span></td>
+              <td><strong style="color:#FA201D;">赤</strong> → 以下のいずれかの場合に表示<br>
+              ・ユーザーが選択中（大サイズ 65px）<br>
+              ・満席（利用者数 ≧ 割当座席数）<br>
+              ・営業時間外</td>
+            </tr>
+          </table>
+          <span style="font-size:11px; color:#888;">※ マーカーの大きさ: 通常45px / 選択中65px</span>
+        </div>
+
+        <h4>&#x2462; 下部スライド（店舗情報カード）</h4>
+        <div class="mock-card">
+          <strong>表示データ:</strong><br>
+          ・店舗画像<br>
+          ・店舗名 / サブ名<br>
+          ・住所<br>
+          ・営業状態バッジ
+        </div>
+
+        <h4>&#x2463; 経路案内</h4>
+        <div class="mock-card">
+          <strong>「ルート・乗換」ボタンをタップすると:</strong><br>
+          Google Mapsアプリが開き、現在地から店舗までの経路が表示される<br>
+          <span style="font-size:11px; color:#888;">※ URLに店舗の緯度・経度を埋め込んで起動<br>
+          例: google.com/maps/dir/?api=1&destination=35.658,139.701</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 6 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec6">
+    <h2 class="section-title">6. アプリとWordPressの機能比較</h2>
+
+    <table>
+      <tr>
+        <th style="width:260px;">機能</th>
+        <th class="center" style="width:160px;">アプリ (Flutter)</th>
+        <th class="center" style="width:160px;">WordPress連携ページ</th>
+      </tr>
+      <tr>
+        <td><strong>地図で店舗を探す</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>マーカーで空席状況がわかる</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>条件で店舗を絞り込む</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>経路案内（ルート表示）</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>現在地から近い店舗を探す</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>店舗の詳細情報を見る</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+      </tr>
+      <tr>
+        <td><strong>お気に入り登録</strong></td>
+        <td class="center"><span class="tag tag-ok">できる</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+      <tr>
+        <td><strong>店舗の住所→座標の自動変換</strong></td>
+        <td class="center"><span class="tag tag-partial">APIキー未設定</span></td>
+        <td class="center"><span class="tag tag-ng">できない</span></td>
+      </tr>
+    </table>
+
+    <div class="alert alert-info">
+      <strong>まとめ</strong>
+      アプリでは「地図で探す → 詳細を見る → 経路案内する」の流れが完成しています。しかし<strong>WordPress連携ページには地図機能が一切なく</strong>、テキストベースの店舗情報しか表示できていません。
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 8 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec7">
+    <h2 class="section-title">7. データの流れ ― どこから何が参照されるか</h2>
+
+    <h3>7.1 アプリで地図を表示するまでの流れ</h3>
+    <div class="data-flow">
+      <div class="data-flow-item df-db">
+        <div class="df-icon">&#x1F4BE;</div>
+        <div class="df-title">データベース</div>
+        <div class="df-desc">店舗マスタ（Shop テーブル）</div>
+        <div class="df-data">
+          <li><strong>緯度・経度</strong>（登録時に設定）</li>
+          <li>店舗名 / サブ名</li>
+          <li>住所 / アクセス方法</li>
+          <li>座席数 / 料金</li>
+          <li>営業時間ルール</li>
+          <li>画像ファイル名</li>
+        </div>
+      </div>
+      <div class="data-flow-arrow">&#8594;</div>
+      <div class="data-flow-item df-api">
+        <div class="df-icon">&#x2699;</div>
+        <div class="df-title">APIサーバー</div>
+        <div class="df-desc">データを加工して返す</div>
+        <div class="df-data">
+          <li>営業中かどうかを<strong>計算</strong></li>
+          <li>現在の利用者数を<strong>取得</strong></li>
+          <li>最安料金を<strong>算出</strong></li>
+          <li>画像URLを<strong>生成</strong></li>
+          <li>距離を<strong>計算</strong>（GPS座標あれば）</li>
+        </div>
+      </div>
+      <div class="data-flow-arrow">&#8594;</div>
+      <div class="data-flow-item df-app">
+        <div class="df-icon">&#x1F4F1;</div>
+        <div class="df-title">アプリ（Flutter）</div>
+        <div class="df-desc">地図 + カードで表示</div>
+        <div class="df-data">
+          <li>緯度・経度 → <strong>マーカー位置</strong></li>
+          <li>営業中 + 利用者数 → <strong>マーカー色</strong></li>
+          <li>店舗名・料金 → <strong>カード表示</strong></li>
+          <li>緯度・経度 → <strong>経路案内URL</strong></li>
+        </div>
+      </div>
+    </div>
+
+    <h3>7.2 WordPress連携の現状</h3>
+    <div class="data-flow">
+      <div class="data-flow-item df-db">
+        <div class="df-icon">&#x1F4BE;</div>
+        <div class="df-title">データベース</div>
+        <div class="df-desc">同じ店舗マスタ</div>
+        <div class="df-data">
+          <li>緯度・経度（<strong>存在する</strong>）</li>
+          <li>店舗名 / 住所</li>
+          <li>プラン / 営業時間</li>
+        </div>
+      </div>
+      <div class="data-flow-arrow">&#8594;</div>
+      <div class="data-flow-item df-api">
+        <div class="df-icon">&#x2699;</div>
+        <div class="df-title">APIサーバー</div>
+        <div class="df-desc">WordPress向けAPIでデータを返している</div>
+        <div class="df-data">
+          <li>緯度・経度を<strong>返している</strong></li>
+          <li>営業状態も<strong>計算済み</strong></li>
+          <li>各店舗にプラン情報を付加</li>
+        </div>
+      </div>
+      <div class="data-flow-arrow">&#8594;</div>
+      <div class="data-flow-item df-web" style="border:2px dashed #c62828;">
+        <div class="df-icon">&#x1F310;</div>
+        <div class="df-title">WordPress</div>
+        <div class="df-desc" style="color:#c62828; font-weight:bold;">地図表示なし</div>
+        <div class="df-data">
+          <li>緯度・経度 → <strong>使っていない</strong></li>
+          <li>営業状態 → <strong>テキスト表示のみ</strong></li>
+          <li>地図コンポーネントが存在しない</li>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warn">
+      <strong>ポイント</strong>
+      APIサーバーは<strong>すでにWordPress向けにも緯度経度や営業状態を返している</strong>のに、表示側でそれを地図として活用していません。つまり「データは準備できているが、地図画面が作られていない」状態です。
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 8 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec8">
+    <h2 class="section-title">8. 変更提案</h2>
+
+    <h3>8.1 提案一覧</h3>
+    <table>
+      <tr>
+        <th>#</th>
+        <th>提案内容</th>
+        <th>目的</th>
+        <th>優先度</th>
+        <th>フェーズ</th>
+      </tr>
+      <tr class="new-row">
+        <td>1</td>
+        <td><strong>WordPress地図ページに地図表示を追加する</strong></td>
+        <td>WEBサイトからでも地図で店舗を探せるようにする</td>
+        <td style="color:#c62828; font-weight:bold;">高</td>
+        <td><span class="tag tag-phase">Phase 1</span></td>
+      </tr>
+      <tr class="new-row">
+        <td>2</td>
+        <td><strong>検索結果に「距離」を表示する</strong></td>
+        <td>「この店舗は○○m先」とユーザーに伝える</td>
+        <td style="color:#c62828; font-weight:bold;">高</td>
+        <td><span class="tag tag-phase">Phase 1</span></td>
+      </tr>
+      <tr class="new-row">
+        <td>3</td>
+        <td><strong>Google Maps APIキーを設定する</strong></td>
+        <td>住所→座標変換を動作させ、「登録住所近くの店舗」を機能させる</td>
+        <td style="color:#c62828; font-weight:bold;">高</td>
+        <td><span class="tag tag-phase">Phase 1</span></td>
+      </tr>
+      <tr class="new-row">
+        <td>4</td>
+        <td><strong>WordPressページから経路案内できるようにする</strong></td>
+        <td>WEBサイトからもGoogle Mapsで経路案内を開ける</td>
+        <td style="color:#e65100; font-weight:bold;">中</td>
+        <td><span class="tag tag-phase">Phase 2</span></td>
+      </tr>
+      <tr class="new-row">
+        <td>5</td>
+        <td><strong>地図の表示範囲で店舗を絞り込めるようにする</strong></td>
+        <td>地図を動かしたときに「この範囲の店舗だけ」を再検索できる</td>
+        <td style="color:#e65100; font-weight:bold;">中</td>
+        <td><span class="tag tag-phase">Phase 2</span></td>
+      </tr>
+    </table>
+
+    <h3>8.2 提案1: WordPress地図ページに地図表示を追加する</h3>
+    <div class="compare-row">
+      <div class="compare-col" style="border-top:4px solid #c62828;">
+        <h4 style="color:#c62828;">現在（WordPress連携ページ）</h4>
+        <p>店舗一覧はテキストベースのみ。店舗の場所を地図で視覚的に確認することはできない。</p>
+      </div>
+      <div class="compare-col" style="border-top:4px solid #4caf50;">
+        <h4 style="color:#4caf50;">提案後</h4>
+        <p>Google Maps地図を表示し、アプリと同じようにマーカーで店舗の位置・営業状態を確認でき、クリックで店舗詳細に遷移できる。</p>
+      </div>
+    </div>
+
+    <h3>8.3 提案2: 検索結果に「距離」を表示する</h3>
+    <div class="compare-row">
+      <div class="compare-col" style="border-top:4px solid #c62828;">
+        <h4 style="color:#c62828;">現在の検索カード</h4>
+        <div class="mock-card" style="margin-top:8px;">
+          <div class="mock-card-row">
+            <div class="mock-img-placeholder">&#x1F3E2;</div>
+            <div class="mock-card-info">
+              <div class="name">StudyGO 渋谷店</div>
+              <div class="sub">(道玄坂)</div>
+              <div class="sub">渋谷駅 徒歩5分</div>
+              <div style="margin-top:4px;"><span class="mock-price">330円～</span></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:12px; margin-top:4px;">距離は裏で計算されているが、ユーザーには見えない</p>
+      </div>
+      <div class="compare-col" style="border-top:4px solid #4caf50;">
+        <h4 style="color:#4caf50;">提案後の検索カード</h4>
+        <div class="mock-card" style="margin-top:8px;">
+          <div class="mock-card-row">
+            <div class="mock-img-placeholder">&#x1F3E2;</div>
+            <div class="mock-card-info">
+              <div class="name">StudyGO 渋谷店 <span style="color:#1a73e8; font-size:11px; font-weight:normal;">1.2km</span></div>
+              <div class="sub">(道玄坂)</div>
+              <div class="sub">渋谷駅 徒歩5分</div>
+              <div style="margin-top:4px;"><span class="mock-price">330円～</span></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size:12px; margin-top:4px;">現在地からの距離が一目でわかる</p>
+      </div>
+    </div>
+
+    <h3>8.4 提案3: Google Maps APIキーを設定する</h3>
+    <div class="alert alert-info">
+      <strong>何が変わるか</strong>
+      APIキーを設定すると、ホーム画面の「<strong>お住まいの登録住所近くの店舗</strong>」セクションが正しく動作するようになります。現在はこの機能が停止しており、ユーザーの住所から近い店舗を自動的に表示できていません。
+    </div>
+    <table>
+      <tr>
+        <th>設定箇所</th>
+        <th>何に使うか</th>
+        <th>現状</th>
+      </tr>
+      <tr>
+        <td>APIサーバーの環境変数</td>
+        <td>住所→座標の変換（ホーム画面の「登録住所近くの店舗」）</td>
+        <td style="color:#c62828; font-weight:bold;">未設定</td>
+      </tr>
+      <tr>
+        <td>WEBフロントエンドの環境変数</td>
+        <td>ブラウザ上でのGoogle Maps地図表示</td>
+        <td style="color:#c62828; font-weight:bold;">未定義</td>
+      </tr>
+      <tr>
+        <td>iOSアプリの設定ファイル</td>
+        <td>アプリ内のGoogle Maps地図表示</td>
+        <td style="color:#2e7d32;">設定済み</td>
+      </tr>
+      <tr>
+        <td>Androidアプリの設定ファイル</td>
+        <td>アプリ内のGoogle Maps地図表示</td>
+        <td style="color:#2e7d32;">設定済み</td>
+      </tr>
+    </table>
+
+    <h3>8.5 提案4・5: 経路案内 & 範囲検索</h3>
+    <div class="alert alert-success">
+      <strong>Phase 2 で対応</strong>
+      WordPressページからGoogle Mapsアプリを開いて経路案内できるリンクを追加します。また、地図をスクロール/ズームした際に「この範囲で再検索」ボタンで画面内の店舗だけを取得する機能を追加します。
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- Section 10 -->
+  <!-- ================================================================ -->
+  <div class="section" id="sec9">
+    <h2 class="section-title">9. 実装スケジュール</h2>
+
+    <h3>Phase 1（1〜2週間）：基盤整備と必須機能</h3>
+    <table>
+      <tr>
+        <th>#</th>
+        <th>やること</th>
+        <th>結果</th>
+        <th>日数</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Google Maps APIキーの取得と全環境への設定</td>
+        <td>ホーム画面の「登録住所近くの店舗」が動作するようになる</td>
+        <td>0.5日</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>検索結果に「距離（○m）」を追加</td>
+        <td>アプリ・WEB両方で現在地からの距離が表示される</td>
+        <td>1日</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>WordPress連携ページにGoogle Maps地図コンポーネントを追加</td>
+        <td>ブラウザ上で店舗の位置をマーカーで確認できる</td>
+        <td>2日</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>マーカーの色分け（店舗タイプ別の色 / 満席・時間外は赤）とクリック時の情報表示</td>
+        <td>アプリと同じ見た目で店舗状態がわかる</td>
+        <td>1日</td>
+      </tr>
+    </table>
+
+    <h3>Phase 2（1〜2週間）：機能拡張</h3>
+    <table>
+      <tr>
+        <th>#</th>
+        <th>やること</th>
+        <th>結果</th>
+        <th>日数</th>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>WordPressページから経路案内リンクの追加</td>
+        <td>WEBサイトからGoogle Mapsで経路案内を開ける</td>
+        <td>0.5日</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>「この範囲で検索」機能の追加</td>
+        <td>地図を動かして見える範囲だけの店舗を取得</td>
+        <td>1.5日</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>ブラウザの現在地取得（Geolocation API）対応</td>
+        <td>WEBサイトでも現在地から近い店舗を検索できる</td>
+        <td>0.5日</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>住所の座標変換結果をキャッシュして高速化</td>
+        <td>同じ住所の再計算を防ぎ、API料金を節約</td>
+        <td>1日</td>
+      </tr>
+    </table>
+
+    <div class="alert alert-success">
+      <strong>既存のアプリへの影響</strong>
+      今回の提案はすべて「追加」のみです。既存のアプリの動作には一切影響しません。データベースの変更も不要で、API側は新しい項目を追加で返すだけです。
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

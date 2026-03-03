@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クーポン・割引機能改修 技術提案書</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #fff; color: #333; line-height: 1.7; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 24px; background: linear-gradient(135deg, #0f3460 0%, #16213e 50%, #1a1a2e 100%); color: white; margin: -32px -24px 40px; border-radius: 0 0 24px 24px; }
+  .cover h1 { font-size: 32px; margin-bottom: 12px; letter-spacing: 2px; }
+  .cover .sub { font-size: 16px; color: #90caf9; margin-bottom: 32px; }
+  .cover-meta { display: flex; justify-content: center; gap: 40px; font-size: 13px; color: #aaa; }
+  .cover-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* TOC */
+  .toc { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; padding: 24px 32px; margin-bottom: 40px; }
+  .toc h2 { font-size: 16px; margin-bottom: 12px; color: #0f3460; }
+  .toc ol { padding-left: 20px; }
+  .toc li { padding: 4px 0; font-size: 14px; }
+  .toc li a { color: #1a73e8; text-decoration: none; }
+  .toc li a:hover { text-decoration: underline; }
+
+  /* Sections */
+  .section { margin-bottom: 48px; page-break-inside: avoid; }
+  h2.section-title { font-size: 22px; color: #0f3460; border-left: 5px solid #0f3460; padding-left: 16px; margin-bottom: 20px; }
+  h3 { font-size: 16px; color: #16213e; margin: 20px 0 10px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+  h4 { font-size: 14px; color: #333; margin: 16px 0 8px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0 20px; }
+  th { background: #0f3460; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e8e8e8; vertical-align: top; }
+  tr:hover { background: #f5f8ff; }
+  tr.highlight { background: #fff3e0; }
+  tr.new-row { background: #e8f5e9; }
+  th.center, td.center { text-align: center; }
+
+  /* Code */
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 8px; font-size: 13px; overflow-x: auto; margin: 12px 0 20px; line-height: 1.6; font-family: 'Consolas', 'Monaco', monospace; }
+  code { background: #f0f0f0; padding: 1px 6px; border-radius: 3px; font-size: 12px; font-family: 'Consolas', 'Monaco', monospace; }
+  pre code { background: none; padding: 0; }
+  .keyword { color: #cba6f7; }
+  .string { color: #a6e3a1; }
+  .comment { color: #6c7086; }
+  .type { color: #89b4fa; }
+  .number { color: #fab387; }
+
+  /* Alerts */
+  .alert { padding: 14px 18px; border-radius: 8px; margin: 12px 0 20px; font-size: 13px; }
+  .alert-info { background: #e3f2fd; border-left: 4px solid #1a73e8; color: #0d47a1; }
+  .alert-warn { background: #fff3e0; border-left: 4px solid #ff9800; color: #e65100; }
+  .alert-danger { background: #fce4ec; border-left: 4px solid #e53935; color: #b71c1c; }
+  .alert-success { background: #e8f5e9; border-left: 4px solid #4caf50; color: #1b5e20; }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 12px 0 20px; }
+  .card { border: 1px solid #e0e0e0; border-radius: 10px; padding: 16px; }
+  .card h4 { margin-top: 0; border: none; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 4px; }
+  .tag-new { background: #e8f5e9; color: #2e7d32; }
+  .tag-change { background: #fff3e0; color: #e65100; }
+  .tag-delete { background: #fce4ec; color: #c62828; }
+  .tag-keep { background: #e3f2fd; color: #1565c0; }
+  .tag-required { background: #fce4ec; color: #c62828; }
+  .tag-optional { background: #f5f5f5; color: #888; }
+  .tag-pk { background: #fff9c4; color: #f57f17; font-family: monospace; }
+  .tag-fk { background: #e3f2fd; color: #1565c0; font-family: monospace; }
+  .tag-phase { background: #ede7f6; color: #4527a0; }
+
+  /* Diagram */
+  .diagram { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 12px 0 20px; text-align: center; }
+  .er-box { display: inline-block; background: white; border: 2px solid #0f3460; border-radius: 8px; margin: 8px; text-align: left; min-width: 240px; vertical-align: top; }
+  .er-box .title { background: #0f3460; color: white; padding: 6px 12px; font-weight: bold; font-size: 13px; }
+  .er-box.new { border-color: #4caf50; }
+  .er-box.new .title { background: #4caf50; }
+  .er-box.change { border-color: #ff9800; }
+  .er-box.change .title { background: #ff9800; }
+  .er-box ul { list-style: none; padding: 8px 12px; font-size: 12px; font-family: monospace; }
+  .er-box ul li { padding: 2px 0; }
+  .er-relation { display: inline-block; color: #888; font-size: 24px; vertical-align: middle; margin: 0 -4px; }
+
+  /* Screen mock */
+  .screen-mock { background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 0; overflow: hidden; margin: 12px 0 20px; }
+  .screen-mock .titlebar { background: #e0e0e0; padding: 6px 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+  .screen-mock .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .screen-mock .content { padding: 16px; }
+
+  .mock-form-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
+  .mock-field { flex: 1; }
+  .mock-field label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+  .mock-field .input { background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px 10px; font-size: 13px; }
+  .mock-field .input.select::after { content: ' ▼'; color: #999; }
+  .mock-btn { background: #1a73e8; color: white; border: none; border-radius: 4px; padding: 8px 16px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .mock-btn.sm { padding: 4px 12px; font-size: 11px; }
+  .mock-btn.outline { background: white; color: #1a73e8; border: 1px solid #1a73e8; }
+  .mock-btn.danger { background: white; color: #e53935; border: 1px solid #e53935; }
+  .mock-card { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 8px; }
+  .mock-rule-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .mock-rule-row .label { min-width: 70px; font-size: 12px; font-weight: bold; }
+  .mock-rule-row .input { flex: 1; }
+
+  .page-break { page-break-after: always; }
+  .print-only { display: none; }
+  @media print {
+    .print-only { display: block; }
+    .cover { padding: 60px 24px; }
+    .section { page-break-inside: avoid; }
+  }
+
+  /* 連番 */
+  .step-num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #0f3460; color: white; border-radius: 50%; font-size: 13px; font-weight: bold; margin-right: 8px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ==================== 表紙 ==================== -->
+<div class="cover">
+  <div style="font-size:14px;letter-spacing:4px;margin-bottom:16px;color:#64b5f6;">TECHNICAL PROPOSAL</div>
+  <h1>クーポン・割引機能改修<br>技術提案書</h1>
+  <p class="sub">ダイナミックプライシングによる複数月割引対応</p>
+  <div class="cover-meta">
+    <span>&#128197; 2026年2月20日</span>
+    <span>&#128196; Ver 2.0</span>
+    <span>&#127979; StudyGO</span>
+  </div>
+</div>
+
+<!-- ==================== 目次 ==================== -->
+<div class="toc">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#sec1">背景・目的</a></li>
+    <li><a href="#sec2">現状分析（現行システム）</a></li>
+    <li><a href="#sec3">要件定義</a></li>
+    <li><a href="#sec4">DB設計（スキーマ変更）</a></li>
+    <li><a href="#sec5">API仕様</a></li>
+    <li><a href="#sec6">画面仕様（管理画面）</a></li>
+    <li><a href="#sec7">画面仕様（アプリ側）</a></li>
+    <li><a href="#sec8">バックエンド処理仕様（料金計算・月次課金）</a></li>
+    <li><a href="#sec9">実装手順・影響ファイル一覧</a></li>
+    <li><a href="#sec10">テスト計画</a></li>
+    <li><a href="#sec11">マイグレーション・リリース計画</a></li>
+    <li><a href="#sec12">リスクと注意事項</a></li>
+  </ol>
+</div>
+
+<!-- ==================== 1. 背景・目的 ==================== -->
+<div class="section" id="sec1">
+  <h2 class="section-title">1. 背景・目的</h2>
+
+  <h3>1.1 現状の課題</h3>
+  <table>
+    <tr><th style="width:180px;">指標</th><th>値</th><th>問題点</th></tr>
+    <tr><td>契約継続期間 平均</td><td>76日（約2.5ヶ月）</td><td>3ヶ月未満で離脱が多い</td></tr>
+    <tr><td>最長継続期間</td><td>145日（約4.8ヶ月）</td><td>長期ユーザーが少ない</td></tr>
+    <tr><td>現行クーポン適用範囲</td><td>入会金のみ</td><td>月額料金・店舗初期費用への割引ができない</td></tr>
+  </table>
+
+  <h3>1.2 改修の目的</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>&#127919; 目的1：3ヶ月継続率の改善</h4>
+      <p>初期コストを下げて入会ハードルを撤廃し、段階的に通常料金に戻すことで、「3ヶ月の壁」を超えさせる。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的2：早期申込のインセンティブ</h4>
+      <p>開業前の先行入会申込に対して、早く申し込むほどお得な割引を提供する（ダイナミックプライシング）。</p>
+    </div>
+    <div class="card">
+      <h4>&#127919; 目的3：多様な料金プランへの対応</h4>
+      <p>月額プランだけでなく、ドロップイン・期間パスにも割引を適用可能な汎用的な仕組みを構築する。</p>
+    </div>
+  </div>
+
+  <h3>1.3 想定する割引パターン</h3>
+  <table>
+    <tr><th>弾</th><th>申込条件</th><th>初月</th><th>2ヶ月目</th><th>3ヶ月目</th><th>4ヶ月目〜</th></tr>
+    <tr class="highlight"><td><strong>第一弾</strong></td><td>1月末まで先行入会</td><td style="color:#e53935;font-weight:bold;">無料(100%OFF)</td><td style="color:#ff9800;font-weight:bold;">50%OFF</td><td style="color:#ffc107;font-weight:bold;">40%OFF</td><td>通常料金</td></tr>
+    <tr><td><strong>第二弾</strong></td><td>2月末まで先行入会</td><td style="color:#e53935;font-weight:bold;">無料(100%OFF)</td><td style="color:#ffc107;font-weight:bold;">40%OFF</td><td style="color:#ffc107;font-weight:bold;">40%OFF</td><td>通常料金</td></tr>
+    <tr><td><strong>第三弾</strong></td><td>3月末まで入会</td><td style="color:#e53935;font-weight:bold;">無料(100%OFF)</td><td style="color:#ffc107;font-weight:bold;">40%OFF</td><td>通常料金</td><td>通常料金</td></tr>
+    <tr><td><strong>第四弾</strong></td><td>4月末まで入会</td><td>通常（日割り）</td><td style="color:#ffc107;font-weight:bold;">40%OFF</td><td>通常料金</td><td>通常料金</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 2. 現状分析 ==================== -->
+<div class="section" id="sec2">
+  <h2 class="section-title">2. 現状分析（現行システム）</h2>
+
+  <h3>2.1 現行のクーポン関連テーブル</h3>
+  <div class="diagram">
+    <div class="er-box">
+      <div class="title">Coupon</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li>isActive: Int</li>
+        <li>name: String</li>
+        <li>code: String (UNIQUE, 6文字)</li>
+        <li><strong>discountRate: Int</strong> ← 入会金割引のみ</li>
+        <li>validFrom: DateTime?</li>
+        <li>validTo: DateTime?</li>
+        <li>imageFileName: String?</li>
+      </ul>
+    </div>
+    <span class="er-relation">1 ── * </span>
+    <div class="er-box">
+      <div class="title">ShopHasCoupon</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> shopId: Int → Shop</li>
+        <li><span class="tag-fk">FK</span> couponId: Int → Coupon</li>
+      </ul>
+    </div>
+    <br><br>
+    <div class="er-box">
+      <div class="title">ShopContractHasCoupon（利用履歴）</div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> shopContractId: Int → ShopContract</li>
+        <li><span class="tag-fk">FK</span> couponId: Int → Coupon</li>
+        <li>couponCode: String（スナップショット）</li>
+        <li>couponDiscountRate: Int（スナップショット）</li>
+        <li>couponValidFrom: DateTime?</li>
+        <li>couponValidTo: DateTime?</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>2.2 現行の料金計算ロジック</h3>
+  <div class="alert alert-info">
+    <strong>ファイル: src/services/entities/shopContract/ShopContractPriceService.ts</strong>
+    <code>getPrices()</code> メソッドが料金計算の中核。現在クーポン割引は入会金（registrationFee）にのみ適用。
+  </div>
+
+  <table>
+    <tr><th>決済区分</th><th>料金項目</th><th>計算ロジック</th><th>クーポン適用</th></tr>
+    <tr><td rowspan="4" style="background:#e8f5e9;font-weight:bold;">初回決済<br>(PaymentIntent)<br>= 2ヶ月分</td><td>入会金</td><td><code>REGISTRATION_FEE = ¥5,500</code>（定数）</td><td style="color:#4caf50;font-weight:bold;">&#10003; 適用あり</td></tr>
+    <tr><td>初月（日割り）</td><td><code>basePrice / daysInMonth * daysFromStart</code></td><td style="color:#e53935;">&#10007; 適用なし</td></tr>
+    <tr><td>翌月</td><td><code>shopPlan.price</code>（基本月額）</td><td style="color:#e53935;">&#10007; 適用なし</td></tr>
+    <tr><td>店舗初期費用</td><td><code>shop.initialCost</code></td><td style="color:#e53935;">&#10007; 適用なし</td></tr>
+    <tr><td style="background:#e3f2fd;font-weight:bold;">サブスク決済<br>(Subscription)<br>= 3ヶ月目〜</td><td>月額料金</td><td><code>shopPlan.price</code>（毎月15日に翌月分を課金）</td><td style="color:#e53935;">&#10007; 適用なし</td></tr>
+  </table>
+
+  <h3>2.3 現行の月次課金処理</h3>
+  <div class="alert alert-warn">
+    <strong>ファイル: src/batch/contracts/ (BatchContractService)</strong>
+    月次課金バッチでは <code>shopPlan.price</code> をそのまま課金しており、クーポン割引の参照は一切行われていない。<br>
+    → 複数月割引対応のためには、月次課金バッチの改修も必要。
+  </div>
+
+  <h3>2.4 現行のクーポン適用フロー</h3>
+  <pre><code><span class="comment">// ShopContractMonthlyService.ts - signMonthlyContract()</span>
+
+<span class="comment">// 1. クーポンコード検証</span>
+<span class="keyword">const</span> coupon = couponCode
+  ? <span class="keyword">await</span> CouponRepository.findFirstByCode(couponCode)
+  : <span class="keyword">null</span>;
+
+<span class="comment">// 2. 料金計算（入会金にのみ割引適用）</span>
+<span class="keyword">const</span> { prices, totalPrice } = ShopContractPriceService.getPrices(
+  appUser, shop, company, shopPlan, dateStart, dateTo,
+  coupon,  <span class="comment">// ← ここでクーポンを渡す</span>
+  isThe1stContract, now
+);
+
+<span class="comment">// 3. Stripe決済実行</span>
+<span class="keyword">await</span> StripeService.pay(appUser, totalPrice, ...);
+
+<span class="comment">// 4. 契約作成後、クーポン利用履歴を保存</span>
+<span class="keyword">if</span> (coupon) {
+  <span class="keyword">await</span> ShopContractHasCouponRepository.create({
+    shopContractId: contract.id,
+    coupon,  <span class="comment">// discountRate等をスナップショット保存</span>
+  });
+}</code></pre>
+</div>
+
+<!-- ==================== 3. 要件定義 ==================== -->
+<div class="section" id="sec3">
+  <h2 class="section-title">3. 要件定義</h2>
+
+  <h3>3.1 機能要件</h3>
+  <table>
+    <tr><th style="width:40px;">No</th><th style="width:100px;">分類</th><th>要件</th><th style="width:80px;">優先度</th></tr>
+    <tr><td>F-01</td><td>DB設計</td><td>1つのクーポンに対して、月ごとに異なる割引率を設定できるテーブルを追加する</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-02</td><td>DB設計</td><td>割引対象（月額/ドロップイン/期間パス/入会金/店舗別初期費用）を指定できるようにする</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr class="new-row"><td>F-02b</td><td>DB設計</td><td>割引方式として割引率（%）と定額割引（円）の両方に対応する</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr class="new-row"><td>F-02c</td><td>DB設計</td><td>入会金（REGISTRATION_FEE固定）と店舗別初期費用（shop.initialCost可変）を独立した割引対象として扱う</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-03</td><td>管理画面</td><td>クーポン編集画面で月別割引ルールの追加・編集・削除ができる</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-04</td><td>管理画面</td><td>クーポンプレビュー画面で割引適用後の料金をシミュレーションできる</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-05</td><td>バックエンド</td><td>契約時の初回決済で月別割引ルールに基づいた料金計算を行う</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-06</td><td>バックエンド</td><td>月次課金バッチで、契約開始月からの経過月数に応じた割引を適用する</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-07</td><td>バックエンド</td><td>クーポン利用履歴（ShopContractHasCoupon）に割引ルールもスナップショット保存する</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-08</td><td>アプリ</td><td>契約確認画面で月別の割引内訳を表示する</td><td><span class="tag tag-required">必須</span></td></tr>
+    <tr><td>F-09</td><td>アプリ</td><td>今後のお支払い予定（割引適用月）を表示する</td><td><span class="tag tag-optional">任意</span></td></tr>
+    <tr><td>F-10</td><td>全体</td><td>既存のクーポン（入会金割引のみ）との後方互換性を維持する</td><td><span class="tag tag-required">必須</span></td></tr>
+  </table>
+
+  <h3>3.2 非機能要件</h3>
+  <table>
+    <tr><th style="width:40px;">No</th><th>要件</th></tr>
+    <tr><td>NF-01</td><td>既存のクーポン（CouponDiscountRuleなし）は従来通り入会金割引として動作すること</td></tr>
+    <tr><td>NF-02</td><td>月次課金バッチの処理時間に大きな影響を与えないこと</td></tr>
+    <tr><td>NF-03</td><td>DBマイグレーションはダウンタイムなしで実行可能であること</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 4. DB設計 ==================== -->
+<div class="section" id="sec4">
+  <h2 class="section-title">4. DB設計（スキーマ変更）</h2>
+
+  <h3>4.1 ER図（変更後）</h3>
+  <div class="diagram">
+    <div class="er-box">
+      <div class="title">Coupon <span class="tag tag-keep">既存・変更なし</span></div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li>isActive: Int</li>
+        <li>name: String</li>
+        <li>code: String (UNIQUE)</li>
+        <li>discountRate: Int（後方互換用）</li>
+        <li>validFrom: DateTime?</li>
+        <li>validTo: DateTime?</li>
+      </ul>
+    </div>
+    <span class="er-relation"> 1 ── * </span>
+    <div class="er-box new">
+      <div class="title">CouponDiscountRule <span class="tag tag-new">新規</span></div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> couponId: Int → Coupon</li>
+        <li><strong>monthOffset: Int</strong> (0〜5)</li>
+        <li><strong>discountType: String</strong> ("rate"|"amount")</li>
+        <li><strong>discountRate: Int</strong></li>
+        <li><strong>discountAmount: Int?</strong></li>
+        <li><strong>targetType: String</strong></li>
+      </ul>
+    </div>
+    <br><br>
+    <div class="er-box change">
+      <div class="title">ShopContractHasCoupon <span class="tag tag-change">変更</span></div>
+      <ul>
+        <li><span class="tag-pk">PK</span> id: Int</li>
+        <li><span class="tag-fk">FK</span> shopContractId: Int</li>
+        <li><span class="tag-fk">FK</span> couponId: Int</li>
+        <li>couponCode: String</li>
+        <li>couponDiscountRate: Int</li>
+        <li><strong style="color:#4caf50;">couponDiscountRulesJson: String?</strong> ← 追加</li>
+        <li>couponValidFrom: DateTime?</li>
+        <li>couponValidTo: DateTime?</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>4.2 新規テーブル: CouponDiscountRule</h3>
+  <table>
+    <tr><th>カラム名</th><th>型</th><th>NULL</th><th>制約</th><th>説明</th></tr>
+    <tr class="new-row"><td><code>id</code></td><td>Int</td><td>NOT NULL</td><td>PK, AUTO_INCREMENT</td><td>主キー</td></tr>
+    <tr class="new-row"><td><code>couponId</code></td><td>Int</td><td>NOT NULL</td><td>FK → Coupon.id</td><td>親クーポン</td></tr>
+    <tr class="new-row"><td><code>monthOffset</code></td><td>Int</td><td>NOT NULL</td><td>0〜5</td><td>0=初月, 1=翌月, ...5=6ヶ月目</td></tr>
+    <tr class="new-row"><td><code>discountType</code></td><td>String</td><td>NOT NULL</td><td>DEFAULT "rate"</td><td>"rate"=割引率(%) / "amount"=定額割引(円)</td></tr>
+    <tr class="new-row"><td><code>discountRate</code></td><td>Int</td><td>NOT NULL</td><td>0〜100</td><td>割引率(%) 100=無料（discountType="rate"時）</td></tr>
+    <tr class="new-row"><td><code>discountAmount</code></td><td>Int?</td><td>NULL</td><td>0以上</td><td>定額割引(円)（discountType="amount"時）</td></tr>
+    <tr class="new-row"><td><code>targetType</code></td><td>String</td><td>NOT NULL</td><td>enum的</td><td>下記参照</td></tr>
+    <tr class="new-row"><td><code>createdAt</code></td><td>DateTime</td><td>NOT NULL</td><td>DEFAULT now()</td><td></td></tr>
+    <tr class="new-row"><td><code>updatedAt</code></td><td>DateTime</td><td>NOT NULL</td><td>@updatedAt</td><td></td></tr>
+  </table>
+
+  <div class="alert alert-info">
+    <strong>UNIQUE制約: (couponId, monthOffset, targetType)</strong>
+    同一クーポン × 同一月 × 同一対象タイプ の重複登録を防ぐ。
+  </div>
+
+  <h4>discountType の定義値</h4>
+  <table>
+    <tr><th>値</th><th>説明</th><th>計算方法</th><th>例</th></tr>
+    <tr><td><code>rate</code></td><td>割引率（%）</td><td><code>Math.round(price * (1 - discountRate / 100))</code></td><td>discountRate=50 → 半額</td></tr>
+    <tr class="new-row"><td><code>amount</code></td><td>定額割引（円）</td><td><code>Math.max(0, price - discountAmount)</code></td><td>discountAmount=1000 → 1,000円引き</td></tr>
+  </table>
+
+  <h4>targetType の定義値</h4>
+  <div class="alert alert-warn">
+    <strong>入会金（REGISTRATION_FEE = &yen;5,500）と店舗別初期費用（shop.initialCost）は別の料金項目です</strong>
+    <ul style="margin-top:4px;padding-left:20px;">
+      <li><strong>入会金</strong>: 全店舗共通の固定金額（&yen;5,500）。初回契約時のみ。<code>USER_PAYMENT_DETAIL_TYPE.ENTRY_FEE</code></li>
+      <li><strong>店舗別初期費用</strong>: 店舗ごとに設定される可変金額（<code>shop.initialCost</code>）。<code>USER_PAYMENT_DETAIL_TYPE.SHOP_INITIAL_FEE</code></li>
+    </ul>
+    クーポンではそれぞれを個別に割引対象として指定できます。
+  </div>
+  <table>
+    <tr><th>値</th><th>説明</th><th>適用箇所</th><th>料金ソース</th></tr>
+    <tr><td><code>initial_fee</code></td><td>入会金</td><td>初回契約時の入会金に適用</td><td><code>REGISTRATION_FEE</code> (&yen;5,500固定)</td></tr>
+    <tr class="new-row"><td><code>shop_initial_fee</code></td><td>店舗別初期費用</td><td>店舗別の初期費用に適用</td><td><code>shop.initialCost</code> (店舗ごとに異なる)</td></tr>
+    <tr><td><code>monthly</code></td><td>月額プラン料金</td><td>月額プランの各月の料金に適用</td><td><code>shopPlan.price</code></td></tr>
+    <tr><td><code>dropin</code></td><td>ドロップイン利用料</td><td>ドロップイン利用料に適用</td><td><code>shopPlan.price</code> (DROPIN型)</td></tr>
+    <tr><td><code>period_pass</code></td><td>期間パス料金</td><td>期間パス料金に適用（将来対応）</td><td>-</td></tr>
+  </table>
+
+  <h3>4.3 Prisma Schema 追記内容</h3>
+  <pre><code><span class="comment">// prisma/schema.prisma に追加</span>
+
+<span class="keyword">model</span> <span class="type">CouponDiscountRule</span> {
+  id             <span class="type">Int</span>      <span class="string">@id @default(autoincrement())</span>
+  coupon         <span class="type">Coupon</span>   <span class="string">@relation(fields: [couponId], references: [id])</span>
+  couponId       <span class="type">Int</span>
+  monthOffset    <span class="type">Int</span>      <span class="comment">// 0=初月, 1=翌月, ...5=6ヶ月目</span>
+  discountType   <span class="type">String</span>   <span class="string">@default("rate")</span>  <span class="comment">// "rate" | "amount"</span>
+  discountRate   <span class="type">Int</span>      <span class="comment">// 割引率(%) 0〜100（discountType="rate"時）</span>
+  discountAmount <span class="type">Int?</span>     <span class="comment">// 定額割引(円)（discountType="amount"時）</span>
+  targetType     <span class="type">String</span>   <span class="comment">// "monthly" | "dropin" | "period_pass" | "initial_fee" | "shop_initial_fee"</span>
+  createdAt      <span class="type">DateTime</span> <span class="string">@default(now()) @map("created_at") @db.Timestamp(0)</span>
+  updatedAt      <span class="type">DateTime</span> <span class="string">@updatedAt @map("updated_at")</span>
+
+  <span class="string">@@unique([couponId, monthOffset, targetType])</span>
+}
+
+<span class="comment">// Coupon モデルにリレーション追加</span>
+<span class="keyword">model</span> <span class="type">Coupon</span> {
+  <span class="comment">// ... 既存フィールド ...</span>
+  couponDiscountRules <span class="type">CouponDiscountRule[]</span>  <span class="comment">// ← 追加</span>
+}
+
+<span class="comment">// ShopContractHasCoupon にカラム追加</span>
+<span class="keyword">model</span> <span class="type">ShopContractHasCoupon</span> {
+  <span class="comment">// ... 既存フィールド ...</span>
+  couponDiscountRulesJson <span class="type">String?</span> <span class="string">@db.Text</span>  <span class="comment">// ← 追加（JSON文字列でスナップショット）</span>
+}</code></pre>
+
+  <h3>4.4 データ登録例</h3>
+
+  <h4>例1: 第一弾キャンペーン（割引率ベース + 入会金無料 + 店舗初期費用50%OFF）</h4>
+  <table>
+    <tr><th>couponId</th><th>monthOffset</th><th>discountType</th><th>discountRate</th><th>discountAmount</th><th>targetType</th><th>意味</th></tr>
+    <tr class="new-row"><td>1</td><td>0</td><td>rate</td><td>100</td><td>NULL</td><td>monthly</td><td>初月の月額料金 → 無料</td></tr>
+    <tr class="new-row"><td>1</td><td>1</td><td>rate</td><td>50</td><td>NULL</td><td>monthly</td><td>2ヶ月目の月額料金 → 50%OFF</td></tr>
+    <tr class="new-row"><td>1</td><td>2</td><td>rate</td><td>40</td><td>NULL</td><td>monthly</td><td>3ヶ月目の月額料金 → 40%OFF</td></tr>
+    <tr class="highlight"><td>1</td><td>0</td><td>rate</td><td>100</td><td>NULL</td><td>initial_fee</td><td>入会金(&yen;5,500) → 無料</td></tr>
+    <tr class="highlight"><td>1</td><td>0</td><td>rate</td><td>50</td><td>NULL</td><td>shop_initial_fee</td><td>店舗別初期費用 → 50%OFF</td></tr>
+  </table>
+
+  <h4>例2: 定額割引キャンペーン（月額1,000円引き + 店舗初期費用2,000円引き）</h4>
+  <table>
+    <tr><th>couponId</th><th>monthOffset</th><th>discountType</th><th>discountRate</th><th>discountAmount</th><th>targetType</th><th>意味</th></tr>
+    <tr class="new-row"><td>2</td><td>0</td><td>amount</td><td>0</td><td>1000</td><td>monthly</td><td>初月の月額 → 1,000円引き</td></tr>
+    <tr class="new-row"><td>2</td><td>1</td><td>amount</td><td>0</td><td>1000</td><td>monthly</td><td>2ヶ月目の月額 → 1,000円引き</td></tr>
+    <tr class="new-row"><td>2</td><td>2</td><td>amount</td><td>0</td><td>1000</td><td>monthly</td><td>3ヶ月目の月額 → 1,000円引き</td></tr>
+    <tr class="highlight"><td>2</td><td>0</td><td>amount</td><td>0</td><td>2000</td><td>shop_initial_fee</td><td>店舗別初期費用 → 2,000円引き</td></tr>
+  </table>
+
+  <div class="alert alert-info">
+    <strong>入会金と店舗別初期費用の違い</strong>
+    <table style="margin:8px 0 0;">
+      <tr><th>項目</th><th>入会金 (initial_fee)</th><th>店舗別初期費用 (shop_initial_fee)</th></tr>
+      <tr><td>金額ソース</td><td><code>REGISTRATION_FEE = &yen;5,500</code>（固定）</td><td><code>shop.initialCost</code>（店舗ごとに設定）</td></tr>
+      <tr><td>対象条件</td><td>初回契約時 (<code>isThe1stContract=true</code>)</td><td><code>shop.initialCost > 0</code> かつ <code>shopPlan.withInitialFee=1</code> or デフォルトプラン</td></tr>
+      <tr><td>決済タイプ</td><td><code>USER_PAYMENT_DETAIL_TYPE.ENTRY_FEE</code></td><td><code>USER_PAYMENT_DETAIL_TYPE.SHOP_INITIAL_FEE</code></td></tr>
+      <tr><td>monthOffset</td><td>常に 0（初回のみ）</td><td>常に 0（初回のみ）</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== 5. API仕様 ==================== -->
+<div class="section" id="sec5">
+  <h2 class="section-title">5. API仕様</h2>
+
+  <h3>5.1 変更が必要な既存API</h3>
+  <table>
+    <tr><th>API名</th><th>パス</th><th>変更内容</th></tr>
+    <tr><td><code>adminSaveCoupon</code></td><td>POST /admin/saveCoupon</td><td>inputに<code>discountRules[]</code>を追加</td></tr>
+    <tr><td><code>adminCoupon</code></td><td>POST /admin/coupon</td><td>outputに<code>couponDiscountRules[]</code>を追加</td></tr>
+    <tr><td><code>adminCoupons</code></td><td>POST /admin/coupons</td><td>outputに<code>couponDiscountRules[]</code>を追加</td></tr>
+    <tr><td><code>appPlanDetail</code></td><td>POST /app/planDetail</td><td>outputの<code>prices[]</code>に割引前後の価格を追加</td></tr>
+    <tr><td><code>adminShopCoupons</code></td><td>POST /admin/shopCoupons</td><td>outputに<code>discountRules[]</code>を追加（実装済み）</td></tr>
+  </table>
+
+  <h3>5.2 adminSaveCoupon 変更詳細</h3>
+  <h4>Input（変更後）</h4>
+  <pre><code><span class="comment">// definition.ts - adminSaveCoupon</span>
+input: {
+  id?: <span class="type">number</span>
+  isActive: <span class="type">number</span>
+  name: <span class="type">string</span>
+  code: <span class="type">string</span>
+  discountRate: <span class="type">number</span>          <span class="comment">// 既存（後方互換: 入会金割引）</span>
+  validFrom: <span class="type">string</span>
+  validTo: <span class="type">string</span>
+  filebase64?: <span class="type">string</span>
+  <span class="comment">// ↓ 新規追加</span>
+  discountRules?: {
+    monthOffset: <span class="type">number</span>        <span class="comment">// 0〜5（最大6ヶ月）</span>
+    discountType: <span class="type">string</span>       <span class="comment">// "rate" | "amount"</span>
+    discountRate: <span class="type">number</span>       <span class="comment">// 0〜100（discountType="rate"時）</span>
+    discountAmount?: <span class="type">number</span>   <span class="comment">// 定額割引(円)（discountType="amount"時）</span>
+    targetType: <span class="type">string</span>         <span class="comment">// "monthly" | "initial_fee" | "shop_initial_fee" | "dropin" | ...</span>
+  }[]
+}</code></pre>
+
+  <h4>処理フロー</h4>
+  <pre><code><span class="comment">// adminCouponResolver.ts - adminSaveCoupon 改修</span>
+
+<span class="comment">// 1. 既存のCoupon保存処理（変更なし）</span>
+<span class="keyword">await</span> prisma.coupon.upsert({ ... });
+
+<span class="comment">// 2. 割引ルールの洗い替え（新規追加）</span>
+<span class="keyword">if</span> (discountRules) {
+  <span class="comment">// 既存ルールを全削除</span>
+  <span class="keyword">await</span> prisma.couponDiscountRule.deleteMany({
+    where: { couponId: targetId }
+  });
+  <span class="comment">// 新ルールを一括登録</span>
+  <span class="keyword">await</span> prisma.couponDiscountRule.createMany({
+    data: discountRules.map(rule => ({
+      couponId: targetId,
+      monthOffset: rule.monthOffset,
+      discountType: rule.discountType ?? <span class="string">'rate'</span>,
+      discountRate: rule.discountRate,
+      discountAmount: rule.discountAmount ?? <span class="keyword">null</span>,
+      targetType: rule.targetType,
+    }))
+  });
+}</code></pre>
+
+  <h3>5.3 appPlanDetail 変更詳細</h3>
+  <h4>Output（変更後）</h4>
+  <pre><code><span class="comment">// 既存のprices配列に「割引前価格」「割引情報」を追加</span>
+prices: {
+  label: <span class="type">string</span>
+  price: <span class="type">number</span>              <span class="comment">// 割引後の価格</span>
+  originalPrice?: <span class="type">number</span>     <span class="comment">// ← 追加: 割引前の価格</span>
+  discountRate?: <span class="type">number</span>      <span class="comment">// ← 追加: 適用された割引率</span>
+  discountLabel?: <span class="type">string</span>     <span class="comment">// ← 追加: "100% OFF（無料）" 等</span>
+}[]
+<span class="comment">// 今後の割引予定</span>
+futureDiscounts?: {           <span class="comment">// ← 追加</span>
+  month: <span class="type">string</span>              <span class="comment">// "5月分"</span>
+  discountRate: <span class="type">number</span>       <span class="comment">// 40</span>
+  estimatedPrice: <span class="type">number</span>    <span class="comment">// ¥5,940</span>
+}[]</code></pre>
+</div>
+
+<!-- ==================== 6. 画面仕様（管理画面） ==================== -->
+<div class="section" id="sec6">
+  <h2 class="section-title">6. 画面仕様（管理画面）</h2>
+
+  <h3>6.1 クーポン編集画面の変更</h3>
+  <div class="alert alert-info">
+    <strong>対象ファイル:</strong> <code>src/pages/admin/coupons/edit/[id]/index.tsx</code><br>
+    既存の編集画面に「月別割引ルール」セクションを追加する。
+  </div>
+
+  <div class="screen-mock">
+    <div class="titlebar">
+      <div class="dot" style="background:#ef5350;"></div>
+      <div class="dot" style="background:#ffc107;"></div>
+      <div class="dot" style="background:#4caf50;"></div>
+      管理画面 - クーポン編集
+    </div>
+    <div class="content">
+      <h4 style="margin-top:0;border:none;">基本情報</h4>
+      <div class="mock-form-row">
+        <div class="mock-field"><label>クーポン名 <span class="tag tag-required">必須</span></label><div class="input">第一弾キャンペーン</div></div>
+        <div class="mock-field"><label>クーポンコード <span class="tag tag-required">必須</span></label><div class="input">WAVE01</div></div>
+      </div>
+      <div class="mock-form-row">
+        <div class="mock-field"><label>有効期間（開始）</label><div class="input">2026/01/01</div></div>
+        <div class="mock-field"><label>有効期間（終了）</label><div class="input">2026/01/31</div></div>
+        <div class="mock-field"><label>入会金割引（既存）</label><div class="input select">100% ▼</div></div>
+      </div>
+      <div class="mock-form-row">
+        <div class="mock-field"><label>公開/非公開</label><div class="input select">公開 ▼</div></div>
+      </div>
+
+      <div class="mock-card" style="border-color:#4caf50;background:#f1f8e9;margin-top:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:13px;color:#2e7d32;">&#127970; 店舗別初期費用割引 <span class="tag tag-new">NEW</span></strong>
+        </div>
+        <div class="mock-rule-row">
+          <div class="label" style="min-width:70px;">割引方式</div>
+          <div class="input select" style="flex:1;">割引率（%） ▼</div>
+        </div>
+        <div class="mock-rule-row">
+          <div class="label" style="min-width:70px;">割引値</div>
+          <div class="input select" style="flex:1;">50% OFF ▼</div>
+        </div>
+        <div style="font-size:10px;color:#666;margin-top:4px;">※ 店舗ごとに設定された初期費用（shop.initialCost）に対して割引を適用</div>
+      </div>
+
+      <hr style="margin:16px 0;border:none;border-top:2px solid #ff9800;">
+      <h4 style="margin-top:0;border:none;color:#e65100;">&#11088; 月別割引ルール <span class="tag tag-new">NEW</span></h4>
+
+      <div class="mock-card" style="border-color:#ff9800;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:13px;">適用対象</strong>
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="margin-right:16px;font-size:12px;"><input type="checkbox" checked> 月額プラン</label>
+          <label style="margin-right:16px;font-size:12px;"><input type="checkbox"> ドロップイン</label>
+          <label style="margin-right:16px;font-size:12px;"><input type="checkbox"> 期間パス</label>
+          <label style="margin-right:16px;font-size:12px;"><input type="checkbox" checked> 入会金 (&yen;5,500)</label>
+        </div>
+
+        <div class="mock-rule-row">
+          <div class="label">初月 (月0)</div>
+          <div class="input select" style="flex:1;">100% OFF（無料） ▼</div>
+          <button class="mock-btn danger sm">削除</button>
+        </div>
+        <div class="mock-rule-row">
+          <div class="label">2ヶ月目 (月1)</div>
+          <div class="input select" style="flex:1;">50% OFF ▼</div>
+          <button class="mock-btn danger sm">削除</button>
+        </div>
+        <div class="mock-rule-row">
+          <div class="label">3ヶ月目 (月2)</div>
+          <div class="input select" style="flex:1;">40% OFF ▼</div>
+          <button class="mock-btn danger sm">削除</button>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="mock-btn outline sm">+ ルールを追加</button>
+        </div>
+      </div>
+
+      <div style="text-align:right;margin-top:16px;">
+        <button class="mock-btn" style="padding:10px 32px;">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <h3>6.2 クーポンプレビュー画面</h3>
+  <div class="alert alert-info">
+    <strong>対象ファイル:</strong> <code>src/pages/admin/coupon-preview/index.tsx</code>（実装済み → 拡張）<br>
+    店舗・プラン選択後、クーポン適用時の月別料金内訳を表示する。
+  </div>
+
+  <div class="screen-mock">
+    <div class="titlebar">
+      <div class="dot" style="background:#ef5350;"></div>
+      <div class="dot" style="background:#ffc107;"></div>
+      <div class="dot" style="background:#4caf50;"></div>
+      管理画面 - クーポン・割引シミュレーション
+    </div>
+    <div class="content">
+      <div class="mock-form-row">
+        <div class="mock-field"><label>店舗</label><div class="input select">スタディGO 新店舗 ▼</div></div>
+        <div class="mock-field"><label>プラン</label><div class="input select">レギュラープラン（月額）¥9,900 ▼</div></div>
+        <div class="mock-field"><label>開始日</label><div class="input">2026/03/15</div></div>
+      </div>
+      <div class="mock-form-row">
+        <div class="mock-field" style="max-width:200px;"><label>クーポンコード</label><div class="input">WAVE01</div></div>
+        <button class="mock-btn" style="margin-bottom:0;">適用</button>
+      </div>
+
+      <div class="mock-card" style="border-color:#4caf50;background:#f1f8e9;">
+        <strong style="font-size:13px;">&#10003; 「第一弾キャンペーン」が適用されました</strong>
+      </div>
+
+      <h4 style="margin-top:12px;border:none;">料金内訳プレビュー</h4>
+      <table style="font-size:12px;">
+        <tr><th>項目</th><th class="center">通常料金</th><th class="center">割引</th><th class="center">お支払い</th></tr>
+        <tr class="new-row"><td>入会金</td><td class="center" style="text-decoration:line-through;color:#999;">&yen;5,500</td><td class="center" style="color:#e53935;">100%OFF</td><td class="center"><strong>&yen;0</strong></td></tr>
+        <tr class="new-row"><td>店舗別初期費用</td><td class="center" style="text-decoration:line-through;color:#999;">&yen;3,000</td><td class="center" style="color:#ff9800;">50%OFF</td><td class="center"><strong>&yen;1,500</strong></td></tr>
+        <tr class="new-row"><td>3月分（日割り16日分）</td><td class="center" style="text-decoration:line-through;color:#999;">&yen;5,116</td><td class="center" style="color:#e53935;">100%OFF</td><td class="center"><strong>&yen;0</strong></td></tr>
+        <tr class="highlight"><td>4月分</td><td class="center" style="text-decoration:line-through;color:#999;">&yen;9,900</td><td class="center" style="color:#ff9800;">50%OFF</td><td class="center"><strong>&yen;4,950</strong></td></tr>
+        <tr><td colspan="3" style="text-align:right;font-weight:bold;">初回決済合計</td><td class="center" style="font-size:16px;color:#1a73e8;font-weight:bold;">&yen;6,450</td></tr>
+      </table>
+
+      <div class="mock-card" style="background:#e3f2fd;border-color:#1a73e8;">
+        <strong style="font-size:12px;">&#128197; 今後のお支払い予定</strong>
+        <div style="font-size:12px;margin-top:4px;">
+          ・5月分: ¥5,940 (40%OFF)<br>
+          ・6月分〜: ¥9,900 (通常料金)
+        </div>
+      </div>
+      <div class="mock-card" style="background:#e8f5e9;border-color:#4caf50;">
+        <strong style="font-size:12px;">&#128178; 割引総額: ¥20,466 おトク（通常比）</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 7. 画面仕様（アプリ） ==================== -->
+<div class="section" id="sec7">
+  <h2 class="section-title">7. 画面仕様（アプリ側）</h2>
+
+  <div class="alert alert-warn">
+    <strong>重要: ハイブリッド決済フロー</strong>
+    <ul style="margin-top:4px;padding-left:20px;">
+      <li>初回決済（PaymentIntent）: <strong>初月（日割り）+ 翌月 = 2ヶ月分</strong></li>
+      <li>3ヶ月目以降（Subscription）: <strong>毎月15日に翌月分を自動課金</strong></li>
+    </ul>
+    アプリの契約確認画面には<strong>初回決済の2ヶ月分のみ</strong>を料金内訳として表示する。<br>
+    3ヶ月目以降の割引情報は、マイページ・決済履歴で確認できるようにする。
+  </div>
+
+  <h3>7.1 契約確認画面の変更（初回2ヶ月分のみ表示）</h3>
+  <div class="alert alert-info">
+    <strong>対象:</strong> Flutter アプリの契約確認画面<br>
+    <code>appPlanDetail</code> APIのレスポンスに追加されるフィールドを表示する。
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:#e0e0e0;">
+      <h4 style="margin-top:0;border:none;">変更前（現在）</h4>
+      <div style="font-size:12px;line-height:2;">
+        入会金 ................... &yen;2,750（50%OFF）<br>
+        店舗別初期費用 ........... &yen;3,000<br>
+        3月分(日割り) ............ &yen;5,116<br>
+        4月分 .................... &yen;9,900<br>
+        ─────────────────<br>
+        <strong>合計 .................... &yen;20,766</strong>
+      </div>
+      <p style="font-size:11px;color:#999;margin-top:8px;">※ 月額料金・店舗初期費用には割引が適用されない</p>
+    </div>
+    <div class="card" style="border-color:#4caf50;">
+      <h4 style="margin-top:0;border:none;color:#2e7d32;">変更後（第一弾適用時）</h4>
+      <div style="font-size:12px;line-height:2;">
+        <strong style="color:#0f3460;">&#128176; 初回お支払い（2ヶ月分）</strong><br>
+        入会金 ......... <span style="text-decoration:line-through;color:#999;">&yen;5,500</span> &rarr; <strong style="color:#e53935;">&yen;0</strong> (100%OFF)<br>
+        店舗別初期費用 .. <span style="text-decoration:line-through;color:#999;">&yen;3,000</span> &rarr; &yen;1,500 (50%OFF)<br>
+        3月分(日割り) ... <span style="text-decoration:line-through;color:#999;">&yen;5,116</span> &rarr; <strong style="color:#e53935;">&yen;0</strong> (100%OFF)<br>
+        4月分 ........... <span style="text-decoration:line-through;color:#999;">&yen;9,900</span> &rarr; &yen;4,950 (50%OFF)<br>
+        ─────────────────<br>
+        <strong>初回合計 .................. <span style="color:#e53935;">&yen;6,450</span></strong><br>
+        <br>
+        <span style="font-size:11px;color:#1565c0;">&#128197; 3ヶ月目以降は毎月15日に自動決済</span><br>
+        <span style="font-size:11px;color:#1565c0;">&#127873; 5月分: 40%OFF（¥5,940）が適用されます</span><br>
+        <span style="font-size:10px;color:#888;">※ 割引スケジュールはマイページで確認できます</span>
+      </div>
+    </div>
+  </div>
+
+  <h3>7.2 マイページ（契約詳細 → 割引スケジュール表示）</h3>
+  <div class="alert alert-info">
+    <strong>対象:</strong> Flutter アプリのマイページ → 契約詳細画面<br>
+    契約に紐づくクーポンの全月割引スケジュールを一覧表示する。常時確認可能。
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:#1a73e8;">
+      <h4 style="margin-top:0;border:none;color:#0d47a1;">マイページ > 契約詳細 画面</h4>
+      <div style="font-size:12px;line-height:1.8;">
+        <strong>レギュラープラン</strong><br>
+        <span style="color:#666;">スタディGO 新店舗 | 2026年3月15日〜</span><br>
+        <br>
+        <div style="background:#e3f2fd;border-radius:6px;padding:8px;margin-bottom:8px;">
+          <strong style="font-size:11px;color:#1565c0;">&#128197; 割引スケジュール（第一弾キャンペーン）</strong>
+          <table style="width:100%;font-size:11px;margin:4px 0 0;">
+            <tr><td>3月分（初月）</td><td style="text-align:right;color:#e53935;font-weight:bold;">100%OFF &#10003; 適用済</td></tr>
+            <tr><td>4月分</td><td style="text-align:right;color:#ff9800;font-weight:bold;">50%OFF &#10003; 適用済</td></tr>
+            <tr style="background:#fff9c4;"><td>5月分</td><td style="text-align:right;color:#f57f17;font-weight:bold;">40%OFF &#9679; 次回</td></tr>
+            <tr><td>6月分〜</td><td style="text-align:right;color:#888;">通常料金</td></tr>
+          </table>
+        </div>
+        <span style="font-size:11px;color:#1565c0;">次回決済: 4月15日 | 5月分 ¥5,940（40%OFF）</span>
+      </div>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;border:none;">表示ロジック</h4>
+      <div style="font-size:12px;line-height:1.8;">
+        <strong>データソース:</strong><br>
+        <code>ShopContractHasCoupon.couponDiscountRulesJson</code><br>
+        （契約時にスナップショット保存された割引ルール）<br>
+        <br>
+        <strong>各月のステータス判定:</strong><br>
+        ・適用済（&#10003;）: 現在月より前<br>
+        ・次回（&#9679;）: 次の決済対象月<br>
+        ・予定: まだ先の月<br>
+        ・通常料金: ルール対象外の月<br>
+        <br>
+        <strong>次回決済情報:</strong><br>
+        <code>subscriptionStartDate</code> + 経過月数から計算
+      </div>
+    </div>
+  </div>
+
+  <h3>7.3 決済履歴・明細（実績として表示）</h3>
+  <div class="alert alert-info">
+    <strong>対象:</strong> Flutter アプリのお支払い履歴画面<br>
+    各月の決済明細にクーポン割引の内訳を表示する。
+  </div>
+
+  <div class="card-grid">
+    <div class="card" style="border-color:#4caf50;">
+      <h4 style="margin-top:0;border:none;color:#2e7d32;">お支払い履歴 画面</h4>
+      <div style="font-size:12px;">
+        <div style="border:1px solid #e0e0e0;border-radius:6px;padding:8px;margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+            <strong>2026年4月15日</strong>
+            <span style="background:#e8f5e9;color:#2e7d32;padding:1px 6px;border-radius:3px;font-size:10px;">決済済み</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>5月分 月額料金</span>
+            <span><span style="text-decoration:line-through;color:#999;font-size:10px;">¥9,900</span> <strong>¥5,940</strong></span>
+          </div>
+          <div style="font-size:10px;color:#e53935;">クーポン割引: 40%OFF（第一弾キャンペーン）</div>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-radius:6px;padding:8px;margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+            <strong>2026年3月15日</strong>
+            <span style="background:#e8f5e9;color:#2e7d32;padding:1px 6px;border-radius:3px;font-size:10px;">決済済み</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span>初回決済（2ヶ月分）</span>
+            <strong>&yen;6,450</strong>
+          </div>
+          <div style="font-size:10px;color:#666;">入会金&yen;0(100%OFF) + 店舗初期費用&yen;1,500(50%OFF) + 3月&yen;0(100%OFF) + 4月&yen;4,950(50%OFF)</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0;border:none;">実装方針</h4>
+      <div style="font-size:12px;line-height:1.8;">
+        <strong>Stripeの決済履歴からデータ取得</strong><br>
+        ・PaymentIntentのmetadataにクーポン情報を付与<br>
+        ・Subscriptionのinvoiceにも割引情報を反映<br>
+        <br>
+        <strong>割引額の計算:</strong><br>
+        <code>通常料金 - 実際の決済額 = 割引額</code><br>
+        ・ShopContractHasCouponのスナップショットから割引率を取得<br>
+        ・通常料金はShopPlan.priceから取得
+      </div>
+    </div>
+  </div>
+
+  <h3>7.4 3ヶ月目以降の割引情報 表示場所まとめ</h3>
+  <table>
+    <tr><th>表示場所</th><th>表示タイミング</th><th>表示内容</th><th>用途</th></tr>
+    <tr class="highlight">
+      <td><strong>① 契約確認画面</strong></td>
+      <td>契約時のみ</td>
+      <td>初回決済（2ヶ月分）の料金内訳 + 注釈で今後の割引を簡潔に記載</td>
+      <td>契約前の料金確認</td>
+    </tr>
+    <tr class="new-row">
+      <td><strong>② マイページ</strong></td>
+      <td>常時</td>
+      <td>全月の割引スケジュール一覧 + 次回決済日・金額</td>
+      <td>今後の割引予定の確認</td>
+    </tr>
+    <tr class="new-row">
+      <td><strong>③ 決済履歴</strong></td>
+      <td>決済後</td>
+      <td>各月の決済額 + 通常料金との差額 + 適用クーポン名</td>
+      <td>実績の確認・透明性</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ==================== 8. バックエンド処理仕様 ==================== -->
+<div class="section" id="sec8">
+  <h2 class="section-title">8. バックエンド処理仕様（料金計算・月次課金）</h2>
+
+  <h3>8.1 決済フロー概要（ハイブリッド決済）</h3>
+  <div class="alert alert-warn">
+    <strong>ShopContractHybridService.ts の仕様</strong>
+    <ul style="margin-top:4px;padding-left:20px;">
+      <li><code>calculateInitialPaymentPeriod()</code>: 契約開始月の翌月末まで = <strong>常に2ヶ月分</strong></li>
+      <li><code>calculateSubscriptionStartDate()</code>: 初回決済期間の末月の<strong>15日</strong>からサブスク開始</li>
+      <li>初回決済 = PaymentIntent（入会金 + 初月日割り + 翌月分）</li>
+      <li>3ヶ月目以降 = Stripe Subscription（毎月15日に翌月分を課金）</li>
+    </ul>
+  </div>
+  <pre><code><span class="comment">// ShopContractHybridService.ts - 現行の実装</span>
+
+<span class="comment">// 初回決済の対象期間: 契約開始月〜翌月末（常に2ヶ月）</span>
+calculateInitialPaymentPeriod: (contractStartDate: Dayjs): Dayjs =>
+  contractStartDate.add(<span class="number">1</span>, <span class="string">'month'</span>).endOf(<span class="string">'month'</span>),
+
+<span class="comment">// サブスク開始日: 初回決済期間の末月15日</span>
+calculateSubscriptionStartDate: (initialPaymentEndDate: Dayjs): Date =>
+  initialPaymentEndDate.date(<span class="number">15</span>).startOf(<span class="string">'day'</span>).toDate(),
+
+<span class="comment">// 例: 3/15契約開始 → 初回: 3月(日割り)+4月(全額) → サブスク: 4/15開始 → 5月分から月次課金</span></code></pre>
+
+  <h3>8.2 割引適用の共通関数</h3>
+  <pre><code><span class="comment">// 割引計算の共通関数（rate / amount 両対応）</span>
+<span class="keyword">function</span> applyDiscount(originalPrice: <span class="type">number</span>, rule: <span class="type">CouponDiscountRule</span>): <span class="type">number</span> {
+  <span class="keyword">if</span> (rule.discountType === <span class="string">'amount'</span>) {
+    <span class="comment">// 定額割引: 0円を下回らないようにする</span>
+    <span class="keyword">return</span> Math.max(<span class="number">0</span>, originalPrice - (rule.discountAmount ?? <span class="number">0</span>));
+  }
+  <span class="comment">// 割引率: 従来通り</span>
+  <span class="keyword">return</span> Math.round(originalPrice * (<span class="number">1</span> - rule.discountRate / <span class="number">100</span>));
+}</code></pre>
+
+  <h3>8.3 初回契約時の料金計算（ShopContractPriceService.ts）</h3>
+  <pre><code><span class="comment">// getPrices() メソッドの変更</span>
+<span class="comment">// 引数にcouponDiscountRulesを追加</span>
+
+getPrices: (
+  appUser, shop, company, shopPlan, dateStart, dateTo,
+  coupon,
+  couponDiscountRules: CouponDiscountRule[],  <span class="comment">// ← 追加</span>
+  isThe1stContract, now
+) => {
+  <span class="comment">// ======== 入会金（REGISTRATION_FEE = ¥5,500 固定） ========</span>
+  <span class="keyword">if</span> (isThe1stContract) {
+    <span class="keyword">let</span> registrationFee = REGISTRATION_FEE;
+
+    <span class="comment">// 新: CouponDiscountRuleに initial_fee ルールがあれば優先</span>
+    <span class="keyword">const</span> initialFeeRule = couponDiscountRules.find(
+      r => r.targetType === <span class="string">'initial_fee'</span> && r.monthOffset === <span class="number">0</span>
+    );
+    <span class="keyword">if</span> (initialFeeRule) {
+      registrationFee = applyDiscount(registrationFee, initialFeeRule);
+    } <span class="keyword">else if</span> (coupon) {
+      <span class="comment">// 後方互換: 既存のdiscountRateで入会金割引</span>
+      registrationFee = Math.round(registrationFee * (<span class="number">1</span> - coupon.discountRate / <span class="number">100</span>));
+    }
+    prices.push({ label: <span class="string">'入会金'</span>, price: registrationFee, originalPrice: REGISTRATION_FEE });
+  }
+
+  <span class="comment">// ======== 初月（日割り） ========</span>
+  <span class="keyword">let</span> firstMonthPrice = getMonthlyPricePerDiem(dateStart, basePrice);
+  <span class="keyword">const</span> month0Rule = couponDiscountRules.find(
+    r => r.targetType === <span class="string">'monthly'</span> && r.monthOffset === <span class="number">0</span>
+  );
+  <span class="keyword">if</span> (month0Rule) {
+    <span class="keyword">const</span> originalPrice = firstMonthPrice;
+    firstMonthPrice = applyDiscount(firstMonthPrice, month0Rule);
+    prices.push({
+      label: <span class="string">`${month}月分（日割り）`</span>,
+      price: firstMonthPrice,
+      originalPrice,
+      discountRate: month0Rule.discountRate,
+    });
+  }
+
+  <span class="comment">// ======== 翌月 ========</span>
+  <span class="keyword">let</span> nextMonthPrice = basePrice;
+  <span class="keyword">const</span> month1Rule = couponDiscountRules.find(
+    r => r.targetType === <span class="string">'monthly'</span> && r.monthOffset === <span class="number">1</span>
+  );
+  <span class="keyword">if</span> (month1Rule) {
+    <span class="keyword">const</span> originalPrice = nextMonthPrice;
+    nextMonthPrice = applyDiscount(nextMonthPrice, month1Rule);
+    prices.push({
+      label: <span class="string">`${nextMonth}月分`</span>,
+      price: nextMonthPrice,
+      originalPrice,
+      discountRate: month1Rule.discountRate,
+    });
+  }
+
+  <span class="comment">// ======== 店舗別初期費用（shop.initialCost） ========</span>
+  <span class="keyword">const</span> isDefaultPlan = !!shopPlan.maxMinutes;
+  <span class="keyword">const</span> shopInitialCost =
+    shop.initialCost && (shopPlan.withInitialFee || isDefaultPlan) ? shop.initialCost : <span class="number">0</span>;
+
+  <span class="keyword">if</span> (shopInitialCost > <span class="number">0</span>) {
+    <span class="keyword">let</span> discountedInitialCost = shopInitialCost;
+    <span class="keyword">const</span> shopInitialFeeRule = couponDiscountRules.find(
+      r => r.targetType === <span class="string">'shop_initial_fee'</span> && r.monthOffset === <span class="number">0</span>
+    );
+    <span class="keyword">if</span> (shopInitialFeeRule) {
+      discountedInitialCost = applyDiscount(shopInitialCost, shopInitialFeeRule);
+    }
+    prices.push({
+      label: <span class="string">'店舗別初期費用'</span>,
+      price: discountedInitialCost,
+      originalPrice: shopInitialCost,
+    });
+    details.push({
+      detailType: USER_PAYMENT_DETAIL_TYPE.SHOP_INITIAL_FEE,
+      amount: discountedInitialCost,
+      note: <span class="string">'店舗別初期費用'</span>,
+    });
+  }
+}</code></pre>
+
+  <div class="alert alert-warn">
+    <strong>入会金 vs 店舗別初期費用 の処理フロー</strong>
+    <table style="margin:8px 0 0;">
+      <tr><th>処理</th><th>入会金 (initial_fee)</th><th>店舗別初期費用 (shop_initial_fee)</th></tr>
+      <tr><td>元の金額取得</td><td><code>REGISTRATION_FEE</code> (定数: &yen;5,500)</td><td><code>shop.initialCost</code> (DB値)</td></tr>
+      <tr><td>ルール検索</td><td><code>targetType === 'initial_fee'</code></td><td><code>targetType === 'shop_initial_fee'</code></td></tr>
+      <tr><td>割引適用</td><td><code>applyDiscount(registrationFee, rule)</code></td><td><code>applyDiscount(shopInitialCost, rule)</code></td></tr>
+      <tr><td>後方互換</td><td>ルールなし → 既存<code>coupon.discountRate</code>で割引</td><td>ルールなし → 割引なし（従来通り）</td></tr>
+    </table>
+  </div>
+
+  <h3>8.4 月次課金バッチの変更（BatchContractService）</h3>
+  <div class="alert alert-danger">
+    <strong>重要: 現在の月次課金バッチではクーポン割引が一切参照されていない</strong>
+    Stripeサブスクリプション（毎月15日）で <code>shopPlan.price</code> をそのまま課金しているため、<strong>3ヶ月目以降</strong>の割引を適用するにはバッチの改修が必須。<br>
+    ※ 初月・翌月の2ヶ月分は初回決済（PaymentIntent）で処理されるため、バッチ改修の対象は3ヶ月目以降のみ。
+  </div>
+
+  <pre><code><span class="comment">// BatchContractService - renewMonthlyContracts() の変更</span>
+
+<span class="comment">// 1. 契約に紐づくクーポン割引ルールを取得</span>
+<span class="keyword">const</span> couponHas = <span class="keyword">await</span> prisma.shopContractHasCoupon.findFirst({
+  where: { shopContractId: contract.id }
+});
+
+<span class="keyword">let</span> chargePrice = shopPlan.price;  <span class="comment">// デフォルト: 通常料金</span>
+
+<span class="keyword">if</span> (couponHas?.couponDiscountRulesJson) {
+  <span class="keyword">const</span> rules = JSON.parse(couponHas.couponDiscountRulesJson);
+
+  <span class="comment">// 2. 契約開始月からの経過月数を計算</span>
+  <span class="keyword">const</span> monthsSinceStart = dayjs(now)
+    .diff(dayjs(contract.startDate), <span class="string">'month'</span>);
+
+  <span class="comment">// 3. 該当月のルールを検索</span>
+  <span class="keyword">const</span> rule = rules.find(
+    r => r.targetType === <span class="string">'monthly'</span> && r.monthOffset === monthsSinceStart
+  );
+
+  <span class="comment">// 4. ルールがあれば割引適用（rate / amount 両対応）</span>
+  <span class="keyword">if</span> (rule) {
+    chargePrice = applyDiscount(chargePrice, rule);
+  }
+}
+
+<span class="comment">// 5. 割引後の金額で決済</span>
+<span class="keyword">await</span> StripeService.pay(appUser, chargePrice, ...);</code></pre>
+
+  <h3>8.5 契約時のスナップショット保存</h3>
+  <pre><code><span class="comment">// ShopContractMonthlyService.ts - signMonthlyContract() の変更</span>
+
+<span class="keyword">if</span> (coupon) {
+  <span class="comment">// 割引ルールを取得</span>
+  <span class="keyword">const</span> rules = <span class="keyword">await</span> prisma.couponDiscountRule.findMany({
+    where: { couponId: coupon.id }
+  });
+
+  <span class="keyword">await</span> prisma.shopContractHasCoupon.create({
+    data: {
+      shopContractId: contract.id,
+      couponId: coupon.id,
+      couponCode: coupon.code,
+      couponDiscountRate: coupon.discountRate,
+      couponValidFrom: coupon.validFrom,
+      couponValidTo: coupon.validTo,
+      <span class="comment">// ↓ 新規: ルールをJSON文字列でスナップショット保存</span>
+      couponDiscountRulesJson: JSON.stringify(rules),
+    }
+  });
+}</code></pre>
+  <div class="alert alert-warn">
+    <strong>なぜスナップショットが必要か</strong>
+    クーポンの割引ルールは後から変更される可能性がある。契約時点のルールを保持することで、既存契約に影響を与えない。
+  </div>
+</div>
+
+<!-- ==================== 9. 実装手順 ==================== -->
+<div class="section" id="sec9">
+  <h2 class="section-title">9. 実装手順・影響ファイル一覧</h2>
+
+  <h3>9.1 実装フェーズ</h3>
+  <table>
+    <tr><th style="width:60px;">Phase</th><th>内容</th><th>影響範囲</th><th style="width:80px;">工数目安</th></tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 1</span></td>
+      <td><strong>DB設計・マイグレーション</strong><br>CouponDiscountRuleテーブル追加、ShopContractHasCouponカラム追加</td>
+      <td>prisma/schema.prisma<br>マイグレーションファイル</td>
+      <td>0.5日</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 2</span></td>
+      <td><strong>バックエンドAPI改修</strong><br>クーポン保存・取得APIの拡張、料金計算ロジック変更</td>
+      <td>resolvers, services, definition.ts</td>
+      <td>2日</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 3</span></td>
+      <td><strong>管理画面改修</strong><br>クーポン編集画面の割引ルールUI、プレビュー画面拡張</td>
+      <td>フロントエンド pages/admin/coupons/</td>
+      <td>2日</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 4</span></td>
+      <td><strong>月次課金バッチ改修</strong><br>割引ルール参照ロジック追加</td>
+      <td>batch/contracts/</td>
+      <td>1日</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 5</span></td>
+      <td><strong>アプリ改修</strong><br>契約確認画面の月別割引表示</td>
+      <td>Flutter アプリ</td>
+      <td>1日</td>
+    </tr>
+    <tr>
+      <td><span class="tag tag-phase">Phase 6</span></td>
+      <td><strong>テスト・品質チェック</strong><br>単体テスト、結合テスト、本番データ検証</td>
+      <td>全体</td>
+      <td>2日</td>
+    </tr>
+  </table>
+
+  <h3>9.2 影響ファイル一覧</h3>
+  <h4>バックエンド（studygo-api）</h4>
+  <table>
+    <tr><th style="width:60px;">種別</th><th>ファイルパス</th><th>変更内容</th></tr>
+    <tr class="new-row"><td><span class="tag tag-new">新規</span></td><td><code>prisma/migrations/xxxxx_add_coupon_discount_rule/</code></td><td>マイグレーション</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>prisma/schema.prisma</code></td><td>CouponDiscountRuleモデル追加、Couponリレーション追加、ShopContractHasCouponカラム追加</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/apidef/definition.ts</code></td><td>adminSaveCoupon input拡張、adminCoupon output拡張、appPlanDetail output拡張</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api/resolvers/admin/adminCouponResolver.ts</code></td><td>割引ルール保存・取得ロジック</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api/resolvers/app/appContractResolver.ts</code></td><td>割引ルール取得・料金計算への受渡し</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/services/entities/shopContract/ShopContractPriceService.ts</code></td><td>月別割引適用ロジック + 店舗初期費用割引 + 定額割引対応</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/services/entities/shopContract/ShopContractMonthlyService.ts</code></td><td>契約時のスナップショット保存</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/services/entities/shopContract/ShopContractDropInService.ts</code></td><td>ドロップインへのクーポン適用</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/batch/contracts/ (BatchContractService)</code></td><td>月次課金時の割引ルール参照</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api/gen/resolver.ts</code></td><td>自動生成（再生成）</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api/gen/routes.ts</code></td><td>自動生成（再生成）</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api/gen/json-schema.json</code></td><td>自動生成（再生成）</td></tr>
+  </table>
+
+  <h4>フロントエンド（studygo-front）</h4>
+  <table>
+    <tr><th style="width:60px;">種別</th><th>ファイルパス</th><th>変更内容</th></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/api-client/gen/api-client.ts</code></td><td>自動生成（再生成）</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/pages/admin/coupons/config.tsx</code></td><td>割引ルールフィールド追加</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/pages/admin/coupons/edit/[id]/index.tsx</code></td><td>割引ルール編集UIコンポーネント</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>src/pages/admin/coupon-preview/index.tsx</code></td><td>月別割引プレビュー表示拡張</td></tr>
+  </table>
+
+  <h4>アプリ（Flutter）</h4>
+  <table>
+    <tr><th style="width:60px;">種別</th><th>ファイルパス</th><th>変更内容</th></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>契約確認画面</code></td><td>月別割引内訳の表示</td></tr>
+    <tr class="highlight"><td><span class="tag tag-change">変更</span></td><td><code>APIクライアント</code></td><td>自動生成（再生成）</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 10. テスト計画 ==================== -->
+<div class="section" id="sec10">
+  <h2 class="section-title">10. テスト計画</h2>
+
+  <h3>10.1 単体テスト</h3>
+  <table>
+    <tr><th>No</th><th>テスト対象</th><th>テストケース</th><th>期待結果</th></tr>
+    <tr><td>T-01</td><td>ShopContractPriceService</td><td>CouponDiscountRuleなしのクーポン適用</td><td>既存通り入会金のみ割引</td></tr>
+    <tr><td>T-02</td><td>ShopContractPriceService</td><td>monthOffset=0, rate=100のルール適用</td><td>初月料金が¥0になる</td></tr>
+    <tr><td>T-03</td><td>ShopContractPriceService</td><td>monthOffset=0,1,2の3ルール適用</td><td>3ヶ月分すべてに割引適用</td></tr>
+    <tr><td>T-04</td><td>ShopContractPriceService</td><td>initial_feeルール（割引率）の適用</td><td>入会金(&yen;5,500)に指定割引率適用</td></tr>
+    <tr class="new-row"><td>T-04b</td><td>ShopContractPriceService</td><td>shop_initial_feeルール（割引率）の適用</td><td>店舗別初期費用(shop.initialCost)に指定割引率適用</td></tr>
+    <tr class="new-row"><td>T-04c</td><td>ShopContractPriceService</td><td>initial_fee + shop_initial_fee 同時適用</td><td>入会金と店舗初期費用がそれぞれ独立して割引される</td></tr>
+    <tr class="new-row"><td>T-04d</td><td>ShopContractPriceService</td><td>discountType="amount" の定額割引適用</td><td>元の金額から定額を引いた金額（0円下限）になる</td></tr>
+    <tr class="new-row"><td>T-04e</td><td>ShopContractPriceService</td><td>定額割引が元の金額を超える場合</td><td>&yen;0になる（マイナスにならない）</td></tr>
+    <tr class="new-row"><td>T-04f</td><td>ShopContractPriceService</td><td>shop.initialCost=0の店舗にshop_initial_feeルール適用</td><td>店舗初期費用の行が表示されない（既存動作通り）</td></tr>
+    <tr><td>T-05</td><td>BatchContractService</td><td>割引ルール付き契約の月次更新</td><td>該当月の割引率で課金</td></tr>
+    <tr class="new-row"><td>T-05b</td><td>BatchContractService</td><td>定額割引ルール付き契約の月次更新</td><td>該当月の定額割引で課金</td></tr>
+    <tr><td>T-06</td><td>BatchContractService</td><td>割引期間終了後（6ヶ月超）の月次更新</td><td>通常料金で課金</td></tr>
+    <tr><td>T-07</td><td>BatchContractService</td><td>ルールなしクーポン契約の月次更新</td><td>既存通り通常料金で課金</td></tr>
+  </table>
+
+  <h3>10.2 結合テスト</h3>
+  <table>
+    <tr><th>No</th><th>テストシナリオ</th><th>確認ポイント</th></tr>
+    <tr><td>I-01</td><td>管理画面でクーポン＋割引ルール3件を作成 → 保存 → 再取得</td><td>ルールが正しく保存・取得される</td></tr>
+    <tr><td>I-02</td><td>アプリでクーポン適用 → 料金プレビュー → 契約完了</td><td>割引後料金が正しい、ShopContractHasCouponにスナップショット保存</td></tr>
+    <tr><td>I-03</td><td>月次バッチで割引期間中の契約を更新</td><td>割引料金で課金される</td></tr>
+    <tr><td>I-04</td><td>月次バッチで割引期間終了後の契約を更新</td><td>通常料金で課金される</td></tr>
+    <tr><td>I-05</td><td>クーポンの割引ルールを変更 → 既存契約の月次課金</td><td>スナップショットの値が使用される（影響なし）</td></tr>
+    <tr class="new-row"><td>I-06</td><td>入会金100%OFF + 店舗初期費用50%OFFのクーポンで契約</td><td>入会金=&yen;0、店舗初期費用=半額、それぞれ独立して割引</td></tr>
+    <tr class="new-row"><td>I-07</td><td>定額割引(&yen;1,000引き)のクーポンで月額&yen;9,900のプランを契約</td><td>月額=&yen;8,900で正しく計算される</td></tr>
+    <tr class="new-row"><td>I-08</td><td>店舗初期費用のみ割引のクーポン(入会金割引なし)で契約</td><td>入会金=通常&yen;5,500、店舗初期費用のみ割引</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 11. マイグレーション ==================== -->
+<div class="section" id="sec11">
+  <h2 class="section-title">11. マイグレーション・リリース計画</h2>
+
+  <h3>11.1 DBマイグレーション</h3>
+  <pre><code><span class="comment">-- マイグレーションSQL（自動生成される想定）</span>
+
+<span class="comment">-- 1. CouponDiscountRuleテーブル作成</span>
+<span class="keyword">CREATE TABLE</span> CouponDiscountRule (
+  id <span class="type">INT</span> <span class="keyword">AUTO_INCREMENT PRIMARY KEY</span>,
+  couponId <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+  monthOffset <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+  discountType <span class="type">VARCHAR(20)</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="string">'rate'</span>,
+  discountRate <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+  discountAmount <span class="type">INT</span> <span class="keyword">NULL</span>,
+  targetType <span class="type">VARCHAR(50)</span> <span class="keyword">NOT NULL</span>,
+  created_at <span class="type">TIMESTAMP</span> <span class="keyword">DEFAULT CURRENT_TIMESTAMP</span>,
+  updated_at <span class="type">DATETIME</span> <span class="keyword">NOT NULL</span>,
+  <span class="keyword">UNIQUE KEY</span> (couponId, monthOffset, targetType),
+  <span class="keyword">FOREIGN KEY</span> (couponId) <span class="keyword">REFERENCES</span> Coupon(id)
+);
+<span class="comment">-- targetType: 'initial_fee'(入会金), 'shop_initial_fee'(店舗別初期費用), 'monthly', 'dropin', 'period_pass'</span>
+<span class="comment">-- discountType: 'rate'(割引率%) or 'amount'(定額割引円)</span>
+
+<span class="comment">-- 2. ShopContractHasCouponにカラム追加</span>
+<span class="keyword">ALTER TABLE</span> ShopContractHasCoupon
+  <span class="keyword">ADD COLUMN</span> couponDiscountRulesJson <span class="type">TEXT</span> <span class="keyword">NULL</span>;</code></pre>
+
+  <div class="alert alert-success">
+    <strong>ダウンタイムなし</strong>
+    テーブル追加とNULL許容カラム追加のため、既存データ・既存処理への影響はありません。
+  </div>
+
+  <h3>11.2 リリース手順</h3>
+  <table>
+    <tr><th style="width:60px;">順序</th><th>作業</th><th>備考</th></tr>
+    <tr><td><span class="step-num">1</span></td><td>DBマイグレーション実行</td><td>本番DB。ダウンタイムなし。</td></tr>
+    <tr><td><span class="step-num">2</span></td><td>バックエンドデプロイ</td><td>API側の変更。既存APIは後方互換。</td></tr>
+    <tr><td><span class="step-num">3</span></td><td>フロントエンドデプロイ</td><td>管理画面の変更。</td></tr>
+    <tr><td><span class="step-num">4</span></td><td>管理画面でクーポン＋ルール作成</td><td>第一弾〜第四弾のクーポンを登録。</td></tr>
+    <tr><td><span class="step-num">5</span></td><td>アプリアップデート配信</td><td>Flutter側の変更。必須ではない（API互換あり）。</td></tr>
+  </table>
+</div>
+
+<!-- ==================== 12. リスク ==================== -->
+<div class="section" id="sec12">
+  <h2 class="section-title">12. リスクと注意事項</h2>
+
+  <table>
+    <tr><th style="width:40px;">No</th><th style="width:80px;">リスク</th><th>内容</th><th>対策</th></tr>
+    <tr>
+      <td>R-01</td>
+      <td><span class="tag tag-required">高</span></td>
+      <td><strong>月次課金バッチの割引計算ミス</strong><br>割引率の計算や経過月数の算出に誤りがあると、過少/過大課金になる</td>
+      <td>テストケースの充実（T-05,06,07）、ステージングでの本番データ検証</td>
+    </tr>
+    <tr>
+      <td>R-02</td>
+      <td><span class="tag tag-required">高</span></td>
+      <td><strong>Stripe決済金額との不整合</strong><br>サブスクリプション型決済の場合、Stripe側の金額変更が必要</td>
+      <td>ハイブリッド決済（初回PaymentIntent + 後続Subscription）のフローを確認</td>
+    </tr>
+    <tr>
+      <td>R-03</td>
+      <td><span class="tag tag-change">中</span></td>
+      <td><strong>既存クーポンとの後方互換性</strong><br>CouponDiscountRuleがないクーポンが正しく動作しない</td>
+      <td>ルールなし時は既存のdiscountRateフォールバックを実装（NF-01）</td>
+    </tr>
+    <tr>
+      <td>R-04</td>
+      <td><span class="tag tag-optional">低</span></td>
+      <td><strong>クーポンルール変更の影響</strong><br>運用中にルールを変更した場合の既存契約への影響</td>
+      <td>スナップショット保存（couponDiscountRulesJson）で対応済み</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ==================== フッター ==================== -->
+<div style="text-align:center;padding:40px 0 20px;color:#aaa;font-size:12px;border-top:1px solid #e0e0e0;margin-top:40px;">
+  クーポン・割引機能改修 技術提案書 | Ver 2.0 | 2026年2月20日作成
+</div>
+
+</div>
+</body>
+</html>

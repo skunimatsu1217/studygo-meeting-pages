@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO - 時間利用の利用条件変更 議論資料</title>
+<style>
+  :root {
+    --primary: #4A90D9;
+    --primary-dark: #2E6CB8;
+    --accent: #FF6B35;
+    --success: #27AE60;
+    --warning: #F39C12;
+    --danger: #E74C3C;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --text: #2C3E50;
+    --text-light: #7F8C8D;
+    --border: #E1E8EE;
+    --phone-bg: #1a1a2e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ========== Header ========== */
+  .header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+  }
+  .header h1 { font-size: 2rem; margin-bottom: 8px; }
+  .header p { opacity: 0.85; font-size: 1rem; }
+  .header .date { margin-top: 12px; font-size: 0.85rem; opacity: 0.7; }
+
+  /* ========== Container ========== */
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+  /* ========== Navigation ========== */
+  .nav {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .nav-inner {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .nav a {
+    display: block;
+    padding: 14px 20px;
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover, .nav a.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: #f0f6ff;
+  }
+
+  /* ========== Section ========== */
+  .section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .section:last-child { border-bottom: none; }
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title .num {
+    background: var(--primary);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .section-desc {
+    color: var(--text-light);
+    margin-bottom: 32px;
+    padding-left: 48px;
+  }
+
+  /* ========== Card ========== */
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--bg);
+  }
+
+  /* ========== Comparison ========== */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .comparison { grid-template-columns: 1fr; }
+  }
+  .comparison .current { border-left: 4px solid var(--text-light); }
+  .comparison .proposed { border-left: 4px solid var(--success); }
+  .comparison .current h3::before { content: '現状 '; color: var(--text-light); }
+  .comparison .proposed h3::before { content: '提案 '; color: var(--success); }
+
+  /* ========== Phone Mockup ========== */
+  .phone-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .phone-wrapper {
+    text-align: center;
+  }
+  .phone-wrapper .caption {
+    margin-top: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .phone-wrapper .sub-caption {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+  .phone {
+    width: 280px;
+    height: 560px;
+    background: white;
+    border-radius: 32px;
+    border: 3px solid #333;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .phone .notch {
+    width: 120px;
+    height: 24px;
+    background: #333;
+    border-radius: 0 0 16px 16px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+  .phone .status-bar {
+    background: var(--primary);
+    color: white;
+    padding: 4px 16px 8px;
+    font-size: 0.65rem;
+    display: flex;
+    justify-content: space-between;
+    margin-top: -24px;
+    padding-top: 28px;
+  }
+  .phone .app-header {
+    background: var(--primary);
+    color: white;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .phone .screen {
+    padding: 12px;
+    font-size: 0.75rem;
+    overflow-y: auto;
+    height: calc(100% - 100px);
+  }
+  .phone .screen .btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+  .phone .screen .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .phone .screen .btn-accent {
+    background: var(--accent);
+    color: white;
+  }
+  .phone .screen .btn-success {
+    background: var(--success);
+    color: white;
+  }
+  .phone .screen .btn-outline {
+    background: white;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+  }
+  .phone .screen .btn-disabled {
+    background: #ddd;
+    color: #999;
+  }
+  .phone .screen .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0;
+  }
+  .phone .screen .label {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    margin-bottom: 4px;
+  }
+  .phone .screen .value {
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .phone .screen .info-box {
+    background: #f0f6ff;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    border-left: 3px solid var(--primary);
+    font-size: 0.7rem;
+  }
+  .phone .screen .warn-box {
+    background: #fff8e1;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    border-left: 3px solid var(--warning);
+    font-size: 0.7rem;
+  }
+  .phone .screen .success-box {
+    background: #e8f5e9;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    border-left: 3px solid var(--success);
+    font-size: 0.7rem;
+  }
+  .phone .screen .error-box {
+    background: #fde8e8;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    border-left: 3px solid var(--danger);
+    font-size: 0.7rem;
+  }
+  .phone .screen .plan-card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 8px 0;
+    position: relative;
+  }
+  .phone .screen .plan-card.recommended {
+    border-color: var(--accent);
+  }
+  .phone .screen .plan-card .plan-badge {
+    position: absolute;
+    top: -8px;
+    right: 8px;
+    background: var(--accent);
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .phone .screen .plan-card .plan-name {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+  }
+  .phone .screen .plan-card .plan-price {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  .phone .screen .plan-card .plan-desc {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    margin-top: 4px;
+  }
+
+  .phone .screen .checkin-icon {
+    width: 60px;
+    height: 60px;
+    margin: 8px auto;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.6rem;
+  }
+  .phone .screen .time-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+  .phone .screen .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    margin: 2px;
+  }
+  .phone .screen .tag-blue { background: #e3f2fd; color: var(--primary); }
+  .phone .screen .tag-green { background: #e8f5e9; color: var(--success); }
+  .phone .screen .tag-orange { background: #fff3e0; color: var(--accent); }
+  .phone .screen .tag-gray { background: #eee; color: #666; }
+
+  .phone .home-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 16px;
+    font-size: 0.55rem;
+    color: var(--text-light);
+  }
+  .phone .home-nav .nav-item { text-align: center; }
+  .phone .home-nav .nav-item.active { color: var(--primary); font-weight: 600; }
+  .phone .home-nav .nav-icon {
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    border-radius: 4px;
+    margin: 0 auto 2px;
+    opacity: 0.3;
+  }
+
+  /* ========== Flow Diagram ========== */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding: 20px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    text-align: center;
+    min-width: 140px;
+    max-width: 180px;
+    flex-shrink: 0;
+  }
+  .flow-step .step-box {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .flow-step .step-box.highlight {
+    border-color: var(--accent);
+    background: #fff8f0;
+  }
+  .flow-step .step-box.success {
+    border-color: var(--success);
+    background: #f0fff4;
+  }
+  .flow-step .step-box.removed {
+    border-color: var(--danger);
+    background: #fff0f0;
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+  .flow-step .step-box.new-step {
+    border-color: var(--success);
+    background: #e8f5e9;
+    border-style: dashed;
+    border-width: 3px;
+  }
+  .flow-step .step-note {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    margin-top: 6px;
+  }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin: 0 4px;
+  }
+  .flow-arrow.down {
+    flex-direction: column;
+    margin: 4px 0;
+    font-size: 1rem;
+  }
+
+  .flow-branch {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .flow-branch-item {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    padding: 20px;
+    min-width: 260px;
+    max-width: 340px;
+    flex: 1;
+  }
+  .flow-branch-item h4 {
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--bg);
+  }
+  .flow-branch-item.monthly { border-top: 4px solid var(--primary); }
+  .flow-branch-item.dropin { border-top: 4px solid var(--accent); }
+  .flow-branch-item.new { border-top: 4px solid var(--success); border-style: dashed; }
+
+  /* ========== Timeline Table ========== */
+  .time-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .time-table th {
+    background: var(--primary);
+    color: white;
+    padding: 10px 12px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .time-table td {
+    padding: 8px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .time-table tr:last-child td { border-bottom: none; }
+  .time-table .available {
+    background: #e8f5e9;
+    color: var(--success);
+    font-weight: 600;
+  }
+  .time-table .unavailable {
+    background: #fde8e8;
+    color: var(--danger);
+    font-weight: 600;
+  }
+  .time-table .limited {
+    background: #fff8e1;
+    color: var(--warning);
+    font-weight: 600;
+  }
+  .time-table .highlight-row { background: #f0f6ff; }
+
+  /* ========== Scenario Cards ========== */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .scenario {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .scenario .scenario-header {
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .scenario .scenario-header.a { background: #e3f2fd; color: var(--primary); }
+  .scenario .scenario-header.b { background: #fff3e0; color: #e65100; }
+  .scenario .scenario-header.c { background: #e8f5e9; color: #2e7d32; }
+  .scenario .scenario-header.d { background: #f3e5f5; color: #6a1b9a; }
+  .scenario .scenario-body {
+    padding: 18px;
+    font-size: 0.85rem;
+  }
+  .scenario .scenario-body ol {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  .scenario .scenario-body li { margin-bottom: 6px; }
+  .scenario .scenario-body .step-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .scenario .scenario-body .step-tag.current { background: #fde8e8; color: var(--danger); }
+  .scenario .scenario-body .step-tag.new { background: #e8f5e9; color: var(--success); }
+
+  /* ========== Discussion Points ========== */
+  .discussion-point {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin: 16px 0;
+    border-left: 4px solid var(--warning);
+  }
+  .discussion-point h4 {
+    color: var(--warning);
+    margin-bottom: 8px;
+    font-size: 1rem;
+  }
+  .discussion-point ul {
+    padding-left: 20px;
+    margin: 8px 0;
+  }
+  .discussion-point li { margin-bottom: 6px; font-size: 0.9rem; }
+
+  /* ========== Highlight ========== */
+  .highlight-text {
+    background: #fff3cd;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .text-primary { color: var(--primary); }
+  .text-accent { color: var(--accent); }
+  .text-success { color: var(--success); }
+  .text-danger { color: var(--danger); }
+  .text-warning { color: var(--warning); }
+  .fw-bold { font-weight: 700; }
+  .mt-2 { margin-top: 16px; }
+  .mt-3 { margin-top: 24px; }
+  .mb-2 { margin-bottom: 16px; }
+  .text-sm { font-size: 0.85rem; }
+  .text-center { text-align: center; }
+
+  /* ========== Tab ========== */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab:hover { color: var(--primary); }
+  .tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ========== Badge ========== */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-new { background: #e8f5e9; color: var(--success); }
+  .badge-change { background: #fff3e0; color: var(--accent); }
+  .badge-remove { background: #fde8e8; color: var(--danger); }
+  .badge-keep { background: #eee; color: #666; }
+
+  /* ========== Arrow connector ========== */
+  .arrow-down {
+    text-align: center;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    margin: 8px 0;
+  }
+
+  /* ========== Grid layouts ========== */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ========== Summary box ========== */
+  .summary-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 32px;
+    margin: 32px 0;
+  }
+  .summary-box h3 { font-size: 1.3rem; margin-bottom: 16px; }
+  .summary-box ul { padding-left: 20px; }
+  .summary-box li { margin-bottom: 8px; opacity: 0.95; }
+
+  /* ========== Print ========== */
+  @media print {
+    .nav { display: none; }
+    .phone { break-inside: avoid; }
+    .section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================== -->
+<!-- Header -->
+<!-- ========================================== -->
+<div class="header">
+  <div class="container">
+    <h1>時間利用の利用条件変更 - 議論資料</h1>
+    <p>月額プラン所持有無に基づくチェックイン条件の最適化と、お客様のアプリ利用フロー簡略化</p>
+    <div class="date">作成日: 2026年3月3日 | スタディGO</div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Navigation -->
+<!-- ========================================== -->
+<div class="nav">
+  <div class="nav-inner">
+    <a href="#overview">概要</a>
+    <a href="#time-conditions">時間条件</a>
+    <a href="#current-flow">現状フロー</a>
+    <a href="#proposed-flow">提案フロー</a>
+    <a href="#screens">画面イメージ</a>
+    <a href="#scenarios">利用シナリオ</a>
+    <a href="#plan-display">プラン表示</a>
+    <a href="#calendar">カレンダー連携</a>
+    <a href="#discussion">論点整理</a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ========================================== -->
+<!-- Section 1: Overview -->
+<!-- ========================================== -->
+<div class="section" id="overview">
+  <div class="section-title"><span class="num">1</span> 変更の概要</div>
+  <p class="section-desc">月額プラン契約の有無に応じて、時間利用（ドロップイン）の条件を最適化し、お客様の利用体験を向上させます。</p>
+
+  <div class="summary-box">
+    <h3>実現したいこと</h3>
+    <ul>
+      <li><strong>月額プラン所持者</strong>：契約時間外でも、わざわざドロップインプランを購入せずにスムーズに時間利用できるようにしたい</li>
+      <li><strong>月額プラン未所持者</strong>：限定された時間帯で時間利用可能（プラン購入は必要）</li>
+      <li><strong>全体目標</strong>：プラン購入の手間を最小化し、チェックイン～利用までのステップを削減する</li>
+    </ul>
+  </div>
+
+  <div class="grid-3 mt-3">
+    <div class="card" style="border-top: 4px solid var(--primary);">
+      <h3>月額プラン所持者</h3>
+      <p class="text-sm">平日 <strong class="text-primary">6:00 ～ 23:00</strong></p>
+      <p class="text-sm mt-2">月額契約の営業時間よりも広い範囲で時間利用が可能。専用のドロップインプランが自動表示される。</p>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--accent);">
+      <h3>月額プラン未所持者</h3>
+      <p class="text-sm">平日 <strong class="text-accent">17:00 ～ 21:00</strong></p>
+      <p class="text-sm mt-2">限られた時間帯でのドロップイン利用。通常のプラン購入フローが必要。</p>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--success);">
+      <h3>目指す体験</h3>
+      <p class="text-sm text-success fw-bold">プラン購入ステップの最小化</p>
+      <p class="text-sm mt-2">ボタン操作で疑似的にプラン適用。月額営業カレンダーと連動したドロップインプランの自動生成。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 2: Time Conditions -->
+<!-- ========================================== -->
+<div class="section" id="time-conditions">
+  <div class="section-title"><span class="num">2</span> チェックイン可能時間の比較</div>
+  <p class="section-desc">月額プランの所持有無で、曜日・時間帯ごとのチェックイン可否が変わります。</p>
+
+  <div class="card">
+    <h3>平日の利用可能時間帯マップ</h3>
+    <div style="overflow-x: auto;">
+      <table class="time-table">
+        <thead>
+          <tr>
+            <th>時間帯</th>
+            <th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+            <th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th>
+            <th>19</th><th>20</th><th>21</th><th>22</th><th>23</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="highlight-row">
+            <td style="text-align:left;font-weight:600;">月額所持者<br><small style="color:var(--primary)">時間利用</small></td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;font-weight:600;">月額未所持者<br><small style="color:var(--accent)">時間利用</small></td>
+            <td class="unavailable">×</td><td class="unavailable">×</td><td class="unavailable">×</td>
+            <td class="unavailable">×</td><td class="unavailable">×</td><td class="unavailable">×</td>
+            <td class="unavailable">×</td><td class="unavailable">×</td><td class="unavailable">×</td>
+            <td class="unavailable">×</td><td class="unavailable">×</td><td class="available">○</td>
+            <td class="available">○</td><td class="available">○</td><td class="available">○</td>
+            <td class="unavailable">×</td><td class="unavailable">×</td><td class="unavailable">×</td>
+          </tr>
+          <tr style="background:#f9f9f9;">
+            <td style="text-align:left;font-weight:600;">月額契約時間<br><small style="color:#999">（参考）</small></td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+            <td class="limited">△</td><td class="limited">△</td><td class="limited">△</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="text-sm mt-2" style="color:var(--text-light);">
+      ○ = チェックイン可能 ／ × = チェックイン不可 ／ △ = 月額契約プランの営業時間による（店舗設定で変動）
+    </p>
+    <div class="warn-box" style="background:#fff8e1;border-radius:8px;padding:12px;margin-top:12px;border-left:3px solid var(--warning);font-size:0.85rem;">
+      <strong>補足:</strong> 月額契約時間（△）は店舗の ShopBusinessHourRule（calendarType=1）で設定される営業時間に準拠します。上記の6-23時/17-21時はドロップイン用（calendarType=2）の時間設定です。
+    </div>
+  </div>
+
+  <div class="comparison mt-3">
+    <div class="card current">
+      <h3>ドロップイン営業時間</h3>
+      <ul class="text-sm" style="padding-left: 20px;">
+        <li>全ユーザー共通の営業時間を適用</li>
+        <li>ShopBusinessHourRule (calendarType=2) で管理</li>
+        <li>月額契約の有無は考慮されていない</li>
+        <li>チェックイン時に営業時間チェック → 時間外は利用不可</li>
+      </ul>
+    </div>
+    <div class="card proposed">
+      <h3>ドロップイン営業時間</h3>
+      <ul class="text-sm" style="padding-left: 20px;">
+        <li><strong>月額プラン所持者用</strong>の営業時間を新設（6:00-23:00）</li>
+        <li><strong>月額プラン未所持者用</strong>の営業時間を設定（17:00-21:00）</li>
+        <li>チェックイン時に月額契約の存在をチェック → 適用する営業時間を切替</li>
+        <li>ShopBusinessHourRule に条件分岐を追加</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 3: Current Flow -->
+<!-- ========================================== -->
+<div class="section" id="current-flow">
+  <div class="section-title"><span class="num">3</span> 現状のアプリ利用フロー</div>
+  <p class="section-desc">月額プラン所持者が契約時間外に時間利用する場合の、現在のステップ数を確認します。</p>
+
+  <div class="card">
+    <h3>現状: 月額所持者が時間利用する場合（7ステップ）</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-box">QRコード読込<br>/ コード入力</div>
+        <div class="step-note">店舗を特定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">契約なし判定<br><small class="text-danger">「月額契約時間外」</small></div>
+        <div class="step-note">チェックイン不可</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box highlight">プラン一覧画面<br>へ遷移</div>
+        <div class="step-note">ドロップイン選択</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box highlight">プラン詳細確認<br>・支払い情報入力</div>
+        <div class="step-note">金額確認</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box highlight">決済処理<br><small>3DS認証</small></div>
+        <div class="step-note">カード決済</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">再度QRコード<br>読込</div>
+        <div class="step-note">もう一度チェックイン</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box success">チェックイン<br>完了</div>
+        <div class="step-note">利用開始</div>
+      </div>
+    </div>
+    <div class="error-box" style="background:#fde8e8;border-radius:8px;padding:12px;margin-top:12px;border-left:3px solid var(--danger);font-size:0.85rem;">
+      <strong>課題:</strong> 月額プランを持っているのに、時間外利用のためだけに「プラン選択 → 詳細確認 → 決済 → 再チェックイン」という4ステップが追加で必要。ユーザーにとって煩雑。
+    </div>
+  </div>
+
+  <div class="card mt-2">
+    <h3>現状: 月額未所持者がドロップイン利用する場合（6ステップ）</h3>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-box">QRコード読込</div>
+        <div class="step-note">店舗を特定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">「契約なし」判定</div>
+        <div class="step-note">チェックイン不可</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">プラン一覧画面</div>
+        <div class="step-note">ドロップイン選択</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">プラン詳細・決済</div>
+        <div class="step-note">金額確認 + 支払い</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">再度QRコード</div>
+        <div class="step-note">チェックインへ</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box success">チェックイン完了</div>
+        <div class="step-note">利用開始</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 4: Proposed Flow -->
+<!-- ========================================== -->
+<div class="section" id="proposed-flow">
+  <div class="section-title"><span class="num">4</span> 提案する新フロー</div>
+  <p class="section-desc">月額プラン所持者のフローを大幅に簡略化し、プラン購入ステップを省略または最小化します。</p>
+
+  <div class="card" style="border-left: 4px solid var(--success);">
+    <h3 style="color: var(--success);">案A: ワンタップチェックイン（月額所持者向け・3ステップ）</h3>
+    <p class="text-sm mb-2">月額契約者は、契約時間外でも自動的に専用ドロップインプランが適用される。</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-box">QRコード読込<br>/ コード入力</div>
+        <div class="step-note">店舗を特定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box new-step">月額所持者判定<br><small class="text-success">自動プラン適用</small></div>
+        <div class="step-note">ドロップインプラン自動選択<br>決済も自動処理</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box success">チェックイン<br>完了</div>
+        <div class="step-note">利用開始</div>
+      </div>
+    </div>
+    <div class="success-box" style="background:#e8f5e9;border-radius:8px;padding:12px;margin-top:12px;border-left:3px solid var(--success);font-size:0.85rem;">
+      <strong>メリット:</strong> 7ステップ → 3ステップ。プラン選択・詳細確認・決済の操作が不要。QRを読むだけで利用開始。
+    </div>
+    <div class="warn-box" style="background:#fff8e1;border-radius:8px;padding:12px;margin-top:8px;border-left:3px solid var(--warning);font-size:0.85rem;">
+      <strong>検討事項:</strong> 自動決済のため、金額確認なしで課金される。確認画面を1つ挟むべきか？
+    </div>
+  </div>
+
+  <div class="card mt-2" style="border-left: 4px solid var(--primary);">
+    <h3 style="color: var(--primary);">案B: ワンタップ確認チェックイン（月額所持者向け・4ステップ）</h3>
+    <p class="text-sm mb-2">金額を確認してからチェックインする安心フロー。ただしプラン選択は自動。</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-box">QRコード読込</div>
+        <div class="step-note">店舗を特定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box new-step">月額所持者判定<br><small class="text-success">専用プラン表示</small></div>
+        <div class="step-note">料金を確認</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box new-step">「利用開始」<br>ボタンをタップ</div>
+        <div class="step-note">1タップで決済+チェックイン</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box success">チェックイン完了</div>
+        <div class="step-note">利用開始</div>
+      </div>
+    </div>
+    <div class="info-box" style="background:#f0f6ff;border-radius:8px;padding:12px;margin-top:12px;border-left:3px solid var(--primary);font-size:0.85rem;">
+      <strong>ポイント:</strong> 7ステップ → 4ステップ。プラン選択が不要で、料金確認+ワンタップで利用開始。安心感とスピードのバランス。
+    </div>
+  </div>
+
+  <div class="card mt-2" style="border-left: 4px solid var(--accent);">
+    <h3 style="color: var(--accent);">案C: ボタン切替式（疑似プラン適用）</h3>
+    <p class="text-sm mb-2">ホーム画面やチェックイン画面にトグルボタンを設置。月額契約の時間外利用をON/OFFで切り替え。</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-box new-step">ホーム画面で<br>「時間外利用」<br>をON</div>
+        <div class="step-note">ボタン操作で<br>疑似プラン適用</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box">QRコード読込</div>
+        <div class="step-note">店舗を特定</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-box success">チェックイン完了</div>
+        <div class="step-note">ドロップインプランで<br>自動チェックイン</div>
+      </div>
+    </div>
+    <div class="info-box" style="background:#f0f6ff;border-radius:8px;padding:12px;margin-top:12px;border-left:3px solid var(--primary);font-size:0.85rem;">
+      <strong>ポイント:</strong> 事前にボタンをONにしておけば、QR読込だけでチェックイン完了。月額契約時間前の早朝利用なども対応可能。
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 5: Screen Images -->
+<!-- ========================================== -->
+<div class="section" id="screens">
+  <div class="section-title"><span class="num">5</span> 画面イメージ</div>
+  <p class="section-desc">各フローにおけるアプリ画面のモックアップです。</p>
+
+  <!-- Tab: 案A/B/C切替 -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab(event, 'tab-flow-a')">案A: ワンタップ</button>
+    <button class="tab" onclick="switchTab(event, 'tab-flow-b')">案B: 確認付き</button>
+    <button class="tab" onclick="switchTab(event, 'tab-flow-c')">案C: ボタン切替</button>
+    <button class="tab" onclick="switchTab(event, 'tab-non-monthly')">未所持者フロー</button>
+  </div>
+
+  <!-- 案A -->
+  <div class="tab-content active" id="tab-flow-a">
+    <div class="phone-row">
+      <!-- Screen 1: QR -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">チェックイン</div>
+          <div class="screen">
+            <div style="text-align:center;margin-top:40px;">
+              <div style="width:160px;height:160px;border:3px dashed var(--primary);border-radius:16px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.8rem;">
+                QRコード<br>スキャン領域
+              </div>
+              <p style="margin-top:16px;font-weight:600;">店舗のQRコードを<br>読み取ってください</p>
+              <div class="divider"></div>
+              <button class="btn btn-outline">コードを手動入力</button>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 1: QR読込</div>
+      </div>
+
+      <!-- Screen 2: 自動判定中 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">チェックイン</div>
+          <div class="screen">
+            <div style="text-align:center;margin-top:30px;">
+              <div style="width:80px;height:80px;border:4px solid var(--primary);border-top-color:transparent;border-radius:50%;margin:0 auto;animation:spin 1s linear infinite;"></div>
+              <p style="margin-top:20px;font-weight:600;font-size:0.85rem;">確認中...</p>
+              <div class="info-box" style="margin-top:20px;text-align:left;">
+                <div class="label">検出された情報</div>
+                <div class="value" style="font-size:0.8rem;">スタディGO ○○店</div>
+                <div class="divider"></div>
+                <div class="label">月額契約</div>
+                <div><span class="tag tag-green">契約あり</span></div>
+                <div class="divider"></div>
+                <div class="label">現在時刻</div>
+                <div class="value" style="font-size:0.8rem;">7:30（契約時間外）</div>
+                <div class="divider"></div>
+                <div class="label">適用プラン</div>
+                <div><span class="tag tag-blue">月額会員限定 時間利用</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 2: 自動判定</div>
+        <div class="sub-caption">月額契約を検出 → 専用プラン自動適用</div>
+      </div>
+
+      <!-- Screen 3: 完了 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">チェックイン完了</div>
+          <div class="screen">
+            <div style="text-align:center;">
+              <div class="checkin-icon">✓</div>
+              <p style="font-weight:700;font-size:1rem;margin-top:8px;">チェックイン完了</p>
+              <div class="time-badge" style="margin-top:8px;">7:30 チェックイン</div>
+            </div>
+            <div class="divider"></div>
+            <div class="label">店舗</div>
+            <div class="value">スタディGO ○○店</div>
+            <div class="label">利用プラン</div>
+            <div class="value"><span class="tag tag-blue">月額会員限定 時間利用</span></div>
+            <div class="label">利用可能時間</div>
+            <div class="value">～ 23:00まで</div>
+            <div class="label">料金</div>
+            <div class="value text-primary">¥110/30分（税込）</div>
+            <div class="info-box">
+              月額プランの営業時間（例: 9:00）になると自動的に月額契約での利用に切り替わります。
+            </div>
+            <button class="btn btn-primary" style="margin-top:8px;">ホームに戻る</button>
+          </div>
+        </div>
+        <div class="caption">STEP 3: 完了</div>
+        <div class="sub-caption">即座にチェックイン完了</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 案B -->
+  <div class="tab-content" id="tab-flow-b">
+    <div class="phone-row">
+      <!-- Screen 1: QR -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">チェックイン</div>
+          <div class="screen">
+            <div style="text-align:center;margin-top:40px;">
+              <div style="width:160px;height:160px;border:3px dashed var(--primary);border-radius:16px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.8rem;">
+                QRコード<br>スキャン領域
+              </div>
+              <p style="margin-top:16px;font-weight:600;">店舗のQRコードを<br>読み取ってください</p>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 1: QR読込</div>
+      </div>
+
+      <!-- Screen 2: 確認画面 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">時間外利用確認</div>
+          <div class="screen">
+            <div class="info-box">
+              <strong>月額会員様向け時間利用</strong><br>
+              現在は月額契約の営業時間外です。<br>
+              専用の時間利用プランでチェックインできます。
+            </div>
+
+            <div class="plan-card recommended" style="margin-top:12px;">
+              <div class="plan-badge">会員限定</div>
+              <div class="plan-name">月額会員限定 時間利用</div>
+              <div class="plan-price">¥110<small>/30分</small></div>
+              <div class="plan-desc">月額会員様専用の割引時間利用プランです。6:00〜23:00の間でご利用いただけます。</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="label">店舗</div>
+            <div class="value">スタディGO ○○店</div>
+            <div class="label">利用可能時間</div>
+            <div class="value">7:30 ～ 23:00</div>
+            <div class="label">最大料金</div>
+            <div class="value text-primary">¥2,200（税込）</div>
+
+            <button class="btn btn-success" style="margin-top:12px;font-size:0.9rem;">
+              この内容で利用開始
+            </button>
+            <button class="btn btn-outline" style="margin-top:4px;">
+              キャンセル
+            </button>
+          </div>
+        </div>
+        <div class="caption">STEP 2: 料金確認</div>
+        <div class="sub-caption">プラン選択不要、確認のみ</div>
+      </div>
+
+      <!-- Screen 3: 決済中 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">処理中</div>
+          <div class="screen">
+            <div style="text-align:center;margin-top:60px;">
+              <div style="width:60px;height:60px;border:4px solid var(--success);border-top-color:transparent;border-radius:50%;margin:0 auto;animation:spin 1s linear infinite;"></div>
+              <p style="margin-top:20px;font-weight:600;">決済処理中...</p>
+              <p style="margin-top:8px;font-size:0.7rem;color:var(--text-light);">
+                登録済みのカードで決済しています
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 3: 自動決済</div>
+        <div class="sub-caption">登録済みカードで自動処理</div>
+      </div>
+
+      <!-- Screen 4: 完了 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>9:41</span><span>⚡ 85%</span></div>
+          <div class="app-header">チェックイン完了</div>
+          <div class="screen">
+            <div style="text-align:center;">
+              <div class="checkin-icon">✓</div>
+              <p style="font-weight:700;font-size:1rem;margin-top:8px;">チェックイン完了</p>
+              <div class="time-badge" style="margin-top:8px;">7:30 チェックイン</div>
+            </div>
+            <div class="divider"></div>
+            <div class="label">利用プラン</div>
+            <div class="value"><span class="tag tag-blue">月額会員限定 時間利用</span></div>
+            <div class="label">料金</div>
+            <div class="value text-primary">¥110/30分（税込）</div>
+            <div class="success-box">
+              決済が完了しました。ご利用ありがとうございます。
+            </div>
+            <button class="btn btn-primary">ホームに戻る</button>
+          </div>
+        </div>
+        <div class="caption">STEP 4: 完了</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 案C -->
+  <div class="tab-content" id="tab-flow-c">
+    <div class="phone-row">
+      <!-- Screen 1: ホーム -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>6:45</span><span>⚡ 92%</span></div>
+          <div class="app-header">スタディGO</div>
+          <div class="screen">
+            <div class="label">こんにちは、田中さん</div>
+            <div class="value">現在の契約</div>
+
+            <div class="plan-card" style="margin:8px 0;">
+              <div class="plan-name">月額レギュラープラン</div>
+              <div class="plan-desc">営業時間: 9:00 ～ 22:00</div>
+              <div><span class="tag tag-green">契約中</span></div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Toggle Switch -->
+            <div style="background:#f0f6ff;border-radius:12px;padding:14px;margin:8px 0;border:2px solid var(--primary);">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-weight:700;font-size:0.85rem;">時間外利用モード</div>
+                  <div style="font-size:0.65rem;color:var(--text-light);margin-top:2px;">
+                    契約時間外に時間利用で入室
+                  </div>
+                </div>
+                <div style="width:48px;height:28px;background:var(--success);border-radius:14px;position:relative;cursor:pointer;">
+                  <div style="width:24px;height:24px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>
+                </div>
+              </div>
+              <div style="margin-top:8px;font-size:0.65rem;color:var(--success);font-weight:600;">
+                ✓ ON：QR読込だけでチェックインできます
+              </div>
+              <div style="font-size:0.6rem;color:var(--text-light);margin-top:4px;">
+                料金: ¥110/30分 ・ 最大¥2,200/日
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn btn-primary" style="font-size:0.9rem;">
+              チェックイン（QR読込）
+            </button>
+
+            <div class="info-box" style="margin-top:8px;">
+              時間外利用モードがONの場合、営業時間外のQR読込時に自動で時間利用プランが適用されます。
+            </div>
+          </div>
+          <div class="home-nav">
+            <div class="nav-item active"><div class="nav-icon"></div>ホーム</div>
+            <div class="nav-item"><div class="nav-icon"></div>店舗</div>
+            <div class="nav-item"><div class="nav-icon"></div>プラン</div>
+            <div class="nav-item"><div class="nav-icon"></div>設定</div>
+          </div>
+        </div>
+        <div class="caption">STEP 1: トグルON</div>
+        <div class="sub-caption">ホーム画面で事前にON</div>
+      </div>
+
+      <!-- Screen 2: QR -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>6:50</span><span>⚡ 92%</span></div>
+          <div class="app-header">チェックイン</div>
+          <div class="screen">
+            <div class="warn-box" style="text-align:center;">
+              <strong>時間外利用モード ON</strong><br>
+              <span style="font-size:0.65rem;">月額会員限定 時間利用プランで自動チェックイン</span>
+            </div>
+            <div style="text-align:center;margin-top:20px;">
+              <div style="width:160px;height:160px;border:3px dashed var(--success);border-radius:16px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--success);font-size:0.8rem;">
+                QRコード<br>スキャン領域
+              </div>
+              <p style="margin-top:16px;font-weight:600;">QRコードを読み取ると<br>即チェックインします</p>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 2: QR読込</div>
+        <div class="sub-caption">モードON状態で読込</div>
+      </div>
+
+      <!-- Screen 3: 完了 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>6:50</span><span>⚡ 92%</span></div>
+          <div class="app-header">チェックイン完了</div>
+          <div class="screen">
+            <div style="text-align:center;">
+              <div class="checkin-icon">✓</div>
+              <p style="font-weight:700;font-size:1rem;margin-top:8px;">チェックイン完了</p>
+              <div class="time-badge" style="margin-top:8px;">6:50 チェックイン</div>
+            </div>
+            <div class="divider"></div>
+            <div class="label">利用プラン</div>
+            <div class="value"><span class="tag tag-blue">月額会員限定 時間利用</span></div>
+            <div class="label">利用可能時間</div>
+            <div class="value">6:50 ～ 23:00</div>
+            <div class="label">料金</div>
+            <div class="value text-primary">¥110/30分</div>
+            <div class="info-box">
+              9:00以降は自動的に月額プランでの利用に切り替わります。追加料金は6:50〜9:00の分のみ発生します。
+            </div>
+            <button class="btn btn-primary" style="margin-top:8px;">ホームに戻る</button>
+          </div>
+        </div>
+        <div class="caption">STEP 3: 完了</div>
+        <div class="sub-caption">自動決済+チェックイン</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未所持者フロー -->
+  <div class="tab-content" id="tab-non-monthly">
+    <div class="phone-row">
+      <!-- Screen 1: QR -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>17:30</span><span>⚡ 70%</span></div>
+          <div class="app-header">チェックイン</div>
+          <div class="screen">
+            <div style="text-align:center;margin-top:40px;">
+              <div style="width:160px;height:160px;border:3px dashed var(--primary);border-radius:16px;margin:0 auto;display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:0.8rem;">
+                QRコード<br>スキャン領域
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 1: QR読込</div>
+      </div>
+
+      <!-- Screen 2: 契約なし -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>17:30</span><span>⚡ 70%</span></div>
+          <div class="app-header">プラン選択</div>
+          <div class="screen">
+            <div class="error-box">
+              有効な契約がありません。<br>時間利用プランを選択してチェックインできます。
+            </div>
+
+            <div class="label" style="margin-top:12px;">利用可能なプラン</div>
+
+            <div class="plan-card" style="margin:8px 0;">
+              <div class="plan-name">時間利用 3時間プラン</div>
+              <div class="plan-price">¥990</div>
+              <div class="plan-desc">17:00〜21:00 最大3時間</div>
+            </div>
+
+            <div class="plan-card" style="margin:8px 0;">
+              <div class="plan-name">時間利用 1時間プラン</div>
+              <div class="plan-price">¥550</div>
+              <div class="plan-desc">17:00〜21:00 最大1時間</div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="info-box">
+              月額プランに加入すると、平日6:00〜23:00で時間利用が可能になります。
+              <button class="btn btn-outline" style="margin-top:8px;font-size:0.7rem;">月額プランを見る</button>
+            </div>
+          </div>
+        </div>
+        <div class="caption">STEP 2: プラン選択</div>
+        <div class="sub-caption">17:00-21:00のみ表示</div>
+      </div>
+
+      <!-- Screen 3: 決済 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>17:31</span><span>⚡ 70%</span></div>
+          <div class="app-header">お支払い確認</div>
+          <div class="screen">
+            <div class="label">選択プラン</div>
+            <div class="value">時間利用 3時間プラン</div>
+            <div class="label">料金</div>
+            <div class="value text-primary" style="font-size:1.2rem;">¥990（税込）</div>
+            <div class="divider"></div>
+            <div class="label">お支払い方法</div>
+            <div class="value">VISA •••• 1234</div>
+            <div class="divider"></div>
+            <div class="label">利用時間</div>
+            <div class="value">17:31 ～ 20:31（最大3時間）</div>
+
+            <button class="btn btn-accent" style="margin-top:16px;font-size:0.9rem;">
+              決済してチェックイン
+            </button>
+            <button class="btn btn-outline" style="margin-top:4px;">
+              戻る
+            </button>
+          </div>
+        </div>
+        <div class="caption">STEP 3: 決済</div>
+      </div>
+
+      <!-- Screen 4: 完了 -->
+      <div class="phone-wrapper">
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="status-bar"><span>17:31</span><span>⚡ 70%</span></div>
+          <div class="app-header">チェックイン完了</div>
+          <div class="screen">
+            <div style="text-align:center;">
+              <div class="checkin-icon">✓</div>
+              <p style="font-weight:700;font-size:1rem;">チェックイン完了</p>
+              <div class="time-badge" style="margin-top:8px;">17:31</div>
+            </div>
+            <div class="divider"></div>
+            <div class="label">利用プラン</div>
+            <div class="value">時間利用 3時間プラン</div>
+            <div class="label">終了時刻</div>
+            <div class="value">20:31</div>
+            <div class="label">お支払い</div>
+            <div class="value">¥990（税込）決済済み</div>
+            <button class="btn btn-primary" style="margin-top:12px;">ホームに戻る</button>
+          </div>
+        </div>
+        <div class="caption">STEP 4: 完了</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 6: Scenarios -->
+<!-- ========================================== -->
+<div class="section" id="scenarios">
+  <div class="section-title"><span class="num">6</span> 利用シナリオ別フロー比較</div>
+  <p class="section-desc">具体的な利用シーンごとに、現状と提案のフローを比較します。</p>
+
+  <div class="scenario-grid">
+    <div class="scenario">
+      <div class="scenario-header a">シナリオA: 月額会員の早朝利用（7:00）</div>
+      <div class="scenario-body">
+        <p><strong>状況:</strong> 月額契約（9:00-22:00）の会員が、朝7:00に勉強したい。</p>
+        <div class="mt-2">
+          <strong><span class="step-tag current">現状</span> 7ステップ</strong>
+          <ol>
+            <li>QR読込 → 「営業時間外」エラー</li>
+            <li>プラン一覧画面を開く</li>
+            <li>ドロップインプランを選択</li>
+            <li>金額確認・決済</li>
+            <li>3DS認証</li>
+            <li>再度QR読込</li>
+            <li>チェックイン完了</li>
+          </ol>
+        </div>
+        <div class="mt-2">
+          <strong><span class="step-tag new">提案</span> 3〜4ステップ</strong>
+          <ol>
+            <li>QR読込</li>
+            <li>月額会員を自動検出、専用プラン適用</li>
+            <li>（案Bの場合: 料金確認画面）</li>
+            <li>チェックイン完了</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="scenario-header b">シナリオB: 月額会員の深夜利用（22:30）</div>
+      <div class="scenario-body">
+        <p><strong>状況:</strong> 月額契約（9:00-22:00）の会員が、22:30に少しだけ利用したい。</p>
+        <div class="mt-2">
+          <strong><span class="step-tag current">現状</span></strong>
+          <p>月額営業時間を過ぎているため、新規チェックインは不可。ドロップインプランを個別購入する必要がある。</p>
+        </div>
+        <div class="mt-2">
+          <strong><span class="step-tag new">提案</span></strong>
+          <p>23:00まで利用可能。QR読込だけで時間利用プランが自動適用。22:30〜23:00の30分のみ課金。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="scenario-header c">シナリオC: 月額未所持者の夕方利用</div>
+      <div class="scenario-body">
+        <p><strong>状況:</strong> 月額契約なしの利用者が、18:00にドロップインしたい。</p>
+        <div class="mt-2">
+          <strong><span class="step-tag current">現状</span></strong>
+          <p>通常のドロップインフロー。プラン選択 → 決済 → チェックイン。</p>
+        </div>
+        <div class="mt-2">
+          <strong><span class="step-tag new">提案</span></strong>
+          <p>17:00-21:00の間のみドロップインプランが表示される。フロー自体は変わらないが、時間帯の制限が明確化。</p>
+          <p class="mt-2" style="font-size:0.8rem;color:var(--primary);">+ 月額プランへの誘導バナーを表示し、コンバージョンを促進。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="scenario">
+      <div class="scenario-header d">シナリオD: 月額未所持者の早朝アクセス</div>
+      <div class="scenario-body">
+        <p><strong>状況:</strong> 月額契約なしの利用者が、8:00にチェックインしようとした。</p>
+        <div class="mt-2">
+          <strong><span class="step-tag new">提案</span></strong>
+          <p>17:00-21:00以外のため、時間利用は不可。<br>「現在は時間利用の営業時間外です」メッセージを表示。</p>
+          <p class="mt-2" style="font-size:0.8rem;color:var(--primary);">月額プラン加入で6:00〜23:00の時間利用が可能になる旨を案内し、プラン購入画面への誘導リンクを表示。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 7: Plan Display -->
+<!-- ========================================== -->
+<div class="section" id="plan-display">
+  <div class="section-title"><span class="num">7</span> プラン表示の条件付けロジック</div>
+  <p class="section-desc">ユーザーの契約状態・時間帯に応じて、表示するドロップインプランを切り替えます。</p>
+
+  <div class="card">
+    <h3>プラン表示の判定フロー</h3>
+    <div style="overflow-x: auto;">
+      <table class="time-table">
+        <thead>
+          <tr>
+            <th>条件</th>
+            <th>表示するプラン</th>
+            <th>補足</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="text-align:left;font-weight:600;">月額所持 + 契約時間内</td>
+            <td class="available">月額プランで利用（プラン購入不要）</td>
+            <td>通常のチェックイン</td>
+          </tr>
+          <tr class="highlight-row">
+            <td style="text-align:left;font-weight:600;">月額所持 + 契約時間外<br><small>（6:00-23:00内）</small></td>
+            <td class="available" style="font-weight:700;">月額会員限定ドロップインプラン</td>
+            <td>通常のドロップインプランは非表示<br>専用プランのみ表示</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;font-weight:600;">月額未所持<br><small>（17:00-21:00内）</small></td>
+            <td class="limited">一般向けドロップインプラン</td>
+            <td>通常のプラン選択フロー<br>+ 月額プラン誘導バナー</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;font-weight:600;">月額未所持<br><small>（17:00-21:00外）</small></td>
+            <td class="unavailable">プラン表示なし</td>
+            <td>「営業時間外」メッセージ<br>+ 月額プラン案内</td>
+          </tr>
+          <tr>
+            <td style="text-align:left;font-weight:600;">月額所持 + 23:00以降</td>
+            <td class="unavailable">プラン表示なし</td>
+            <td>全ユーザー利用不可</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="comparison mt-3">
+    <div class="card" style="border-top: 4px solid var(--primary);">
+      <h3>月額会員限定ドロップインプラン（新規作成）</h3>
+      <ul class="text-sm" style="padding-left: 20px;">
+        <li><strong>対象:</strong> 月額プラン契約中のユーザーのみ</li>
+        <li><strong>時間帯:</strong> 平日 6:00-23:00（月額営業時間外の部分）</li>
+        <li><strong>料金:</strong> 通常ドロップインより割安に設定可能</li>
+        <li><strong>表示条件:</strong> 月額契約がアクティブ + 現在時刻が契約時間外</li>
+        <li><strong>非表示条件:</strong> 契約時間内、契約なし、23:00以降</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--accent);">
+      <h3>一般ドロップインプラン（既存の改修）</h3>
+      <ul class="text-sm" style="padding-left: 20px;">
+        <li><strong>対象:</strong> 月額プラン未所持のユーザー</li>
+        <li><strong>時間帯:</strong> 平日 17:00-21:00 のみ</li>
+        <li><strong>料金:</strong> 現行通り</li>
+        <li><strong>表示条件:</strong> 月額契約なし + 17:00-21:00の間</li>
+        <li><strong>追加:</strong> 月額プランへの誘導バナーを併設</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 8: Calendar -->
+<!-- ========================================== -->
+<div class="section" id="calendar">
+  <div class="section-title"><span class="num">8</span> 月額営業カレンダーとの連携</div>
+  <p class="section-desc">月額営業カレンダー（ShopBusinessHourRule）を参照して、ドロップインプランの利用可能時間を動的に生成します。</p>
+
+  <div class="card">
+    <h3>カレンダー連携の仕組み</h3>
+
+    <div class="grid-2">
+      <div>
+        <h4 style="font-size:0.95rem;margin-bottom:12px;">現在のデータ構造</h4>
+        <div style="background:#f5f5f5;border-radius:8px;padding:14px;font-family:monospace;font-size:0.75rem;line-height:1.8;">
+          <strong>ShopBusinessHourRule</strong><br>
+          ├── calendarType: 1 (月額)<br>
+          │&nbsp;&nbsp; └── ShopBusinessHour<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── 月曜: 9:00-22:00<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── 火曜: 9:00-22:00<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── ...<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── 日曜: 休業<br>
+          └── calendarType: 2 (ドロップイン)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp; └── ShopBusinessHour<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── 月曜: 17:00-21:00<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── ...
+        </div>
+      </div>
+      <div>
+        <h4 style="font-size:0.95rem;margin-bottom:12px;">提案するデータ構造</h4>
+        <div style="background:#f0fff4;border-radius:8px;padding:14px;font-family:monospace;font-size:0.75rem;line-height:1.8;border:2px dashed var(--success);">
+          <strong>ShopBusinessHourRule</strong><br>
+          ├── calendarType: 1 (月額)<br>
+          │&nbsp;&nbsp; └── （変更なし）<br>
+          ├── calendarType: 2 (ドロップイン一般)<br>
+          │&nbsp;&nbsp; └── ShopBusinessHour<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── 月曜: 17:00-21:00<br>
+          │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── ...<br>
+          └── <span style="color:var(--success);font-weight:700;">calendarType: 5 (会員限定DI) ※新規</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp; └── ShopBusinessHour<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── 月曜: 6:00-23:00<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── ...
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <h4 style="font-size:0.95rem;margin-bottom:12px;">月額カレンダー参照の自動生成イメージ</h4>
+      <div class="info-box" style="background:#f0f6ff;border-radius:8px;padding:14px;border-left:3px solid var(--primary);font-size:0.85rem;">
+        <p><strong>アイデア:</strong> 月額営業カレンダーの「営業日」を参照し、その営業日に対応するドロップインプランを自動的に作成・更新する仕組み。</p>
+        <ul style="padding-left:20px;margin-top:8px;">
+          <li>月額カレンダーで「休業日」の日は、会員限定ドロップインも休業</li>
+          <li>月額カレンダーが「9:00-22:00」の日は、会員限定ドロップインは「6:00-9:00 + 22:00-23:00」を自動設定</li>
+          <li>管理画面で月額カレンダーを更新すると、連動してドロップイン営業時間も更新される</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <h4 style="font-size:0.95rem;margin-bottom:12px;">具体例: ある1週間のカレンダー</h4>
+      <div style="overflow-x:auto;">
+        <table class="time-table">
+          <thead>
+            <tr>
+              <th>曜日</th>
+              <th>月額営業時間</th>
+              <th>会員限定DI<br>（自動生成）</th>
+              <th>一般DI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight:600;">月曜</td>
+              <td>9:00 - 22:00</td>
+              <td class="available">6:00-9:00 / 22:00-23:00</td>
+              <td class="limited">17:00 - 21:00</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">火曜</td>
+              <td>9:00 - 22:00</td>
+              <td class="available">6:00-9:00 / 22:00-23:00</td>
+              <td class="limited">17:00 - 21:00</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">水曜</td>
+              <td>10:00 - 20:00</td>
+              <td class="available">6:00-10:00 / 20:00-23:00</td>
+              <td class="limited">17:00 - 20:00</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">木曜</td>
+              <td>9:00 - 22:00</td>
+              <td class="available">6:00-9:00 / 22:00-23:00</td>
+              <td class="limited">17:00 - 21:00</td>
+            </tr>
+            <tr>
+              <td style="font-weight:600;">金曜</td>
+              <td>9:00 - 22:00</td>
+              <td class="available">6:00-9:00 / 22:00-23:00</td>
+              <td class="limited">17:00 - 21:00</td>
+            </tr>
+            <tr style="background:#fff8e1;">
+              <td style="font-weight:600;">土曜</td>
+              <td>10:00 - 18:00</td>
+              <td class="available">6:00-10:00 / 18:00-23:00</td>
+              <td class="unavailable">休業</td>
+            </tr>
+            <tr style="background:#fde8e8;">
+              <td style="font-weight:600;">日曜</td>
+              <td>休業</td>
+              <td class="unavailable">休業</td>
+              <td class="unavailable">休業</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Section 9: Discussion Points -->
+<!-- ========================================== -->
+<div class="section" id="discussion">
+  <div class="section-title"><span class="num">9</span> 論点整理</div>
+  <p class="section-desc">実装・運用にあたって議論が必要なポイントをまとめます。</p>
+
+  <div class="discussion-point">
+    <h4>論点1: フロー案の選択（A / B / C）</h4>
+    <ul>
+      <li><strong>案A（全自動）:</strong> 最もスムーズだが、金額確認なしに課金される。ユーザーの不安感は？</li>
+      <li><strong>案B（確認付き）:</strong> 料金確認画面1つを挟む。安心感と利便性のバランス。</li>
+      <li><strong>案C（トグル式）:</strong> 事前にモードを切り替える手間はあるが、意図的な操作で安心。日常的に時間外利用する人向き。</li>
+      <li>案Bと案Cの組み合わせ（通常は案B、設定で案Aに切替可能）もあり得る</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点2: 月額契約の「時間外」の定義と料金切替タイミング</h4>
+    <ul>
+      <li>例: 7:00に時間利用でチェックイン → 9:00に月額契約時間になった場合</li>
+      <li><strong>選択肢1:</strong> 9:00で自動的に時間利用を終了し、月額利用に切り替え（7:00-9:00分のみ課金）</li>
+      <li><strong>選択肢2:</strong> そのまま時間利用を継続し、チェックアウト時に全時間分を精算</li>
+      <li><strong>選択肢3:</strong> 月額契約時間になったら追加課金をストップ（月額に包含される時間として扱う）</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点3: 会員限定ドロップインプランの料金設定</h4>
+    <ul>
+      <li>通常のドロップインプランと同じ料金にするか、割安にするか</li>
+      <li>分単価制か、固定料金制か</li>
+      <li>最大料金のキャップは必要か</li>
+      <li>月額プランの料金に含める（追加課金なし）という選択肢はあるか</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点4: 土日祝日の扱い</h4>
+    <ul>
+      <li>「平日6:00-23:00」とあるが、土日はどうするか</li>
+      <li>月額営業カレンダーに土曜が営業日として設定されている場合、会員限定DIはどうなるか</li>
+      <li>祝日は平日扱いか、休日扱いか</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点5: データモデルの拡張方法</h4>
+    <ul>
+      <li>ShopBusinessHourRule に新しい calendarType（会員限定DI）を追加するか</li>
+      <li>既存の calendarType=2（ドロップイン）に月額契約有無の判定ロジックを追加するか</li>
+      <li>ShopPlan に「月額会員限定フラグ」を追加するか</li>
+      <li>表示条件のロジックをフロント側（Flutter）で制御するか、API側で制御するか</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点6: 決済フローの簡略化</h4>
+    <ul>
+      <li>3DS認証を毎回求めるか、一定額以下は省略するか</li>
+      <li>登録済みカードの自動決済は法的に問題ないか（事前同意の取り方）</li>
+      <li>デビットカードの場合の即時引き落とし対応</li>
+    </ul>
+  </div>
+
+  <div class="discussion-point">
+    <h4>論点7: 管理画面への影響</h4>
+    <ul>
+      <li>店舗管理者が「会員限定ドロップインプラン」を設定できる画面の追加が必要</li>
+      <li>月額営業カレンダー更新時の連動ロジックの複雑さ</li>
+      <li>売上レポートでの分類（月額利用 / 会員限定DI / 一般DI）</li>
+    </ul>
+  </div>
+
+  <!-- まとめ -->
+  <div class="summary-box" style="margin-top:32px;">
+    <h3>次のステップ</h3>
+    <ul>
+      <li><strong>Step 1:</strong> フロー案（A/B/C）の決定</li>
+      <li><strong>Step 2:</strong> 時間外利用の料金体系の決定</li>
+      <li><strong>Step 3:</strong> 月額契約時間との切替ロジックの詳細設計</li>
+      <li><strong>Step 4:</strong> データモデル拡張の設計（ShopBusinessHourRule / ShopPlan）</li>
+      <li><strong>Step 5:</strong> API変更の設計（チェックインフロー / プラン取得ロジック）</li>
+      <li><strong>Step 6:</strong> Flutter画面の実装（チェックイン画面 / ホーム画面）</li>
+      <li><strong>Step 7:</strong> 管理画面（Next.js）への設定機能追加</li>
+      <li><strong>Step 8:</strong> テスト・検証</li>
+    </ul>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ========================================== -->
+<!-- Footer -->
+<!-- ========================================== -->
+<div style="background:#2C3E50;color:white;padding:24px 0;margin-top:48px;text-align:center;font-size:0.85rem;">
+  <p>スタディGO - 時間利用条件変更 議論資料 | 2026年3月3日作成</p>
+  <p style="opacity:0.6;margin-top:4px;">このページはチーム内議論用です</p>
+</div>
+
+<!-- ========================================== -->
+<!-- Script -->
+<!-- ========================================== -->
+<script>
+function switchTab(event, tabId) {
+  // Deactivate all tabs and contents
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+  // Activate clicked tab and content
+  event.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+// Smooth scroll for navigation
+document.querySelectorAll('.nav a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Highlight active nav on scroll
+window.addEventListener('scroll', function() {
+  const sections = document.querySelectorAll('.section');
+  const navLinks = document.querySelectorAll('.nav a');
+  let current = '';
+
+  sections.forEach(section => {
+    const top = section.offsetTop - 80;
+    if (window.scrollY >= top) {
+      current = '#' + section.id;
+    }
+  });
+
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === current) {
+      link.classList.add('active');
+    }
+  });
+});
+
+// CSS animation
+const style = document.createElement('style');
+style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+document.head.appendChild(style);
+</script>
+
+</body>
+</html>

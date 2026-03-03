@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スタディGO オプション機能 改善レポート</title>
+  <style>
+    :root {
+      --primary: #1a73e8;
+      --primary-light: #e8f0fe;
+      --danger: #d93025;
+      --danger-light: #fce8e6;
+      --warning: #f9ab00;
+      --warning-light: #fef7e0;
+      --success: #1e8e3e;
+      --success-light: #e6f4ea;
+      --gray-50: #f8f9fa;
+      --gray-100: #f1f3f4;
+      --gray-200: #e8eaed;
+      --gray-300: #dadce0;
+      --gray-600: #5f6368;
+      --gray-800: #3c4043;
+      --gray-900: #202124;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      line-height: 1.7;
+    }
+
+    /* ヘッダー */
+    .header {
+      background: linear-gradient(135deg, #1a237e 0%, #1565c0 50%, #0288d1 100%);
+      color: white;
+      padding: 48px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 600px;
+      height: 600px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .header .container {
+      position: relative;
+      z-index: 1;
+    }
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      color: white;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      backdrop-filter: blur(4px);
+    }
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .header-meta {
+      display: flex;
+      gap: 24px;
+      margin-top: 16px;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ナビゲーション */
+    .nav-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: white;
+      border-bottom: 1px solid var(--gray-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .nav-inner {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .nav-inner::-webkit-scrollbar { display: none; }
+    .nav-item {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gray-600);
+      text-decoration: none;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-item:hover {
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+    .nav-item.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* メインコンテンツ */
+    main { padding: 40px 0 80px; }
+
+    /* エグゼクティブサマリー */
+    .exec-summary {
+      background: white;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 4px solid var(--danger);
+    }
+    .exec-summary h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: var(--gray-900);
+    }
+    .exec-summary p {
+      color: var(--gray-600);
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    /* KPI カード */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .kpi-card .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 22px;
+    }
+    .kpi-card .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .kpi-card .kpi-label {
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    .kpi-danger .kpi-icon { background: var(--danger-light); }
+    .kpi-danger .kpi-value { color: var(--danger); }
+    .kpi-warning .kpi-icon { background: var(--warning-light); }
+    .kpi-warning .kpi-value { color: var(--warning); }
+
+    /* セクション */
+    .section {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 24px 32px 0;
+    }
+    .section-header h2 {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-header h2 .num {
+      background: var(--primary);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .section-body {
+      padding: 20px 32px 32px;
+    }
+
+    /* 問題カード */
+    .issue-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .issue-card.critical {
+      border-left: 4px solid var(--danger);
+      background: linear-gradient(135deg, var(--danger-light) 0%, white 30%);
+    }
+    .issue-card.warning {
+      border-left: 4px solid var(--warning);
+      background: linear-gradient(135deg, var(--warning-light) 0%, white 30%);
+    }
+    .issue-card h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .issue-card p {
+      font-size: 14px;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+    }
+    .severity-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .severity-critical { background: var(--danger); color: white; }
+    .severity-high { background: #e65100; color: white; }
+    .severity-medium { background: var(--warning); color: var(--gray-900); }
+
+    /* コードブロック */
+    .code-block {
+      background: #1e1e2e;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 16px 0;
+      overflow-x: auto;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .code-block .comment { color: #6c7086; }
+    .code-block .keyword { color: #cba6f7; }
+    .code-block .string { color: #a6e3a1; }
+    .code-block .function { color: #89b4fa; }
+    .code-block .error-line { background: rgba(243, 139, 168, 0.15); display: block; margin: 0 -20px; padding: 0 20px; }
+    .code-block .error-marker { color: #f38ba8; font-weight: 700; }
+
+    /* フロー図 */
+    .flow-container {
+      padding: 24px 0;
+    }
+    .flow-row {
+      display: flex;
+      align-items: stretch;
+      margin-bottom: 0;
+    }
+    .flow-step {
+      flex: 1;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-step.active {
+      background: var(--primary-light);
+      border-color: var(--primary);
+    }
+    .flow-step.error {
+      background: var(--danger-light);
+      border-color: var(--danger);
+    }
+    .flow-step .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 auto 8px;
+    }
+    .flow-step.error .step-num { background: var(--danger); }
+    .flow-step h4 { font-size: 13px; margin-bottom: 4px; }
+    .flow-step p { font-size: 12px; color: var(--gray-600); }
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      color: var(--gray-300);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .flow-vertical {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .flow-vertical .flow-step {
+      width: 100%;
+      max-width: 600px;
+    }
+    .flow-v-arrow {
+      color: var(--gray-300);
+      font-size: 20px;
+    }
+
+    /* テーブル */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      background: var(--gray-50);
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 2px solid var(--gray-200);
+      font-size: 13px;
+      color: var(--gray-600);
+    }
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: top;
+    }
+    tr:hover td { background: var(--gray-50); }
+
+    /* ステータス */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .status-error { background: var(--danger-light); color: var(--danger); }
+    .status-error .status-dot { background: var(--danger); }
+    .status-warning { background: var(--warning-light); color: #b45309; }
+    .status-warning .status-dot { background: var(--warning); }
+    .status-ok { background: var(--success-light); color: var(--success); }
+    .status-ok .status-dot { background: var(--success); }
+
+    /* 改善提案 */
+    .proposal-card {
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .proposal-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .proposal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .proposal-header h3 {
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .priority-badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .priority-p0 { background: var(--danger); color: white; }
+    .priority-p1 { background: #e65100; color: white; }
+    .priority-p2 { background: var(--warning); color: var(--gray-900); }
+
+    .proposal-body p { font-size: 14px; color: var(--gray-600); margin-bottom: 12px; }
+    .proposal-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: var(--gray-100);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--gray-600);
+    }
+
+    /* タイムライン */
+    .timeline { position: relative; padding-left: 32px; }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--gray-200);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -26px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 3px solid var(--primary);
+      background: white;
+    }
+    .timeline-item.done .timeline-dot { background: var(--primary); }
+    .timeline-content {
+      background: var(--gray-50);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .timeline-content h4 { font-size: 14px; margin-bottom: 4px; }
+    .timeline-content p { font-size: 13px; color: var(--gray-600); }
+    .timeline-phase {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    /* メール比較 */
+    .email-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .email-box {
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .email-box-header {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .email-box-header.current { background: var(--danger-light); color: var(--danger); }
+    .email-box-header.improved { background: var(--success-light); color: var(--success); }
+    .email-box-body {
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.8;
+      background: white;
+      white-space: pre-line;
+      font-family: 'Segoe UI', 'Hiragino Sans', sans-serif;
+    }
+    .email-highlight {
+      background: #bbf7d0;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .email-missing {
+      background: #fecaca;
+      padding: 2px 4px;
+      border-radius: 3px;
+      text-decoration: line-through;
+      color: var(--danger);
+    }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      .header h1 { font-size: 24px; }
+      .header-meta { flex-direction: column; gap: 8px; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .email-compare { grid-template-columns: 1fr; }
+      .flow-row { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); justify-content: center; padding: 8px 0; }
+      .section-body, .section-header { padding-left: 20px; padding-right: 20px; }
+    }
+
+    /* ファイルパス */
+    .filepath {
+      display: inline-block;
+      background: var(--gray-100);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      color: var(--gray-600);
+      word-break: break-all;
+    }
+
+    /* 承認フロー比較 */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 16px 0;
+    }
+    .comparison-box {
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gray-200);
+    }
+    .comparison-box-header {
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .comparison-box-header.before { background: var(--danger-light); color: var(--danger); }
+    .comparison-box-header.after { background: var(--success-light); color: var(--success); }
+    .comparison-box-body { padding: 16px; font-size: 14px; line-height: 1.8; }
+    .comparison-box-body ul { padding-left: 20px; }
+    .comparison-box-body li { margin-bottom: 6px; }
+
+    /* 補足テキスト */
+    .note {
+      background: var(--primary-light);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .note-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<div class="header">
+  <div class="container">
+    <span class="header-badge">技術分析レポート</span>
+    <h1>オプション機能 改善レポート</h1>
+    <p style="font-size: 15px; opacity: 0.9; margin-top: 4px;">
+      月額プラン＋オプション同時契約における問題の分析と改善提案
+    </p>
+    <div class="header-meta">
+      <span>プロジェクト: スタディGO</span>
+      <span>作成日: 2026年3月2日</span>
+      <span>対象: テスト環境</span>
+    </div>
+  </div>
+</div>
+
+<!-- ナビゲーション -->
+<nav class="nav-sticky">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#summary" class="nav-item active">概要</a>
+      <a href="#issue1" class="nav-item">問題1: メール</a>
+      <a href="#issue2" class="nav-item">問題2: 承認制度</a>
+      <a href="#root-cause" class="nav-item">根本原因</a>
+      <a href="#current-flow" class="nav-item">現在のフロー</a>
+      <a href="#code-analysis" class="nav-item">コード分析</a>
+      <a href="#proposals" class="nav-item">改善提案</a>
+      <a href="#roadmap" class="nav-item">ロードマップ</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- エグゼクティブサマリー -->
+    <section id="summary" class="exec-summary">
+      <h2>エグゼクティブサマリー</h2>
+      <p>
+        テスト環境において、<strong>月額プランとオプションの同時契約</strong>に関する重大な問題が2件発生しています。
+        コードベース分析の結果、オプション機能は<strong>フロントエンド側では表示対応済み</strong>ですが、
+        <strong>API側の承認処理・メール送信処理にオプション情報が未統合</strong>であることが根本原因です。
+      </p>
+      <p>
+        特に承認制度が有効な店舗では、オプション契約が事実上無視されるため、
+        ユーザーは月額プラン承認後に再度オプション契約を行う必要があり、<strong>UX上の重大な問題</strong>となっています。
+      </p>
+    </section>
+
+    <!-- KPIカード -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-danger">
+        <div class="kpi-icon">&#9888;</div>
+        <div class="kpi-value">2</div>
+        <div class="kpi-label">重大な問題（Critical）</div>
+      </div>
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-icon">&#9888;</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-label">関連する副次的問題</div>
+      </div>
+      <div class="kpi-card kpi-danger">
+        <div class="kpi-icon">&#128196;</div>
+        <div class="kpi-value">4通</div>
+        <div class="kpi-label">影響を受けるメール種別</div>
+      </div>
+      <div class="kpi-card kpi-warning">
+        <div class="kpi-icon">&#128100;</div>
+        <div class="kpi-value">2回</div>
+        <div class="kpi-label">ユーザーの契約操作回数（本来1回）</div>
+      </div>
+    </div>
+
+    <!-- ============================== -->
+    <!-- 問題1: メール -->
+    <!-- ============================== -->
+    <section id="issue1" class="section">
+      <div class="section-header">
+        <h2><span class="num">1</span> 問題1: メールにオプション情報が含まれない</h2>
+      </div>
+      <div class="section-body">
+        <div class="issue-card critical">
+          <h3>
+            <span class="severity-badge severity-critical">CRITICAL</span>
+            承認通知メール（4種類）にオプション情報が記載されない
+          </h3>
+          <p>
+            月額プランとオプションを同時契約した場合、承認完了後に送信される4種類のメール（ユーザー向け・店舗向け・加盟法人管理者向け・全管理者向け）すべてに、オプションの契約内容が記載されません。
+          </p>
+          <p><strong>影響範囲:</strong> すべての同時契約ユーザー・すべての店舗・すべての管理者</p>
+        </div>
+
+        <h3 style="margin: 24px 0 12px; font-size: 16px;">メール内容の比較（ユーザー向け）</h3>
+
+        <div class="email-compare">
+          <div class="email-box">
+            <div class="email-box-header current">現在のメール内容</div>
+            <div class="email-box-body">件名: 【スタディGO】契約申請が承認されました - ○○店
+
+○○ ○○ 様
+
+この度は、スタディGOの店舗契約をお申し込みいただき
+誠にありがとうございます。
+お申し込みいただいた契約申請が承認されましたので
+お知らせいたします。
+
+【契約内容】
+店舗名: ○○店
+プラン: ゴールドプラン
+利用開始日: 2026/3/15
+
+【料金内訳】
+月額料金: 10,000円
+──────────────────
+合計金額: 10,000円 (税込)
+
+<span class="email-missing">※ オプション情報が一切記載されていない</span>
+
+サービスをご利用いただけるようになりました。</div>
+          </div>
+          <div class="email-box">
+            <div class="email-box-header improved">改善後のメール内容（案）</div>
+            <div class="email-box-body">件名: 【スタディGO】契約申請が承認されました - ○○店
+
+○○ ○○ 様
+
+この度は、スタディGOの店舗契約をお申し込みいただき
+誠にありがとうございます。
+お申し込みいただいた契約申請が承認されましたので
+お知らせいたします。
+
+【契約内容】
+店舗名: ○○店
+プラン: ゴールドプラン
+利用開始日: 2026/3/15
+
+<span class="email-highlight">【オプション】
+・ロッカー利用: 2,000円/月
+・Wi-Fiサービス: 500円/月</span>
+
+【料金内訳】
+月額料金: 10,000円
+<span class="email-highlight">ロッカー利用: 2,000円
+Wi-Fiサービス: 500円</span>
+──────────────────
+合計金額: <span class="email-highlight">12,500円</span> (税込)
+
+サービスをご利用いただけるようになりました。</div>
+          </div>
+        </div>
+
+        <h3 style="margin: 24px 0 12px; font-size: 16px;">影響を受けるメール一覧</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>送信先</th>
+              <th>件名パターン</th>
+              <th>オプション情報</th>
+              <th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ユーザー</td>
+              <td>【スタディGO】契約申請が承認されました</td>
+              <td>契約内容・料金内訳</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未記載</span></td>
+            </tr>
+            <tr>
+              <td>店舗</td>
+              <td>【スタディGO】新規契約がありました</td>
+              <td>契約内容</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未記載</span></td>
+            </tr>
+            <tr>
+              <td>加盟法人管理者</td>
+              <td>【スタディGO】新規契約が承認されました</td>
+              <td>契約内容</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未記載</span></td>
+            </tr>
+            <tr>
+              <td>全管理者</td>
+              <td>【スタディGO】新規契約が承認されました</td>
+              <td>契約内容</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未記載</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin: 24px 0 12px; font-size: 16px;">該当コード</h3>
+        <p style="margin-bottom: 8px;">
+          <span class="filepath">ContractApplicationService.ts : 31-154行目</span> — <code>sendApprovalEmails()</code> 関数
+        </p>
+        <div class="code-block">
+<span class="comment">// ContractApplicationService.ts - sendApprovalEmails()</span>
+<span class="comment">// 引数にオプション情報が渡されていない</span>
+<span class="keyword">async function</span> <span class="function">sendApprovalEmails</span>(
+  appUser: AppUser,
+  shop: Shop,
+  plan: ShopPlan,
+  startDate: <span class="keyword">string</span>,
+  isThe1stContract: <span class="keyword">boolean</span>,
+  coupon: <span class="keyword">any</span>,
+  now: Dayjs,
+<span class="error-line"><span class="error-marker">  // ← options パラメータが存在しない</span></span>
+) {
+  <span class="comment">// ... 価格計算処理 ...</span>
+
+  <span class="keyword">const</span> userEmailBody = <span class="string">`
+    【契約内容】
+    店舗名: ${shop.name}
+    プラン: ${plan.name}             </span><span class="error-marker">// ← オプション名なし</span><span class="string">
+    利用開始日: ${startDate}
+
+    【料金内訳】</span>
+<span class="error-line"><span class="error-marker">    // ← オプション料金が含まれていない</span></span><span class="string">
+    合計金額: ${totalPrice} 円`</span>;
+}</div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- 問題2: 承認制度 -->
+    <!-- ============================== -->
+    <section id="issue2" class="section">
+      <div class="section-header">
+        <h2><span class="num">2</span> 問題2: 承認制度でオプションが処理されない</h2>
+      </div>
+      <div class="section-body">
+        <div class="issue-card critical">
+          <h3>
+            <span class="severity-badge severity-critical">CRITICAL</span>
+            承認制度適用時、月額プランのみが申請されオプションが消失する
+          </h3>
+          <p>
+            承認制度が有効な店舗で月額プラン＋オプションを同時申込した場合、
+            <strong>ContractApplicationService.approveApplication()</strong>は月額プランの契約処理のみを実行し、
+            オプション契約の作成処理を一切行いません。
+          </p>
+          <p><strong>結果:</strong> ユーザーは月額プラン承認後に、再度オプション契約を別途行う必要があります（2度手間）。</p>
+        </div>
+
+        <h3 style="margin: 24px 0 12px; font-size: 16px;">現在の承認フロー vs 期待されるフロー</h3>
+
+        <div class="comparison-grid">
+          <div class="comparison-box">
+            <div class="comparison-box-header before">現在のフロー（問題あり）</div>
+            <div class="comparison-box-body">
+              <ol style="padding-left: 20px;">
+                <li>ユーザーが月額プラン＋オプションを申込</li>
+                <li>ContractApplication レコード作成<br><small style="color: var(--gray-600);">（options情報はDBに保存される）</small></li>
+                <li>店舗管理者が承認ボタンをクリック</li>
+                <li><strong style="color: var(--danger);">approveApplication() が月額プランのみ処理</strong></li>
+                <li><strong style="color: var(--danger);">オプション契約は作成されない</strong></li>
+                <li>メールにもオプション情報なし</li>
+                <li style="color: var(--danger); font-weight: 600;">ユーザーが再度オプションのみを契約する必要あり</li>
+              </ol>
+            </div>
+          </div>
+          <div class="comparison-box">
+            <div class="comparison-box-header after">期待されるフロー</div>
+            <div class="comparison-box-body">
+              <ol style="padding-left: 20px;">
+                <li>ユーザーが月額プラン＋オプションを申込</li>
+                <li>ContractApplication レコード作成<br><small style="color: var(--gray-600);">（options情報がDBに保存される）</small></li>
+                <li>店舗管理者が承認ボタンをクリック</li>
+                <li style="color: var(--success); font-weight: 600;">月額プラン＋オプション両方を処理</li>
+                <li style="color: var(--success); font-weight: 600;">オプション契約も同時に作成</li>
+                <li style="color: var(--success); font-weight: 600;">メールにオプション情報も記載</li>
+                <li style="color: var(--success); font-weight: 600;">ユーザーの操作は1回で完了</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="note">
+          <span class="note-icon">&#128161;</span>
+          <div>
+            <strong>フロントエンド側は対応済み</strong><br>
+            承認管理画面のテーブル表示では <code>useContractApplicationTableLayout.tsx:109-117行目</code> にて
+            「ゴールドプラン（ロッカー利用、Wi-Fi）」のようにオプション名が表示されています。
+            つまり、データ自体はフロントに届いているが、API側の承認処理でオプションが処理されていない状態です。
+          </div>
+        </div>
+
+        <h3 style="margin: 24px 0 12px; font-size: 16px;">該当コード</h3>
+        <p style="margin-bottom: 8px;">
+          <span class="filepath">ContractApplicationService.ts : 255-427行目</span> — <code>approveApplication()</code>
+        </p>
+        <div class="code-block">
+<span class="comment">// ContractApplicationService.ts - approveApplication()</span>
+<span class="comment">// 承認処理で ShopContractManagementService.signContract() のみ呼び出し</span>
+
+<span class="keyword">await</span> <span class="function">ShopContractManagementService.signContract</span>(
+  application.appUser,
+  now,
+  application.shopId,
+  application.shopPlanId,      <span class="comment">// ← 月額プランのみ</span>
+  actualStartDate,
+  application.couponCode,
+  <span class="keyword">false</span>,                       <span class="comment">// isGod</span>
+  <span class="keyword">true</span>,                        <span class="comment">// isApproved</span>
+);
+
+<span class="error-line"><span class="error-marker">// ← ここにオプション契約処理が存在しない</span></span>
+<span class="error-line"><span class="error-marker">// application.options のデータは取得可能だが未使用</span></span>
+</div>
+
+        <p style="margin: 16px 0 8px;">
+          <span class="filepath">ContractApplicationService.ts : 434-810行目</span> — <code>completeApprovedApplication()</code>（3DS認証後の完了処理）
+        </p>
+        <div class="code-block">
+<span class="comment">// ContractApplicationService.ts - completeApprovedApplication()</span>
+<span class="comment">// 3DS認証後の完了処理にもオプション処理なし</span>
+
+<span class="keyword">if</span> (isHybridPayment) {
+  <span class="comment">// ... Stripe Subscription Schedule 作成 ...</span>
+  <span class="keyword">await</span> <span class="function">ShopContractManagementService.signContract</span>(...);
+  <span class="comment">// サブスクリプションID紐づけ</span>
+  <span class="comment">// UserPayment作成</span>
+}
+
+<span class="error-line"><span class="error-marker">// ← オプション契約作成処理が存在しない</span></span>
+<span class="error-line"><span class="error-marker">// ← オプション用のStripe決済処理が存在しない</span></span>
+</div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- 根本原因分析 -->
+    <!-- ============================== -->
+    <section id="root-cause" class="section">
+      <div class="section-header">
+        <h2><span class="num">3</span> 根本原因分析</h2>
+      </div>
+      <div class="section-body">
+        <p style="margin-bottom: 20px; font-size: 15px; color: var(--gray-600);">
+          オプション機能は開発の途中段階にあり、一部のレイヤーのみ実装が完了しています。
+          以下に各レイヤーの実装状況を整理します。
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>レイヤー</th>
+              <th>コンポーネント</th>
+              <th>実装状況</th>
+              <th>備考</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="3"><strong>フロントエンド</strong></td>
+              <td>契約申請テーブル表示（プラン＋オプション名）</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>実装済み</span></td>
+              <td>useContractApplicationTableLayout.tsx</td>
+            </tr>
+            <tr>
+              <td>承認ダイアログ</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>部分的</span></td>
+              <td>オプション個別の承認UIなし</td>
+            </tr>
+            <tr>
+              <td>Admin用オプション強制契約</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>実装済み</span></td>
+              <td>option-modal.tsx (adminGodSignOption)</td>
+            </tr>
+            <tr>
+              <td rowspan="6"><strong>APIバックエンド</strong></td>
+              <td>ShopOptionContractManagementService（骨格）</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>骨格のみ</span></td>
+              <td>存在しないサービスを参照</td>
+            </tr>
+            <tr>
+              <td>ShopOptionPriceService</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>部分的</span></td>
+              <td>一部実装あり</td>
+            </tr>
+            <tr>
+              <td>ShopOptionRepository</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+              <td>インポートのみ</td>
+            </tr>
+            <tr>
+              <td>ShopOptionContractService</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+              <td>インポートのみ</td>
+            </tr>
+            <tr>
+              <td>ShopOptionEmailService</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+              <td>インポートのみ</td>
+            </tr>
+            <tr>
+              <td>ContractApplicationService（オプション処理）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+              <td>承認時にオプション処理なし</td>
+            </tr>
+            <tr>
+              <td rowspan="2"><strong>メール送信</strong></td>
+              <td>承認通知メール（4種類）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未対応</span></td>
+              <td>オプション情報を含まない</td>
+            </tr>
+            <tr>
+              <td>オプション単体契約メール</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+              <td>ShopOptionEmailService 未実装</td>
+            </tr>
+            <tr>
+              <td><strong>連携処理</strong></td>
+              <td>月額解約時のオプション連動解約</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>骨格のみ</span></td>
+              <td>resignOptionsWithContract は定義済みだが呼び出し箇所なし</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note" style="margin-top: 20px;">
+          <span class="note-icon">&#128270;</span>
+          <div>
+            <strong>分析結論</strong><br>
+            オプション機能はフロントエンドの表示レイヤーから実装が開始されており、
+            バックエンドの<strong>ShopOptionContractManagementService</strong>に全体の骨格が設計されています。
+            しかし、このサービスが依存する下位サービス群（Repository, ContractService, EmailService等）が未実装のため、
+            実際のオプション契約処理が動作しない状態です。
+            さらに、既存の承認フロー（ContractApplicationService）にオプション処理を統合する作業が未着手です。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- 現在のフロー -->
+    <!-- ============================== -->
+    <section id="current-flow" class="section">
+      <div class="section-header">
+        <h2><span class="num">4</span> 現在の処理フロー（承認制度あり）</h2>
+      </div>
+      <div class="section-body">
+        <p style="margin-bottom: 20px; color: var(--gray-600);">
+          承認制度が有効な店舗で、ユーザーが月額プラン＋オプションを同時契約した場合のフロー
+        </p>
+
+        <div class="flow-vertical">
+          <div class="flow-step active">
+            <div class="step-num">1</div>
+            <h4>ユーザーが月額プラン＋オプションを選択して申込</h4>
+            <p>アプリから契約申請を送信。plan情報とoptions配列がAPIに送られる。</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step active">
+            <div class="step-num">2</div>
+            <h4>ContractApplication レコード作成</h4>
+            <p>DB上にplan + options の情報が保存される。ステータス: 「申請中」(status=0)</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step active">
+            <div class="step-num">3</div>
+            <h4>店舗管理画面に申請が表示される</h4>
+            <p>テーブルには「ゴールドプラン（ロッカー利用、Wi-Fi）」と正しく表示される</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step active">
+            <div class="step-num">4</div>
+            <h4>店舗管理者が「承認」ボタンをクリック</h4>
+            <p>ApprovalDialog が表示。開始日を確認して承認を実行。</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step error">
+            <div class="step-num">5</div>
+            <h4 style="color: var(--danger);">approveApplication() が月額プランのみ処理</h4>
+            <p style="color: var(--danger);">ShopContractManagementService.signContract() が呼ばれるが、オプション契約は作成されない</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step error">
+            <div class="step-num">6</div>
+            <h4 style="color: var(--danger);">メール送信（オプション情報なし）</h4>
+            <p style="color: var(--danger);">sendApprovalEmails() にオプション引数がないため、プラン情報のみ記載</p>
+          </div>
+          <div class="flow-v-arrow">&#9660;</div>
+          <div class="flow-step error">
+            <div class="step-num">7</div>
+            <h4 style="color: var(--danger);">ユーザーがオプションを再度契約する必要がある（2度手間）</h4>
+            <p style="color: var(--danger);">オプション契約が作成されていないため、ユーザーはアプリから再度オプション契約を行う必要がある</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- コード分析 -->
+    <!-- ============================== -->
+    <section id="code-analysis" class="section">
+      <div class="section-header">
+        <h2><span class="num">5</span> 詳細コード分析</h2>
+      </div>
+      <div class="section-body">
+
+        <h3 style="margin-bottom: 16px;">5-1. 承認処理コード（ContractApplicationService）</h3>
+        <p style="margin-bottom: 8px;">
+          <span class="filepath">studygo-api-backup/src/services/entities/shopContract/ContractApplicationService.ts</span>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>関数名</th>
+              <th>行番号</th>
+              <th>役割</th>
+              <th>オプション処理</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>sendApprovalEmails()</code></td>
+              <td>31-154</td>
+              <td>承認通知メール送信（4種類）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>なし</span></td>
+            </tr>
+            <tr>
+              <td><code>sendRejectionEmails()</code></td>
+              <td>159-245</td>
+              <td>却下通知メール送信（4種類）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>なし</span></td>
+            </tr>
+            <tr>
+              <td><code>approveApplication()</code></td>
+              <td>255-427</td>
+              <td>承認処理（決済不要/3DS）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>なし</span></td>
+            </tr>
+            <tr>
+              <td><code>completeApprovedApplication()</code></td>
+              <td>434-810</td>
+              <td>3DS認証後の契約確定</td>
+              <td><span class="status status-error"><span class="status-dot"></span>なし</span></td>
+            </tr>
+            <tr>
+              <td><code>rejectApplication()</code></td>
+              <td>822-858</td>
+              <td>却下処理</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>N/A</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin: 32px 0 16px;">5-2. オプション管理サービス（ShopOptionContractManagementService）</h3>
+        <p style="margin-bottom: 8px;">
+          <span class="filepath">studygo-api-backup/src/services/entities/shopOption/ShopOptionContractManagementService.ts</span>
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>関数名</th>
+              <th>行番号</th>
+              <th>役割</th>
+              <th>依存サービス状況</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>signOptionContract3DS()</code></td>
+              <td>23-107</td>
+              <td>オプション契約開始（3DS）</td>
+              <td><span class="status status-error"><span class="status-dot"></span>依存先未実装</span></td>
+            </tr>
+            <tr>
+              <td><code>completeOptionContract()</code></td>
+              <td>112-239</td>
+              <td>オプション契約完了</td>
+              <td><span class="status status-error"><span class="status-dot"></span>依存先未実装</span></td>
+            </tr>
+            <tr>
+              <td><code>resignOptionContract()</code></td>
+              <td>245-306</td>
+              <td>ユーザーによるオプション解約</td>
+              <td><span class="status status-error"><span class="status-dot"></span>依存先未実装</span></td>
+            </tr>
+            <tr>
+              <td><code>resignOptionContractByCompany()</code></td>
+              <td>311-358</td>
+              <td>加盟法人によるオプション解約</td>
+              <td><span class="status status-error"><span class="status-dot"></span>依存先未実装</span></td>
+            </tr>
+            <tr>
+              <td><code>resignOptionsWithContract()</code></td>
+              <td>365-415</td>
+              <td>月額解約時のオプション連動解約</td>
+              <td><span class="status status-error"><span class="status-dot"></span>依存先未実装</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin: 32px 0 16px;">5-3. 未実装の依存サービス一覧</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>サービス名</th>
+              <th>想定ファイルパス</th>
+              <th>参照元</th>
+              <th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ShopOptionRepository</td>
+              <td>repositories/ShopOptionRepository.ts</td>
+              <td>ShopOptionContractManagementService:5</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+            <tr>
+              <td>ShopOptionContractRepository</td>
+              <td>repositories/ShopOptionContractRepository.ts</td>
+              <td>ShopOptionContractManagementService:6</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+            <tr>
+              <td>ShopOptionContractService</td>
+              <td>services/.../ShopOptionContractService.ts</td>
+              <td>ShopOptionContractManagementService:8</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+            <tr>
+              <td>ShopOptionHybridService</td>
+              <td>services/.../ShopOptionHybridService.ts</td>
+              <td>ShopOptionContractManagementService:9</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+            <tr>
+              <td>ShopOptionService</td>
+              <td>services/.../ShopOptionService.ts</td>
+              <td>ShopOptionContractManagementService:11</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+            <tr>
+              <td>ShopOptionEmailService</td>
+              <td>services/.../ShopOptionEmailService.ts</td>
+              <td>ShopOptionContractManagementService:12</td>
+              <td><span class="status status-error"><span class="status-dot"></span>未実装</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 style="margin: 32px 0 16px;">5-4. フロントエンド側の実装状況</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ファイル</th>
+              <th>機能</th>
+              <th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="filepath">useContractApplicationTableLayout.tsx:105-117</span></td>
+              <td>契約申請テーブルでプラン名（オプション名）表示</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>実装済み</span></td>
+            </tr>
+            <tr>
+              <td><span class="filepath">ApprovalDialog.tsx:18-63</span></td>
+              <td>承認ダイアログ（3DS対応）</td>
+              <td><span class="status status-warning"><span class="status-dot"></span>オプション非対応</span></td>
+            </tr>
+            <tr>
+              <td><span class="filepath">api-client.ts:5833-5869</span></td>
+              <td>ContractApplication型定義（options配列あり）</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>定義済み</span></td>
+            </tr>
+            <tr>
+              <td><span class="filepath">alliance/dashboard/hooks.ts:212-280</span></td>
+              <td>オプション契約管理API呼び出し</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>実装済み</span></td>
+            </tr>
+            <tr>
+              <td><span class="filepath">admin/shops/edit/[id]/option-modal.tsx</span></td>
+              <td>Admin用オプション強制契約</td>
+              <td><span class="status status-ok"><span class="status-dot"></span>実装済み</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- 改善提案 -->
+    <!-- ============================== -->
+    <section id="proposals" class="section">
+      <div class="section-header">
+        <h2><span class="num">6</span> 改善提案</h2>
+      </div>
+      <div class="section-body">
+
+        <!-- 提案1 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <h3>提案1: 承認処理にオプション契約作成を統合</h3>
+            <span class="priority-badge priority-p0">P0 - 最優先</span>
+          </div>
+          <div class="proposal-body">
+            <p>
+              <code>ContractApplicationService.approveApplication()</code> および
+              <code>completeApprovedApplication()</code> に、オプション契約の作成処理を追加します。
+            </p>
+            <p><strong>具体的な修正内容:</strong></p>
+            <ul style="padding-left: 20px; margin-bottom: 12px; font-size: 14px; color: var(--gray-600);">
+              <li>承認時に <code>application.options</code> をループして各オプション契約を作成</li>
+              <li>オプションの料金を月額プランの料金に合算して決済</li>
+              <li>3DS認証のPayment Intentにオプション料金を含める</li>
+              <li>オプション用のStripe Subscription Schedule を作成</li>
+            </ul>
+            <p><strong>前提条件:</strong> 提案3の依存サービス実装が必要</p>
+            <div class="proposal-tags">
+              <span class="tag">ContractApplicationService.ts</span>
+              <span class="tag">ShopOptionContractManagementService.ts</span>
+              <span class="tag">バックエンド</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提案2 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <h3>提案2: メール送信にオプション情報を追加</h3>
+            <span class="priority-badge priority-p0">P0 - 最優先</span>
+          </div>
+          <div class="proposal-body">
+            <p>
+              <code>sendApprovalEmails()</code> 関数にオプション情報パラメータを追加し、
+              メール本文にオプション名・料金を記載します。
+            </p>
+            <p><strong>具体的な修正内容:</strong></p>
+            <ul style="padding-left: 20px; margin-bottom: 12px; font-size: 14px; color: var(--gray-600);">
+              <li><code>sendApprovalEmails()</code> に <code>options</code> パラメータを追加</li>
+              <li>ユーザー向けメール: 【オプション】セクションと料金内訳にオプション料金を追加</li>
+              <li>店舗向けメール: 契約内容にオプション名を追加</li>
+              <li>加盟法人管理者向けメール: 同上</li>
+              <li>全管理者向けメール: 同上</li>
+              <li><code>sendRejectionEmails()</code> にもオプション情報を追加</li>
+            </ul>
+            <div class="proposal-tags">
+              <span class="tag">ContractApplicationService.ts</span>
+              <span class="tag">sendApprovalEmails()</span>
+              <span class="tag">メール</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提案3 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <h3>提案3: 未実装の依存サービス群を実装</h3>
+            <span class="priority-badge priority-p1">P1 - 高優先</span>
+          </div>
+          <div class="proposal-body">
+            <p>
+              <code>ShopOptionContractManagementService</code> が参照している6つの未実装サービスを実装します。
+              これにより、オプション契約の作成・管理・メール送信が可能になります。
+            </p>
+            <p><strong>実装が必要なサービス:</strong></p>
+            <table style="margin: 12px 0;">
+              <thead>
+                <tr><th>サービス</th><th>主な責務</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>ShopOptionRepository</td><td>オプション定義のDB操作（CRUD）</td></tr>
+                <tr><td>ShopOptionContractRepository</td><td>オプション契約のDB操作（CRUD）</td></tr>
+                <tr><td>ShopOptionContractService</td><td>オプション契約の作成・解約ロジック</td></tr>
+                <tr><td>ShopOptionHybridService</td><td>オプション料金のハイブリッド決済計算</td></tr>
+                <tr><td>ShopOptionService</td><td>オプションの有効性・上限チェック</td></tr>
+                <tr><td>ShopOptionEmailService</td><td>オプション契約関連メール送信</td></tr>
+              </tbody>
+            </table>
+            <div class="proposal-tags">
+              <span class="tag">新規ファイル作成</span>
+              <span class="tag">バックエンド</span>
+              <span class="tag">6ファイル</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提案4 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <h3>提案4: 月額解約時のオプション連動解約を有効化</h3>
+            <span class="priority-badge priority-p2">P2 - 中優先</span>
+          </div>
+          <div class="proposal-body">
+            <p>
+              <code>ShopContractCancellationService</code> に
+              <code>resignOptionsWithContract()</code> の呼び出しを追加します。
+              現在、この関数は定義済みですが、解約処理から呼び出されていません。
+            </p>
+            <div class="proposal-tags">
+              <span class="tag">ShopContractCancellationService.ts</span>
+              <span class="tag">ShopOptionContractManagementService.ts</span>
+              <span class="tag">バックエンド</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 提案5 -->
+        <div class="proposal-card">
+          <div class="proposal-header">
+            <h3>提案5: 承認ダイアログにオプション詳細表示を追加</h3>
+            <span class="priority-badge priority-p2">P2 - 中優先</span>
+          </div>
+          <div class="proposal-body">
+            <p>
+              承認ダイアログ（ApprovalDialog）に、承認対象のオプション名と料金を表示します。
+              管理者が承認時にオプション内容を確認できるようにします。
+            </p>
+            <div class="proposal-tags">
+              <span class="tag">ApprovalDialog.tsx</span>
+              <span class="tag">フロントエンド</span>
+              <span class="tag">UX改善</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================== -->
+    <!-- ロードマップ -->
+    <!-- ============================== -->
+    <section id="roadmap" class="section">
+      <div class="section-header">
+        <h2><span class="num">7</span> 実装ロードマップ</h2>
+      </div>
+      <div class="section-body">
+        <p style="margin-bottom: 24px; color: var(--gray-600);">
+          依存関係を考慮した段階的な実装順序を提案します。
+        </p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-phase">Phase 1 - 基盤構築</div>
+              <h4>データベーススキーマ・リポジトリ層の実装</h4>
+              <p>
+                Prismaスキーマに ShopOption, ShopOptionContract 等のモデルを追加。
+                ShopOptionRepository, ShopOptionContractRepository を実装。
+                マイグレーション実行。
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-phase">Phase 2 - コアサービス</div>
+              <h4>オプション契約のコアサービス群を実装</h4>
+              <p>
+                ShopOptionService, ShopOptionContractService, ShopOptionHybridService,
+                ShopOptionPriceService（残り部分）を実装。
+                オプション契約の作成・管理ロジックを確立。
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-phase">Phase 3 - 承認フロー統合（最重要）</div>
+              <h4>ContractApplicationService にオプション処理を統合</h4>
+              <p>
+                approveApplication() と completeApprovedApplication() にオプション契約作成処理を追加。
+                3DS決済にオプション料金を含める。
+                sendApprovalEmails() にオプション情報を追加。
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-phase">Phase 4 - メール・通知</div>
+              <h4>ShopOptionEmailService の実装とメールテンプレート改修</h4>
+              <p>
+                オプション単体契約時のメール送信実装。
+                承認・却下メールのテンプレートにオプション情報セクション追加。
+              </p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-phase">Phase 5 - 連携処理</div>
+              <h4>月額解約時の連動解約・フロントエンド改修</h4>
+              <p>
+                ShopContractCancellationService にオプション連動解約を追加。
+                ApprovalDialog にオプション詳細表示を追加。
+                テスト実施。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="note" style="margin-top: 24px;">
+          <span class="note-icon">&#9889;</span>
+          <div>
+            <strong>暫定対応（即時可能）</strong><br>
+            Phase 3 の完了を待たずに、以下の暫定対応が可能です：<br>
+            <strong>(a)</strong> <code>sendApprovalEmails()</code> に <code>application.options</code> 情報を渡してメール本文に表示する（メール問題のみ解決）<br>
+            <strong>(b)</strong> 承認制度が有効な店舗では、申請前にオプション同時選択を無効化するUIガードを追加（2度手間だが混乱を防止）
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- フッター -->
+    <div style="text-align: center; padding: 40px 0; color: var(--gray-600); font-size: 13px;">
+      <p>スタディGO オプション機能 改善レポート</p>
+      <p>作成日: 2026年3月2日 | 分析対象: テスト環境</p>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ナビゲーションのアクティブ状態制御
+  const navItems = document.querySelectorAll('.nav-item');
+  const sections = document.querySelectorAll('section[id], .exec-summary');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id || 'summary';
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-80px 0px -80% 0px' });
+
+  sections.forEach(section => observer.observe(section));
+
+  // スムーズスクロール
+  navItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector(item.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

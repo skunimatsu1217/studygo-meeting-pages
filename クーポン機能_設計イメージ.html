@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>クーポン機能 設計イメージ</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Helvetica Neue', 'Hiragino Sans', sans-serif; background: #f0f2f5; color: #333; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+
+  h1 { text-align: center; margin-bottom: 32px; font-size: 28px; color: #1a1a2e; }
+  h2 { font-size: 20px; color: #16213e; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 3px solid #0f3460; }
+  h3 { font-size: 16px; color: #555; margin-bottom: 12px; }
+
+  .section { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  @media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+
+  .arrow-section { text-align: center; font-size: 40px; color: #0f3460; margin: 16px 0; }
+
+  /* ===== アプリモック ===== */
+  .phone-frame {
+    width: 320px; margin: 0 auto; background: #fff; border-radius: 32px;
+    border: 3px solid #333; padding: 48px 16px 32px; position: relative;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  }
+  .phone-frame::before {
+    content: ''; position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 6px; background: #333; border-radius: 3px;
+  }
+  .app-header { background: #1a73e8; color: white; padding: 12px; margin: -16px -16px 16px; text-align: center; font-weight: bold; font-size: 14px; }
+  .app-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 8px; }
+  .app-btn { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; }
+  .app-btn:disabled { background: #ccc; }
+  .app-btn.secondary { background: white; color: #1a73e8; border: 1px solid #1a73e8; }
+  .app-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+  .app-price-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px solid #f0f0f0; }
+  .app-price-row.total { border-top: 2px solid #333; border-bottom: none; font-weight: bold; font-size: 15px; margin-top: 4px; padding-top: 12px; }
+  .app-price-row .discount { color: #e53935; font-size: 11px; }
+  .app-badge { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .app-badge.off { background: #fce4ec; color: #c62828; }
+  .app-coupon-card {
+    border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; margin-bottom: 8px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+  }
+  .app-coupon-card.applied { border-color: #4caf50; background: linear-gradient(135deg, #e8f5e9 0%, #fff 100%); }
+  .app-alert { padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; }
+  .app-alert.success { background: #e8f5e9; color: #2e7d32; }
+  .app-alert.error { background: #fce4ec; color: #c62828; }
+  .app-alert.info { background: #e3f2fd; color: #1565c0; }
+
+  /* ===== DB設計図 ===== */
+  .db-table { border-collapse: collapse; width: 100%; font-size: 13px; margin-bottom: 16px; }
+  .db-table th { background: #1a1a2e; color: white; padding: 8px 12px; text-align: left; }
+  .db-table td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+  .db-table tr:hover { background: #f5f5f5; }
+  .db-table .pk { color: #ff9800; font-weight: bold; }
+  .db-table .fk { color: #2196f3; }
+  .db-table .new { background: #fff3e0; }
+  .db-table .highlight { background: #e8f5e9; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 4px; }
+  .tag.existing { background: #e3f2fd; color: #1565c0; }
+  .tag.new { background: #fff3e0; color: #e65100; }
+  .tag.change { background: #fce4ec; color: #c62828; }
+
+  /* ===== 割引パターン ===== */
+  .wave-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .wave-card { border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
+  .wave-card .header { padding: 12px 16px; font-weight: bold; color: white; font-size: 14px; }
+  .wave-card:nth-child(1) .header { background: linear-gradient(135deg, #e53935, #ff7043); }
+  .wave-card:nth-child(2) .header { background: linear-gradient(135deg, #1e88e5, #42a5f5); }
+  .wave-card:nth-child(3) .header { background: linear-gradient(135deg, #43a047, #66bb6a); }
+  .wave-card:nth-child(4) .header { background: linear-gradient(135deg, #f9a825, #ffca28); color: #333; }
+  .wave-card .body { padding: 16px; }
+  .wave-card .condition { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .wave-month { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
+  .wave-month .month { font-weight: bold; min-width: 50px; }
+  .wave-month .rate { padding: 2px 10px; border-radius: 12px; font-weight: bold; font-size: 12px; }
+  .wave-month .rate.free { background: #e53935; color: white; }
+  .wave-month .rate.half { background: #ff9800; color: white; }
+  .wave-month .rate.forty { background: #ffc107; color: #333; }
+
+  /* ===== フロー図 ===== */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+  .flow-step { background: #e3f2fd; border: 2px solid #1a73e8; border-radius: 8px; padding: 10px 16px; font-size: 13px; text-align: center; font-weight: bold; }
+  .flow-step.highlight { background: #fff3e0; border-color: #ff9800; }
+  .flow-arrow { font-size: 20px; color: #999; }
+
+  .note { background: #fffde7; border-left: 4px solid #ffc107; padding: 12px 16px; font-size: 13px; margin: 12px 0; border-radius: 0 8px 8px 0; }
+
+  .file-list { font-size: 13px; }
+  .file-list li { padding: 4px 0; }
+  .file-list code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>クーポン・割引機能 設計イメージ</h1>
+
+  <!-- ==================== 現在の仕組み ==================== -->
+  <div class="section">
+    <h2><span class="tag existing">現状</span> 現在のクーポン機能</h2>
+    <div class="comparison">
+      <div>
+        <h3>アプリ画面（現在）</h3>
+        <div class="phone-frame">
+          <div class="app-header">プラン詳細・契約確認</div>
+          <p class="app-label">店舗</p>
+          <div class="app-input" style="background:#f5f5f5;">スタディGO 渋谷店</div>
+          <p class="app-label">プラン</p>
+          <div class="app-input" style="background:#f5f5f5;">レギュラープラン（月額）</div>
+          <p class="app-label">クーポンコード</p>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input class="app-input" style="margin:0;flex:1;" placeholder="6文字入力" value="ABC123">
+            <button class="app-btn" style="width:auto;padding:10px 16px;">適用</button>
+          </div>
+          <div class="app-alert success">&#10003; クーポンが適用されました</div>
+          <hr style="margin:12px 0;border:none;border-top:1px solid #eee;">
+          <p style="font-weight:bold;font-size:14px;margin-bottom:8px;">料金内訳</p>
+          <div class="app-price-row">
+            <span>入会金</span>
+            <span>
+              <span style="text-decoration:line-through;color:#999;">¥5,500</span>
+              &rarr; ¥2,750
+              <br><span class="discount">クーポン50% OFF</span>
+            </span>
+          </div>
+          <div class="app-price-row">
+            <span>店舗別初期費用</span>
+            <span>&yen;3,000</span>
+          </div>
+          <div class="app-price-row">
+            <span>3月分(日割り)</span>
+            <span>¥6,452</span>
+          </div>
+          <div class="app-price-row">
+            <span>4月分</span>
+            <span>¥9,900</span>
+          </div>
+          <div class="app-price-row total">
+            <span>合計</span>
+            <span>¥22,102</span>
+          </div>
+          <div style="height:12px;"></div>
+          <button class="app-btn">この内容で契約する</button>
+        </div>
+      </div>
+      <div>
+        <h3>現在の制限事項</h3>
+        <div class="note">
+          <strong>&#9888; クーポンの割引は「入会金」にしか適用されない</strong>
+          <ul style="margin-top:8px;padding-left:20px;font-size:13px;line-height:1.8;">
+            <li>月額料金への割引は不可</li>
+            <li>1つの割引率しか設定できない</li>
+            <li>月ごとに異なる割引率を設定できない</li>
+            <li>店舗別初期費用への割引は不可</li>
+            <li>ドロップイン・期間パスには未対応</li>
+            <li>定額割引（円引き）には未対応</li>
+          </ul>
+        </div>
+        <h3 style="margin-top:24px;">現在のDBテーブル</h3>
+        <table class="db-table">
+          <tr><th colspan="3">Coupon テーブル</th></tr>
+          <tr><td class="pk">id</td><td>Int</td><td>主キー</td></tr>
+          <tr><td>name</td><td>String</td><td>クーポン名</td></tr>
+          <tr><td>code</td><td>String</td><td>6文字コード</td></tr>
+          <tr><td><strong>discountRate</strong></td><td>Int</td><td>割引率(%) <span class="tag change">入会金のみ</span></td></tr>
+          <tr><td>validFrom</td><td>DateTime?</td><td>有効開始日</td></tr>
+          <tr><td>validTo</td><td>DateTime?</td><td>有効終了日</td></tr>
+          <tr><td>isActive</td><td>Int</td><td>有効/無効</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-section">&#11015; 改修後 &#11015;</div>
+
+  <!-- ==================== 改修後のイメージ ==================== -->
+  <div class="section">
+    <h2><span class="tag new">NEW</span> 改修後：複数月割引対応クーポン</h2>
+
+    <h3>割引パターン一覧</h3>
+    <div class="wave-grid">
+      <div class="wave-card">
+        <div class="header">第一弾（1月末まで入会）</div>
+        <div class="body">
+          <div class="condition">最もお得なキャンペーン</div>
+          <div class="wave-month"><span class="month">3月分</span><span class="rate free">無料(100%OFF)</span></div>
+          <div class="wave-month"><span class="month">4月分</span><span class="rate half">50% OFF</span></div>
+          <div class="wave-month"><span class="month">5月分</span><span class="rate forty">40% OFF</span></div>
+        </div>
+      </div>
+      <div class="wave-card">
+        <div class="header">第二弾（2月末まで入会）</div>
+        <div class="body">
+          <div class="condition">早期入会特典</div>
+          <div class="wave-month"><span class="month">3月分</span><span class="rate free">無料(100%OFF)</span></div>
+          <div class="wave-month"><span class="month">4月分</span><span class="rate forty">40% OFF</span></div>
+          <div class="wave-month"><span class="month">5月分</span><span class="rate forty">40% OFF</span></div>
+        </div>
+      </div>
+      <div class="wave-card">
+        <div class="header">第三弾（3月末まで入会）</div>
+        <div class="body">
+          <div class="condition">オープン記念</div>
+          <div class="wave-month"><span class="month">3月分</span><span class="rate free">無料(100%OFF)</span></div>
+          <div class="wave-month"><span class="month">4月分</span><span class="rate forty">40% OFF</span></div>
+        </div>
+      </div>
+      <div class="wave-card">
+        <div class="header">第四弾（4月末まで入会）</div>
+        <div class="body">
+          <div class="condition">入会数次第で割引率決定</div>
+          <div class="wave-month"><span class="month">4月分</span><span style="font-size:12px;color:#888;">通常通り（日割り）</span></div>
+          <div class="wave-month"><span class="month">5月分</span><span class="rate forty">40% OFF</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 新DB設計 ==================== -->
+  <div class="section">
+    <h2><span class="tag new">NEW</span> 新しいDBテーブル設計</h2>
+    <div class="comparison">
+      <div>
+        <h3>Coupon テーブル <span class="tag existing">既存（変更なし）</span></h3>
+        <table class="db-table">
+          <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+          <tr><td class="pk">id</td><td>Int</td><td>主キー</td></tr>
+          <tr><td>name</td><td>String</td><td>「第一弾キャンペーン」等</td></tr>
+          <tr><td>code</td><td>String</td><td>6文字コード</td></tr>
+          <tr><td>discountRate</td><td>Int</td><td>入会金割引（後方互換）</td></tr>
+          <tr><td>validFrom / validTo</td><td>DateTime?</td><td>有効期間</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>CouponDiscountRule <span class="tag new">新規追加</span></h3>
+        <table class="db-table">
+          <tr><th>カラム</th><th>型</th><th>説明</th></tr>
+          <tr><td class="pk">id</td><td>Int</td><td>主キー</td></tr>
+          <tr class="new"><td class="fk">couponId</td><td>Int</td><td>FK &rarr; Coupon</td></tr>
+          <tr class="new"><td><strong>monthOffset</strong></td><td>Int</td><td>0=初月, 1=翌月, ...5=6ヶ月目</td></tr>
+          <tr class="new"><td><strong>discountType</strong></td><td>String</td><td>"rate"=割引率 / "amount"=定額割引</td></tr>
+          <tr class="new"><td><strong>discountRate</strong></td><td>Int</td><td>割引率(%) 100=無料</td></tr>
+          <tr class="new"><td><strong>discountAmount</strong></td><td>Int?</td><td>定額割引(円)</td></tr>
+          <tr class="new"><td><strong>targetType</strong></td><td>String</td><td>適用対象（下記参照）</td></tr>
+        </table>
+        <div class="note">
+          <strong>targetType の種類:</strong>
+          <ul style="margin-top:4px;padding-left:20px;">
+            <li><code>initial_fee</code> - 入会金（&yen;5,500固定）</li>
+            <li><code>shop_initial_fee</code> - <strong>店舗別初期費用（shop.initialCost）</strong></li>
+            <li><code>monthly</code> - 月額プラン料金</li>
+            <li><code>dropin</code> - ドロップイン利用料</li>
+            <li><code>period_pass</code> - 期間パス料金</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <h3>第一弾クーポンのデータ登録イメージ</h3>
+    <table class="db-table">
+      <tr><th>couponId</th><th>monthOffset</th><th>discountType</th><th>discountRate</th><th>discountAmount</th><th>targetType</th><th>意味</th></tr>
+      <tr class="highlight"><td>1</td><td>0</td><td>rate</td><td>100</td><td>-</td><td>initial_fee</td><td>入会金(&yen;5,500) = 無料</td></tr>
+      <tr class="highlight"><td>1</td><td>0</td><td>rate</td><td>50</td><td>-</td><td>shop_initial_fee</td><td>店舗別初期費用 = 50%OFF</td></tr>
+      <tr class="highlight"><td>1</td><td>0</td><td>rate</td><td>100</td><td>-</td><td>monthly</td><td>初月（3月）= 無料</td></tr>
+      <tr class="highlight"><td>1</td><td>1</td><td>rate</td><td>50</td><td>-</td><td>monthly</td><td>翌月（4月）= 50% OFF</td></tr>
+      <tr class="highlight"><td>1</td><td>2</td><td>rate</td><td>40</td><td>-</td><td>monthly</td><td>翌々月（5月）= 40% OFF</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== 決済フロー説明 ==================== -->
+  <div class="section">
+    <h2><span class="tag existing">重要</span> 決済フローの仕組み</h2>
+    <div class="note" style="margin-bottom:16px;">
+      <strong>&#9888; StudyGOの決済は「ハイブリッド決済」</strong>
+      <ul style="margin-top:8px;padding-left:20px;font-size:13px;line-height:2;">
+        <li><strong>初回決済（PaymentIntent）</strong>：初月（日割り）＋ 翌月分 = <strong>2ヶ月分</strong>を一括決済</li>
+        <li><strong>3ヶ月目以降（Subscription）</strong>：毎月15日にStripeサブスク決済で翌月分を自動課金</li>
+        <li>&#8594; アプリの契約画面では<strong>初回の2ヶ月分のみ</strong>を表示する</li>
+        <li>&#8594; 3ヶ月目以降の割引情報は<strong>マイページ・決済履歴</strong>で確認できるようにする</li>
+      </ul>
+    </div>
+    <div class="flow">
+      <div class="flow-step" style="background:#fff3e0;border-color:#ff9800;">契約開始<br>(例: 3/15)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step" style="background:#e8f5e9;border-color:#4caf50;">初回決済<br>3月(日割)+4月<br><strong>2ヶ月分</strong></div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">サブスク開始<br>(4/15〜)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">4/15決済<br>5月分(40%OFF)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">5/15決済<br>6月分(通常料金)</div>
+    </div>
+  </div>
+
+  <!-- ==================== 改修後アプリ画面 ==================== -->
+  <div class="section">
+    <h2><span class="tag new">NEW</span> 改修後のアプリ画面イメージ</h2>
+
+    <h3>① 契約確認画面（初回決済 = 2ヶ月分のみ表示）</h3>
+    <div class="comparison">
+      <div>
+        <h3>第一弾クーポン適用時</h3>
+        <div class="phone-frame">
+          <div class="app-header">プラン詳細・契約確認</div>
+          <p class="app-label">店舗</p>
+          <div class="app-input" style="background:#f5f5f5;">スタディGO 新店舗</div>
+          <p class="app-label">プラン</p>
+          <div class="app-input" style="background:#f5f5f5;">レギュラープラン（月額）¥9,900/月</div>
+          <p class="app-label">クーポンコード</p>
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <input class="app-input" style="margin:0;flex:1;" value="WAVE01">
+            <button class="app-btn" style="width:auto;padding:10px 16px;background:#4caf50;">適用中</button>
+          </div>
+          <div class="app-coupon-card applied">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <strong style="font-size:13px;">&#127991; 第一弾キャンペーン</strong>
+              <span class="app-badge">適用中</span>
+            </div>
+            <div style="font-size:11px;color:#666;margin-top:4px;">3月無料 / 4月50%OFF / 5月40%OFF</div>
+          </div>
+          <hr style="margin:8px 0;border:none;border-top:1px solid #eee;">
+          <p style="font-weight:bold;font-size:14px;margin-bottom:8px;">&#128176; 初回お支払い（2ヶ月分）</p>
+          <div class="app-price-row">
+            <span>入会金</span>
+            <span>
+              <span style="text-decoration:line-through;color:#999;">&yen;5,500</span>
+              &rarr; <strong style="color:#e53935;">&yen;0</strong>
+              <br><span class="discount">&#127881; 100% OFF（無料）</span>
+            </span>
+          </div>
+          <div class="app-price-row">
+            <span>店舗別初期費用</span>
+            <span>
+              <span style="text-decoration:line-through;color:#999;">&yen;3,000</span>
+              &rarr; &yen;1,500
+              <br><span class="discount">50% OFF</span>
+            </span>
+          </div>
+          <div class="app-price-row">
+            <span>3月分(日割り16日)</span>
+            <span>
+              <span style="text-decoration:line-through;color:#999;">&yen;5,116</span>
+              &rarr; <strong style="color:#e53935;">&yen;0</strong>
+              <br><span class="discount">&#127881; 100% OFF（無料）</span>
+            </span>
+          </div>
+          <div class="app-price-row">
+            <span>4月分</span>
+            <span>
+              <span style="text-decoration:line-through;color:#999;">&yen;9,900</span>
+              &rarr; &yen;4,950
+              <br><span class="discount">50% OFF</span>
+            </span>
+          </div>
+          <div class="app-price-row total">
+            <span>初回合計</span>
+            <span style="color:#e53935;">&yen;6,450</span>
+          </div>
+          <div class="app-alert info" style="margin-top:8px;font-size:11px;">
+            &#128197; 3ヶ月目以降は毎月15日に自動決済されます<br>
+            &#127873; 5月分は40%OFF（¥5,940）が適用されます<br>
+            <span style="color:#888;">※ 割引スケジュールはマイページで確認できます</span>
+          </div>
+          <div style="height:8px;"></div>
+          <button class="app-btn">この内容で契約する</button>
+        </div>
+      </div>
+      <div>
+        <h3>&#9888; ポイント</h3>
+        <div class="note" style="margin-bottom:16px;">
+          <strong>契約画面に表示するのは初回決済の2ヶ月分のみ</strong>
+          <ul style="margin-top:8px;padding-left:20px;font-size:13px;line-height:2;">
+            <li>初月（日割り）+ 翌月 = <strong>2ヶ月分</strong></li>
+            <li>3ヶ月目以降の割引は注釈として簡潔に表示</li>
+            <li>詳細はマイページ・決済履歴で確認</li>
+          </ul>
+        </div>
+
+        <h3 style="margin-top:24px;">② マイページ（割引スケジュール）</h3>
+        <div class="phone-frame" style="width:300px;">
+          <div class="app-header">マイページ &gt; 契約詳細</div>
+          <p style="font-weight:bold;font-size:14px;margin-bottom:4px;">レギュラープラン</p>
+          <p style="font-size:11px;color:#666;margin-bottom:12px;">スタディGO 新店舗 | 2026年3月15日〜</p>
+
+          <div style="background:#e3f2fd;border-radius:8px;padding:10px;margin-bottom:12px;">
+            <p style="font-weight:bold;font-size:12px;color:#1565c0;margin-bottom:6px;">&#128197; 割引スケジュール</p>
+            <div style="font-size:12px;line-height:1.8;">
+              <div style="display:flex;justify-content:space-between;">
+                <span>3月分（初月）</span>
+                <span style="color:#e53935;font-weight:bold;">100%OFF &#10003;</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span>4月分</span>
+                <span style="color:#ff9800;font-weight:bold;">50%OFF &#10003;</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;background:#fff9c4;padding:2px 4px;border-radius:4px;">
+                <span>5月分</span>
+                <span style="color:#ffc107;font-weight:bold;">40%OFF &#9679; 次回</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;color:#888;">
+                <span>6月分〜</span>
+                <span>通常料金</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-alert info" style="font-size:11px;">
+            次回決済: 4月15日 | 5月分 ¥5,940（40%OFF）
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:32px;">③ 決済履歴・明細（毎月の決済確認）</h3>
+    <div class="comparison">
+      <div>
+        <div class="phone-frame" style="width:300px;">
+          <div class="app-header">お支払い履歴</div>
+          <div class="app-coupon-card" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="font-weight:bold;">2026年4月15日</span>
+              <span class="app-badge">決済済み</span>
+            </div>
+            <div style="font-size:13px;display:flex;justify-content:space-between;">
+              <span>5月分 月額料金</span>
+              <span>
+                <span style="text-decoration:line-through;color:#999;font-size:11px;">¥9,900</span>
+                <strong> ¥5,940</strong>
+              </span>
+            </div>
+            <div style="font-size:10px;color:#e53935;">クーポン割引: 40%OFF（第一弾キャンペーン）</div>
+          </div>
+          <div class="app-coupon-card" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span style="font-weight:bold;">2026年3月15日</span>
+              <span class="app-badge">決済済み</span>
+            </div>
+            <div style="font-size:13px;display:flex;justify-content:space-between;">
+              <span>初回決済（2ヶ月分）</span>
+              <strong>&yen;6,450</strong>
+            </div>
+            <div style="font-size:10px;color:#666;">入会金&yen;0(100%OFF) + 店舗初期費用&yen;1,500(50%OFF) + 3月&yen;0(100%OFF) + 4月&yen;4,950(50%OFF)</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>3ヶ月目以降の割引情報 表示場所まとめ</h3>
+        <table class="db-table">
+          <tr><th>表示場所</th><th>表示内容</th><th>タイミング</th></tr>
+          <tr class="highlight">
+            <td><strong>① 契約画面</strong></td>
+            <td>初回2ヶ月の内訳 + 注釈で今後の割引を簡潔に表示</td>
+            <td>契約時</td>
+          </tr>
+          <tr class="highlight">
+            <td><strong>② マイページ</strong></td>
+            <td>割引スケジュール一覧（全月の割引率 + 次回決済日・金額）</td>
+            <td>常時確認可</td>
+          </tr>
+          <tr class="highlight">
+            <td><strong>③ 決済履歴</strong></td>
+            <td>各月の実際の決済額 + 割引額の内訳</td>
+            <td>決済後</td>
+          </tr>
+        </table>
+        <div class="note">
+          <strong>推奨: ①+②+③の組み合わせ</strong><br>
+          <span style="font-size:12px;">
+            ・契約時は初回決済(2ヶ月)に集中させ情報過多を防ぐ<br>
+            ・マイページで今後の割引予定をいつでも確認可能<br>
+            ・決済履歴で実際の割引金額を透明に表示
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 管理画面 ==================== -->
+  <div class="section">
+    <h2><span class="tag new">NEW</span> 管理画面：クーポン編集（改修後）</h2>
+    <div style="background:#f5f5f5;border-radius:8px;padding:16px;font-size:13px;max-width:500px;">
+      <div style="background:#1a1a2e;color:white;padding:8px 12px;border-radius:6px 6px 0 0;font-weight:bold;">クーポン編集</div>
+      <div style="background:white;padding:16px;border:1px solid #ddd;border-radius:0 0 6px 6px;">
+        <p class="app-label">クーポン名</p>
+        <div class="app-input">第一弾キャンペーン</div>
+        <p class="app-label">コード</p>
+        <div class="app-input">WAVE01</div>
+        <p class="app-label">有効期間</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+          <div class="app-input" style="flex:1;">2026/01/01</div>
+          <span style="line-height:38px;">〜</span>
+          <div class="app-input" style="flex:1;">2026/01/31</div>
+        </div>
+        <p class="app-label">入会金割引</p>
+        <div class="app-input">0% (割引なし)</div>
+
+        <div style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:12px;margin-top:12px;margin-bottom:12px;">
+          <p style="font-weight:bold;font-size:13px;color:#2e7d32;margin-bottom:8px;">&#127970; 店舗別初期費用割引</p>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+            <span style="font-size:12px;min-width:70px;font-weight:bold;">割引方式</span>
+            <select class="app-input" style="margin:0;flex:1;"><option selected>割引率（%）</option><option>定額割引（円）</option></select>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:12px;min-width:70px;font-weight:bold;">割引値</span>
+            <select class="app-input" style="margin:0;flex:1;">
+              <option>割引なし</option><option>10% OFF</option><option>20% OFF</option><option>30% OFF</option><option>40% OFF</option><option selected>50% OFF</option><option>60% OFF</option><option>70% OFF</option><option>80% OFF</option><option>90% OFF</option><option>100% OFF（無料）</option>
+            </select>
+          </div>
+          <div style="font-size:10px;color:#666;margin-top:6px;">※ 店舗ごとに設定された初期費用（shop.initialCost）に対して割引を適用します</div>
+        </div>
+
+        <hr style="margin:12px 0;border:none;border-top:2px solid #ff9800;">
+        <p style="font-weight:bold;color:#e65100;margin-bottom:8px;">&#11088; 月額割引ルール <span class="tag new">NEW</span></p>
+
+        <div style="background:#fff3e0;border-radius:6px;padding:12px;margin-bottom:8px;">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:bold;min-width:80px;">初月(月0)</span>
+            <select class="app-input" style="margin:0;flex:1;"><option>100% OFF（無料）</option></select>
+            <span style="font-size:10px;color:#888;">初回決済</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+            <span style="font-weight:bold;min-width:80px;">2ヶ月目(月1)</span>
+            <select class="app-input" style="margin:0;flex:1;"><option>50% OFF</option></select>
+            <span style="font-size:10px;color:#888;">初回決済</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;background:#fff9c4;padding:4px;border-radius:4px;">
+            <span style="font-weight:bold;min-width:80px;">3ヶ月目(月2)</span>
+            <select class="app-input" style="margin:0;flex:1;"><option>40% OFF</option></select>
+            <span style="font-size:10px;color:#1565c0;">サブスク</span>
+          </div>
+          <button class="app-btn secondary" style="font-size:12px;padding:8px;">+ ルールを追加</button>
+        </div>
+        <div class="note" style="font-size:11px;">
+          初月・2ヶ月目 → 初回決済（PaymentIntent）に適用<br>
+          3ヶ月目以降 → サブスク決済（毎月15日）に適用
+        </div>
+
+        <p class="app-label" style="margin-top:12px;">適用対象</p>
+        <div style="margin-bottom:12px;">
+          <label style="display:block;padding:4px 0;"><input type="checkbox" checked> 月額プラン</label>
+          <label style="display:block;padding:4px 0;"><input type="checkbox"> ドロップイン</label>
+          <label style="display:block;padding:4px 0;"><input type="checkbox"> 期間パス</label>
+          <label style="display:block;padding:4px 0;"><input type="checkbox" checked> 入会金 (&yen;5,500)</label>
+        </div>
+
+        <button class="app-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 処理フロー ==================== -->
+  <div class="section">
+    <h2>処理フロー</h2>
+    <h3>契約時の割引適用フロー</h3>
+    <div class="flow">
+      <div class="flow-step">ユーザーが<br>クーポンコード入力</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">Couponテーブル<br>から検索</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step highlight">CouponDiscountRule<br>から月別割引取得</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step highlight">各月の料金に<br>割引率を適用</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">料金内訳を<br>画面に表示</div>
+    </div>
+
+    <h3 style="margin-top:24px;">月次課金時の割引適用フロー</h3>
+    <div class="flow">
+      <div class="flow-step">月次バッチ<br>課金処理</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">ShopContractHasCoupon<br>からクーポン特定</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step highlight">契約開始月から<br>monthOffset計算</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step highlight">該当月の<br>discountRate取得</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-step">割引後の金額で<br>決済実行</div>
+    </div>
+  </div>
+
+  <!-- ==================== 変更対象ファイル ==================== -->
+  <div class="section">
+    <h2>変更対象ファイル一覧</h2>
+    <div class="comparison">
+      <div>
+        <h3>バックエンド</h3>
+        <ul class="file-list" style="padding-left:20px;line-height:2;">
+          <li><span class="tag new">新規</span> <code>prisma/schema.prisma</code> - CouponDiscountRuleモデル追加</li>
+          <li><span class="tag change">変更</span> <code>ShopContractPriceService.ts</code> - 月別割引ロジック + 店舗初期費用割引 + 定額割引対応</li>
+          <li><span class="tag change">変更</span> <code>ShopContractMonthlyService.ts</code> - 月次課金で割引参照</li>
+          <li><span class="tag change">変更</span> <code>ShopContractDropInService.ts</code> - ドロップインへのクーポン適用</li>
+          <li><span class="tag change">変更</span> <code>adminCouponResolver.ts</code> - ルール保存API</li>
+          <li><span class="tag change">変更</span> <code>definition.ts</code> - API定義追加</li>
+          <li><span class="tag change">変更</span> <code>appContractResolver.ts</code> - アプリ側割引参照</li>
+        </ul>
+      </div>
+      <div>
+        <h3>フロントエンド</h3>
+        <ul class="file-list" style="padding-left:20px;line-height:2;">
+          <li><span class="tag change">変更</span> <code>admin/coupons/config.tsx</code> - ルール編集UI追加</li>
+          <li><span class="tag change">変更</span> <code>admin/coupons/edit/</code> - 月別割引設定フォーム</li>
+          <li><span class="tag change">変更</span> <code>admin/coupon-preview/</code> - 複数月割引プレビュー</li>
+          <li><span class="tag change">変更</span> <code>api-client.ts</code> - 新API型追加</li>
+        </ul>
+        <h3 style="margin-top:16px;">アプリ (Flutter)</h3>
+        <ul class="file-list" style="padding-left:20px;line-height:2;">
+          <li><span class="tag change">変更</span> 契約確認画面 - 月別割引表示</li>
+          <li><span class="tag change">変更</span> クーポン入力画面 - 割引詳細表示</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

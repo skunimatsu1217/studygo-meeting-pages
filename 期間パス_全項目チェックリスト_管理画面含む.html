@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>期間パス 全項目チェックリスト（管理画面含む） - スタディGO</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-light: #e8f0fe;
+    --danger: #d93025;
+    --danger-light: #fce8e6;
+    --warning: #f9ab00;
+    --warning-light: #fef7e0;
+    --success: #1e8e3e;
+    --success-light: #e6f4ea;
+    --purple: #7c3aed;
+    --purple-light: #f3e8ff;
+    --bg: #f8f9fa;
+    --card: #ffffff;
+    --border: #dadce0;
+    --text: #202124;
+    --text-sub: #5f6368;
+    --new: #d93025;
+    --change: #f9ab00;
+    --reuse: #1e8e3e;
+    --na: #9aa0a6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+  .header {
+    background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+    color: white; padding: 40px 24px 28px; text-align: center;
+  }
+  .header h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .header p { font-size: 13px; opacity: 0.85; }
+  .header .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 16px; border-radius: 20px; font-size: 12px; margin-top: 8px; }
+
+  .progress-fixed {
+    position: sticky; top: 0; z-index: 100;
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 10px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .progress-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .progress-text { font-size: 13px; font-weight: 700; white-space: nowrap; }
+  .progress-text .count { color: var(--primary); font-size: 18px; }
+  .progress-bar-outer { flex: 1; min-width: 120px; height: 10px; background: #e8e8e8; border-radius: 5px; overflow: hidden; }
+  .progress-bar-inner { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); border-radius: 5px; transition: width 0.4s; width: 0%; }
+  .progress-actions { display: flex; gap: 8px; }
+  .btn-export { padding: 6px 16px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btn-export:hover { background: #1557b0; }
+  .btn-export.green { background: var(--success); }
+
+  .counters { display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap; }
+  .counter { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .counter.new-count { background: var(--danger-light); color: var(--danger); }
+  .counter.change-count { background: var(--warning-light); color: #92400e; }
+  .counter.reuse-count { background: var(--success-light); color: var(--success); }
+  .counter.na-count { background: #f0f0f0; color: var(--text-sub); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+  .legend {
+    background: white; border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+  .legend-dot.new { background: var(--new); }
+  .legend-dot.change { background: var(--change); }
+  .legend-dot.reuse { background: var(--reuse); }
+  .legend-dot.na { background: var(--na); }
+
+  .category { margin-bottom: 32px; }
+  .category-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 4px;
+    cursor: pointer; user-select: none;
+  }
+  .category-header h2 { font-size: 20px; font-weight: 800; }
+  .category-header .icon { font-size: 24px; }
+  .category-header .cat-count { font-size: 12px; color: var(--text-sub); margin-left: auto; font-weight: 600; }
+  .category-desc { font-size: 12px; color: var(--text-sub); margin-bottom: 14px; padding-left: 34px; }
+
+  .item-card {
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 8px; overflow: hidden; transition: border-color 0.3s;
+  }
+  .item-card.answered { border-color: var(--success); }
+  .item-header {
+    padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .item-header:hover { background: #fafafa; }
+  .item-num {
+    width: 28px; height: 28px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center; font-size: 11px;
+    font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .item-num.new { background: var(--new); }
+  .item-num.change { background: var(--change); }
+  .item-num.reuse { background: var(--reuse); }
+  .item-num.na { background: var(--na); }
+
+  .item-title { flex: 1; font-size: 14px; font-weight: 700; }
+  .item-monthly { font-size: 11px; color: var(--text-sub); background: #f0f0f0; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item-status { font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; flex-shrink: 0; }
+  .item-status.pending { background: var(--danger-light); color: var(--danger); }
+  .item-status.done { background: var(--success-light); color: var(--success); }
+  .item-status.decided { background: var(--primary-light); color: var(--primary); }
+
+  .item-body { padding: 0 16px 14px; display: none; }
+  .item-card.open .item-body { display: block; }
+
+  .item-context {
+    font-size: 12px; color: var(--text-sub); margin-bottom: 10px;
+    padding: 8px 12px; background: #f8f9fa; border-radius: 6px; border-left: 3px solid var(--purple);
+  }
+  .item-monthly-detail {
+    font-size: 12px; padding: 8px 12px; background: #fff8e1; border-radius: 6px;
+    border-left: 3px solid var(--warning); margin-bottom: 10px;
+  }
+  .item-monthly-detail strong { color: #92400e; }
+
+  .options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
+    border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer;
+    transition: all 0.2s; font-size: 13px;
+  }
+  .opt:hover { border-color: var(--primary); background: #fafbff; }
+  .opt.selected { border-color: var(--primary); background: var(--primary-light); }
+  .opt input[type="radio"] { margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
+  .opt .opt-label { font-weight: 600; }
+  .opt .opt-desc { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+  .opt .opt-rec { display: inline-block; background: var(--primary); color: white; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
+
+  .note-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; font-weight: 600; }
+  .note-input {
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit; resize: vertical; min-height: 36px;
+  }
+  .note-input:focus { border-color: var(--primary); outline: none; }
+
+  .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; color: white; margin-right: 4px; }
+  .type-badge.db { background: #7c3aed; }
+  .type-badge.api { background: #1565c0; }
+  .type-badge.app { background: #2e7d32; }
+  .type-badge.front { background: #e65100; }
+  .type-badge.stripe { background: #c62828; }
+  .type-badge.batch { background: #00695c; }
+
+  .modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 300; justify-content: center; align-items: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: white; border-radius: 14px; width: 90%; max-width: 800px;
+    max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { font-size: 18px; }
+  .modal-close { width: 32px; height: 32px; border: none; background: #f0f0f0; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .modal-body { padding: 20px 24px; }
+  .modal-body textarea { width: 100%; min-height: 400px; padding: 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Consolas', monospace; font-size: 12px; line-height: 1.7; resize: vertical; }
+  .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn { padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  .modal-btn.primary { background: var(--primary); color: white; }
+  .modal-btn.secondary { background: #f0f0f0; color: var(--text); }
+
+  @media (max-width: 768px) {
+    .progress-inner { flex-direction: column; align-items: stretch; }
+    .legend { flex-direction: column; gap: 8px; }
+    .item-monthly { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>期間パス 全項目チェックリスト</h1>
+  <p>月額プランの全影響項目を洗い出し、期間パスでの対応方針を決定するためのリスト</p>
+  <div class="badge">2026年2月24日 ｜ DB・API・アプリ・管理画面 全領域</div>
+</div>
+
+<div class="progress-fixed">
+  <div class="progress-inner">
+    <div class="progress-text">回答済: <span class="count" id="answeredCount">0</span> / <span id="totalCount">0</span></div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+    <div class="progress-actions">
+      <button class="btn-export green" onclick="exportData()">エクスポート</button>
+      <button class="btn-export" onclick="saveToLocal()">一時保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="legend">
+  <strong style="font-size:13px;">対応種別:</strong>
+  <div class="legend-item"><div class="legend-dot new"></div> 新規作成が必要</div>
+  <div class="legend-item"><div class="legend-dot change"></div> 月額と異なる変更が必要</div>
+  <div class="legend-item"><div class="legend-dot reuse"></div> 月額の仕組みを流用可能</div>
+  <div class="legend-item"><div class="legend-dot na"></div> 期間パスでは不要</div>
+</div>
+
+<div class="counters" id="counters"></div>
+
+<!-- ================================================================== -->
+<!-- カテゴリA: DB設計 -->
+<!-- ================================================================== -->
+<div class="category" id="cat-db">
+  <div class="category-header"><span class="icon">&#128451;</span><h2>DB設計・データモデル</h2><span class="cat-count" id="count-db">0/0</span></div>
+  <div class="category-desc">ShopPlan, ShopContract, Company等のテーブル・フィールドレベルの対応方針</div>
+
+  <div class="item-card" data-id="DB1" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">ShopPlan: planType = 4 (PERIOD_PASS) の追加</div>
+      <div class="item-monthly">月額: planType=1</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> planType=1(MONTHLY), 2(DROPIN), 3(SHOP_DEFAULT) の3種。</div>
+      <div class="item-context"><span class="type-badge db">DB</span> 決定事項まとめでは planType=4 で確定済み。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB1" value="確定済み: planType=4"><div><span class="opt-label">確定済み: planType = 4 (PERIOD_PASS)</span><span class="opt-rec">確定</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB1" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB2" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">ShopPlan: durationDays（期間日数）フィールド追加</div>
+      <div class="item-monthly">月額: なし（月単位固定）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 月額は月単位契約で期間日数フィールドなし。packageDuration（月数）のみ。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB2" value="確定: 7,14,30日"><div><span class="opt-label">確定: durationDays に 7 / 14 / 30 を格納</span><span class="opt-rec">確定</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB2" value="店舗が任意の日数を設定可能"><div><span class="opt-label">店舗が任意の日数を設定可能にする</span><div class="opt-desc">柔軟だが運用が複雑</div></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB2" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB3" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">ShopPlan: periodPassPrice（税込価格）フィールド追加</div>
+      <div class="item-monthly">月額: price（税抜）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> ShopPlan.price は税抜価格で格納。表示時に消費税10%を加算。</div>
+      <div class="item-context"><span class="type-badge db">DB</span> 期間パスは「店舗が税込価格を直接設定」が決定済み。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB3" value="periodPassPrice新設（税込直接格納）"><div><span class="opt-label">periodPassPrice を新設（税込価格を直接格納）</span><span class="opt-rec">推奨</span><div class="opt-desc">既存priceとは別管理。月額と計算ロジックが異なるため分離。</div></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB3" value="既存priceを流用（税込格納）"><div><span class="opt-label">既存の price フィールドを流用（税込で格納）</span><div class="opt-desc">フィールド追加不要だが、planTypeで税込/税抜の判定が必要</div></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB3" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB4" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ShopPlan: name / subTitle / categoryTitle の扱い</div>
+      <div class="item-monthly">月額: 全フィールド使用</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> name=プラン名, subTitle=サブタイトル, categoryTitle=カテゴリ。管理画面から全て設定。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB4" value="nameのみ使用（固定名称）"><div><span class="opt-label">name のみ使用（「1週間パス」等の固定名称）</span><span class="opt-rec">推奨</span><div class="opt-desc">subTitle, categoryTitle は期間パスでは NULL。</div></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB4" value="月額と同様に全フィールド使用"><div><span class="opt-label">月額と同様に name / subTitle / categoryTitle を全て使用</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB4" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB5" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">ShopPlan: maxMinutes（1日の利用上限分数）</div>
+      <div class="item-monthly">月額: 必須設定（超過で従量課金）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> maxMinutes=1日のプラン内利用時間（分）。超過した場合は従量課金。管理画面で必須入力(1-1439分)。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB5" value="不要（NULL）"><div><span class="opt-label">不要: 期間パスでは maxMinutes = NULL（使い放題確定）</span><span class="opt-rec">確定</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB5" value="将来的に時間制限プランも検討"><div><span class="opt-label">将来的に時間制限付きプランも検討するため残す</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB6" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">ShopPlan: withInitialFee / packageDuration / packageDiscountRate / ageDiscount系</div>
+      <div class="item-monthly">月額: 入会金・パッケージ割引・年齢割引</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> withInitialFee=入会金適用, packageDuration/DiscountRate=パッケージ割引, ageDiscountAge/Rate=年齢割引。複数の割引体系。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB6" value="全て不要"><div><span class="opt-label">全て不要（税込価格のみ、クーポンのみで割引対応）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB6" value="入会金のみ検討"><div><span class="opt-label">入会金のみ将来的に検討（他は不要）</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB6" value="年齢割引も適用"><div><span class="opt-label">年齢割引も期間パスに適用する</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB7" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">ShopContract: periodPassStartDate / EndDate / Status 追加</div>
+      <div class="item-monthly">月額: startDate + currentPaymentExpiredAt</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> startDate=契約開始日, currentPaymentExpiredAt=現在の支払い期限（毎月更新）。自動更新ベース。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB7" value="確定: 3フィールド追加"><div><span class="opt-label">確定: periodPassStartDate / EndDate / Status を追加</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB8" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ShopContract: paymentType に "period_pass" 追加</div>
+      <div class="item-monthly">月額: legacy/subscription/hybrid</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> paymentType="legacy"(従来),"subscription"(Stripe定期),"hybrid"(初回PI+定期)。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB8" value="確定: period_pass追加"><div><span class="opt-label">確定: paymentType = "period_pass" を追加</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB9" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">ShopContract: stripeSubscriptionId / stripeScheduleId / subscriptionStatus</div>
+      <div class="item-monthly">月額: Stripe Subscription連携</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> Stripe Subscriptionによる自動定期決済。stripeSubscriptionIdでサブスク管理。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB9" value="不要（PaymentIntentのみ）"><div><span class="opt-label">不要: Subscription系はNULL。PaymentIntentのみ使用</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB10" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">ShopContract: 解約関連フィールド（statusAsResigningUser等）</div>
+      <div class="item-monthly">月額: 解約予約→承認→無効化</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> statusAsResigningUser=解約予約中, isConfirmedAsResigningUser=店舗確認済み。解約予約フロー。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB10" value="不要"><div><span class="opt-label">不要: 中途解約なし（買い切り型、確定済み）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB11" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">Company: periodPassCommissionRate（期間パス手数料率）</div>
+      <div class="item-monthly">月額: commissionRate / firstCommissionRate</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> commissionRate=月額手数料(%), firstCommissionRate=初回手数料(%), dropInCommissionRate=ドロップイン手数料(%)。Company単位。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB11" value="確定: periodPassCommissionRate新設"><div><span class="opt-label">確定: periodPassCommissionRate を Company に追加</span><span class="opt-rec">確定</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:10px 0 6px;">初期値（デフォルト手数料率）は？</p>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB11-sub" value="月額と同じ"><div><span class="opt-label">月額(commissionRate)と同じ値をデフォルトに</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB11-sub" value="ドロップインと同じ"><div><span class="opt-label">ドロップイン(dropInCommissionRate)と同じ値をデフォルトに</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB11-sub" value="別途決定"><div><span class="opt-label">別途決定（後から設定）</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB11" placeholder="手数料率の具体的な数値など..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB12" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">ContractApplication（契約申請/承認制）テーブル</div>
+      <div class="item-monthly">月額: 承認制フロー（requiresApprovalForContract）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> Shop.requiresApprovalForContract=1 なら、申請→承認→契約成立。ContractApplicationテーブルで管理。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB12" value="不要（即時契約）"><div><span class="opt-label">不要: 即時決済・即時契約（承認制なし）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB12" value="将来対応"><div><span class="opt-label">将来的に承認制も対応可能にしておく</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB13" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">StripeSubscriptionCancellationQueue（サブスクキャンセルキュー）</div>
+      <div class="item-monthly">月額: 解約予約キュー管理</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 解約予約されたSubscriptionのキャンセルをキュー管理し順次実行。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB13" value="不要"><div><span class="opt-label">不要（Subscriptionなし、解約なし）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB14" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ShopContract: 同一店舗での複数契約バリデーション</div>
+      <div class="item-monthly">月額: 1店舗1契約制限</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 同一店舗で複数プラン契約不可。最大2店舗。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB14" value="planType別にバリデーション"><div><span class="opt-label">planType別にバリデーション緩和（月額+期間パス両方可）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:10px 0 6px;">期間パス同士の重複契約は？</p>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB14-sub" value="同一店舗で期間パス重複不可"><div><span class="opt-label">同一店舗で期間パスの重複契約は不可</span><span class="opt-rec">推奨</span><div class="opt-desc">延長（再購入）は既存終了後から開始。</div></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB14-sub" value="重複可能"><div><span class="opt-label">重複可能（同じ店舗で複数の期間パスを持てる）</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="DB14" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB15" data-type="reuse">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num reuse">流用</div>
+      <div class="item-title">UserPayment / CompanyPayment（支払い・精算テーブル）</div>
+      <div class="item-monthly">月額: 月次精算</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> UserPayment=ユーザー支払い記録, CompanyPayment=法人月次精算。commissionRateで手数料計算。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB15" value="流用（reason追加のみ）"><div><span class="opt-label">流用: 既存テーブルに reason="period_pass" を追加</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB16" data-type="reuse">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num reuse">流用</div>
+      <div class="item-title">Coupon / ShopContractHasCoupon（クーポン連携）</div>
+      <div class="item-monthly">月額: discountRate(%)でクーポン割引</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> Couponテーブルの discountRate(%)でクーポン割引。ShopContractHasCoupon で紐付け。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB16" value="流用"><div><span class="opt-label">流用: 既存クーポン機能をそのまま使用</span><span class="opt-rec">確定</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:10px 0 6px;">クーポンの適用対象制限は？</p>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB16-sub" value="全クーポン使用可能"><div><span class="opt-label">既存クーポンも期間パスに使用可能</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB16-sub" value="期間パス専用クーポンのみ"><div><span class="opt-label">期間パス専用クーポンのみ使用可能</span><span class="opt-rec">推奨</span><div class="opt-desc">CouponにplanType制限フィールドを追加</div></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="DB17" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">Shop: 期間パス対応の判定方法</div>
+      <div class="item-monthly">月額: canApplyMonthly フラグ</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> Shop.canApplyMonthly=1で月額プラン受付。canUseHourly=1でドロップイン利用可。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB17" value="ShopPlanの有無で判定"><div><span class="opt-label">フラグ不要: planType=4のShopPlanが存在すれば対応</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="DB17" value="canApplyPeriodPassフラグ追加"><div><span class="opt-label">Shop に canApplyPeriodPass フラグを追加</span></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- カテゴリB: Stripe決済・バッチ -->
+<!-- ================================================================== -->
+<div class="category" id="cat-stripe">
+  <div class="category-header"><span class="icon">&#128179;</span><h2>Stripe決済・バッチ処理</h2><span class="cat-count" id="count-stripe">0/0</span></div>
+  <div class="category-desc">決済方式、Webhook、自動更新、期限管理バッチの対応方針</div>
+
+  <div class="item-card" data-id="ST1" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">Stripe決済方式: PaymentIntent（一括払い）</div>
+      <div class="item-monthly">月額: Subscription（定期課金）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> Stripe Subscriptionで毎月自動課金。hybrid方式もあり。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST1" value="確定: PaymentIntentのみ"><div><span class="opt-label">確定: PaymentIntent（一括前払い）+ 3Dセキュア</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="ST2" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">Stripe Webhook: invoice/subscription系イベント</div>
+      <div class="item-monthly">月額: 決済失敗・サブスク更新イベント処理</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> invoice.payment_succeeded/failed, customer.subscription.updated/deleted等のWebhook処理。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST2" value="Subscription系は不要"><div><span class="opt-label">Subscription系Webhookは不要。PaymentIntent結果のみ処理</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="ST3" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">バッチ: 期間パス期限管理（ステータス自動更新）</div>
+      <div class="item-monthly">月額: deactivateExpiredMonthlyContracts</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 毎日実行でcurrentPaymentExpiredAt超過の契約をisActive=0に。毎月15日に自動更新。</div>
+      <div class="item-context"><span class="type-badge batch">Batch</span> 期間パス用: (1) pending→active (2) active→expired (3) Akerun権限付与・削除</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST3" value="新規バッチ作成"><div><span class="opt-label">新規バッチ: 毎日実行で期間パスステータス自動更新</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:10px 0 6px;">バッチ実行タイミングは？</p>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST3-sub" value="毎日0:00"><div><span class="opt-label">毎日 0:00（日付変更時）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST3-sub" value="毎日朝6:00"><div><span class="opt-label">毎日 朝6:00（営業開始前）</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="ST3" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="ST4" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">バッチ: 期間パス期限通知（3日前/1日前/当日）</div>
+      <div class="item-monthly">月額: 支払い失敗通知のみ</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 支払い失敗時にメール通知。期限切れ予告の定期通知はなし（自動更新のため）。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST4" value="確定: 3段階通知バッチ"><div><span class="opt-label">確定: 朝9:00に3段階通知バッチ実行（プッシュ+HTMLメール）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="ST5" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">バッチ: renewMonthlyContracts（月額自動更新）</div>
+      <div class="item-monthly">月額: 毎月15日に自動更新+課金</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST5" value="不要"><div><span class="opt-label">不要: 自動更新なし（買い切り型、確定済み）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="ST6" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">Akerun: 期間連動の解錠権限付与・削除</div>
+      <div class="item-monthly">月額: 契約中は常時付与</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 契約成立→権限付与、解約→権限削除。ShopDoorHasShopPlanでプラン別紐付け。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="ST6" value="期間連動で付与・削除"><div><span class="opt-label">期間連動: 開始日に付与、終了日に削除（月額有無を確認）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- カテゴリC: 管理画面（本部） -->
+<!-- ================================================================== -->
+<div class="category" id="cat-admin">
+  <div class="category-header"><span class="icon">&#128187;</span><h2>管理画面（本部 Admin）</h2><span class="cat-count" id="count-admin">0/0</span></div>
+  <div class="category-desc">本部管理画面でのプラン管理、契約管理、手数料設定等</div>
+
+  <div class="item-card" data-id="AD1" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">プラン管理: 期間パスプラン作成フォーム</div>
+      <div class="item-monthly">月額: name/subTitle/code/price/maxMinutes/isActive</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> フォーム: プラン名, サブタイトル, キャッチコピー, コード, 月額料金(税抜,min50円), プラン内時間(1-1439分), 公開/非公開。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD1" value="最小限のフォーム"><div><span class="opt-label">最小限: プラン名 / 期間(日数) / 税込価格 / 公開・非公開</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD1" value="月額と同様の項目"><div><span class="opt-label">月額同様: プラン名 / サブタイトル / カテゴリ / コード / 期間 / 税込価格 / 公開・非公開</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="AD1" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD2" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">プラン管理: 期間パスプラン一覧画面</div>
+      <div class="item-monthly">月額: コード/名前/料金/上限時間/公開/更新日</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD2" value="専用一覧"><div><span class="opt-label">専用一覧: プラン名 / 期間 / 税込価格 / 公開状態 / 更新日時</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD2" value="月額一覧と統合"><div><span class="opt-label">月額プラン一覧と統合し、planTypeフィルタで切り替え</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD3" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">契約管理: 期間パス契約一覧・詳細</div>
+      <div class="item-monthly">月額: 月額契約申込一覧（承認/却下）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 一覧: ユーザー名, 店舗, プラン, 希望開始日, 確定開始日, ステータス(申請中/承認/却下), 申請日時。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD3" value="期間パス契約一覧を新設"><div><span class="opt-label">新設: ユーザー名, 店舗, プラン, 期間, ステータス, 購入日時, 金額</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD3" value="既存一覧に統合"><div><span class="opt-label">既存の契約申込一覧に統合</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD4" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">手数料率設定: periodPassCommissionRate の入力フィールド</div>
+      <div class="item-monthly">月額: commissionRate / firstCommissionRate / dropInCommissionRate</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 加盟法人編集画面に「月額手数料率」「初回手数料率」「ドロップイン手数料率」の3入力。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD4" value="入力フィールド追加"><div><span class="opt-label">加盟法人編集画面に「期間パス手数料率(%)」を追加</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD5" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">店舗管理: 期間パスプランの公開/非公開切替</div>
+      <div class="item-monthly">月額: ショッププランテーブルでisActiveトグル</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD5" value="既存UIに統合"><div><span class="opt-label">既存ショッププランテーブルに期間パスも表示（ラベル付き）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD5" value="別タブ"><div><span class="opt-label">期間パス専用タブを追加して分離表示</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD6" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ユーザー詳細: 期間パス契約情報の表示</div>
+      <div class="item-monthly">月額: 現在の契約セクション</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD6" value="既存セクションに統合"><div><span class="opt-label">「現在の契約」セクションに期間パスも表示（開始日/終了日/ステータス）</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AD7" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">チェックイン実績: 期間パス利用の表示</div>
+      <div class="item-monthly">月額: プラン名付きで一覧表示</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AD7" value="既存一覧に統合"><div><span class="opt-label">既存一覧に統合（「期間パス利用」ラベル付き）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- カテゴリD: 管理画面（加盟法人） -->
+<!-- ================================================================== -->
+<div class="category" id="cat-alliance">
+  <div class="category-header"><span class="icon">&#127970;</span><h2>管理画面（加盟法人 Alliance）</h2><span class="cat-count" id="count-alliance">0/0</span></div>
+  <div class="category-desc">加盟法人向け管理画面でのダッシュボード、契約管理、精算等</div>
+
+  <div class="item-card" data-id="AL1" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ダッシュボード: 期間パス関連セクション追加</div>
+      <div class="item-monthly">月額: 会員数/未承認/決済失敗/新規/解約予定</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 会員数, 未承認の月額契約申請, 支払い失敗, 新規契約, 休会予定, 解約予定の各セクション。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL1" value="専用セクション追加"><div><span class="opt-label">期間パス専用セクション追加（契約数, 期限間近, 売上）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL1" value="既存に統合"><div><span class="opt-label">既存セクションに期間パス情報を統合</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL1" value="Phase1非対応"><div><span class="opt-label">Phase1では非対応（後から追加）</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="AL1" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AL2" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">契約申込 承認・却下機能</div>
+      <div class="item-monthly">月額: 承認ダイアログ（3DS認証）/却下ダイアログ</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL2" value="不要"><div><span class="opt-label">不要: 即時契約（承認制なし、確定済み）</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AL3" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">期間パス契約一覧画面（加盟法人向け）</div>
+      <div class="item-monthly">月額: 契約申込一覧（承認/却下操作付き）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 加盟法人が契約申請の一覧/詳細閲覧+承認/却下操作。</div>
+      <div class="item-context"><span class="type-badge front">管理画面</span> 決定済み(A3): 一覧・詳細まで閲覧可能。操作権限は未決定(A2)。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL3" value="閲覧のみ"><div><span class="opt-label">閲覧のみの契約一覧を新設（操作はPhase2）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL3" value="操作も含む"><div><span class="opt-label">閲覧+操作（手動失効/延長等）も含む</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AL4" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">支払い実績: 期間パス売上の表示・精算</div>
+      <div class="item-monthly">月額: 月次精算一覧+明細書</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL4" value="既存精算に統合"><div><span class="opt-label">既存精算・明細書に「期間パス」カテゴリを追加</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AL5" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">店舗管理: 期間パスプランの表示・有効無効切替</div>
+      <div class="item-monthly">月額: 月額/ドロップイン別テーブル</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AL5" value="テーブル追加"><div><span class="opt-label">期間パスプラン一覧テーブルを追加（有効/無効切替のみ）</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================== -->
+<!-- カテゴリE: アプリ -->
+<!-- ================================================================== -->
+<div class="category" id="cat-app">
+  <div class="category-header"><span class="icon">&#128241;</span><h2>アプリ（ユーザー向け）</h2><span class="cat-count" id="count-app">0/0</span></div>
+  <div class="category-desc">モバイルアプリの画面・フロー・表示要素</div>
+
+  <div class="item-card" data-id="AP1" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">店舗詳細: 期間パスタブ・プラン表示</div>
+      <div class="item-monthly">月額: monthly_plan_section</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> タブ切替で月額プラン表示。グループ化して名前/サブタイトル/料金表示。</div>
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP1" value="決定済み" checked><div><span class="opt-label">決定済み（S1）: 月額→期間パス→ドロップイン。非提供はタブ非表示。</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP2" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">購入フロー: 4画面（パス選択→開始日→確認・決済→完了）</div>
+      <div class="item-monthly">月額: 5ステップ（プラン→オプション→クーポン→確認→完了）</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> STEP_C1〜C5。オプション選択、年齢割引、パッケージ割引、利用可能時間帯、超過料金等の表示あり。</div>
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP2" value="決定済み" checked><div><span class="opt-label">決定済み: 4画面フロー。オプション画面なし。</span></div></label>
+      </div>
+      <p style="font-size:13px; font-weight:700; margin:10px 0 6px;">確認画面で月額と異なる表示項目</p>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP2-sub" value="期間パス専用"><div><span class="opt-label">不要: 利用可能時間帯/超過料金/日割条件/オプション。追加: 期間/日割単価</span><span class="opt-rec">推奨</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP3" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">オプション選択フロー</div>
+      <div class="item-monthly">月額: option_list / option_contract_confirm等</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> ロッカー等のオプションを選択。月額料金に加算。3画面フロー。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP3" value="不要"><div><span class="opt-label">不要: 期間パスにオプションは適用しない</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP3" value="対応"><div><span class="opt-label">オプションも対応（日割りで追加）</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP4" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">マイページ: 期間パスカード表示</div>
+      <div class="item-monthly">月額: 店舗名/プラン/料金/開始日/更新日/休会</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP4" value="決定済み" checked><div><span class="opt-label">決定済み（S6）: 開始日/終了日/残り日数/警告色/延長ボタン</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP5" data-type="na">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num na">不要</div>
+      <div class="item-title">プラン変更 / 解約 / 休会フロー</div>
+      <div class="item-monthly">月額: changePlan / cancelPlan / suspendPlan（各3画面）</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP5" value="不要" checked><div><span class="opt-label">不要: 中途解約なし・休会なし・プラン変更なし（確定済み）</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP6" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">チェックイン: 月額+期間パス両方時の優先判定</div>
+      <div class="item-monthly">月額: 契約有効性チェック→超過で従量課金</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> isContractValid+isContractPaymentValid。maxMinutes超過で従量課金。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP6" value="期間パス優先"><div><span class="opt-label">期間パス優先（追加課金なし）+ チェックアウト時料金0円</span><span class="opt-rec">確定</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP7" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">ホーム画面: 期間パス情報の表示</div>
+      <div class="item-monthly">月額: 会員カード内に契約店舗表示</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP7" value="決定済み" checked><div><span class="opt-label">決定済み（S9）: 期限間近の場合のみ警告バナー表示</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP8" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">利用履歴 / 領収書: 期間パス利用の表示</div>
+      <div class="item-monthly">月額: 来店日時/店舗/プラン/料金/追加料金</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP8" value="決定済み" checked><div><span class="opt-label">決定済み（S10）: 「期間パス利用」ラベル付き混在+領収書発行</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP9" data-type="change">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num change">変更</div>
+      <div class="item-title">契約上限数の制御</div>
+      <div class="item-monthly">月額: MAXIMUM_CONTRACT（最大2店舗）</div>
+      <div class="item-status pending">要回答</div>
+    </div>
+    <div class="item-body">
+      <div class="item-monthly-detail"><strong>月額での現状:</strong> 最大2店舗まで月額契約可能。超えると新規契約ボタン非表示。</div>
+      <div class="options">
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP9" value="上限に含めない"><div><span class="opt-label">期間パスはMAXIMUM_CONTRACTに含めない（無制限）</span><span class="opt-rec">推奨</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP9" value="合計で上限"><div><span class="opt-label">月額+期間パスの合計で上限を設定</span></div></label>
+        <label class="opt" onclick="selectOpt(this)"><input type="radio" name="AP9" value="独自上限"><div><span class="opt-label">期間パスにも独自上限を設定（例: 同時3店舗まで）</span></div></label>
+      </div>
+      <div class="note-label">補足メモ</div>
+      <textarea class="note-input" data-note="AP9" placeholder="補足..." oninput="updateProgress()"></textarea>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP10" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">期限切れ後チェックイン画面（3択提示）</div>
+      <div class="item-monthly">月額: なし（自動更新のため）</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP10" value="決定済み" checked><div><span class="opt-label">決定済み（U4）: 再購入/ドロップイン/月額の3択</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP11" data-type="reuse">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num reuse">流用</div>
+      <div class="item-title">カード登録 / 3Dセキュア決済フロー</div>
+      <div class="item-monthly">月額: registerPayment / PaymentSheet</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP11" value="流用" checked><div><span class="opt-label">流用: 既存実装をそのまま使用（確定済み）</span></div></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-card" data-id="AP12" data-type="new">
+    <div class="item-header" onclick="toggleCard(this)">
+      <div class="item-num new">新規</div>
+      <div class="item-title">店舗検索: 「期間パス対応」フィルタ</div>
+      <div class="item-monthly">月額: なし</div>
+      <div class="item-status decided">決定済</div>
+    </div>
+    <div class="item-body">
+      <div class="options">
+        <label class="opt selected"><input type="radio" name="AP12" value="決定済み" checked><div><span class="opt-label">決定済み（S12）: フィルタ追加</span></div></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- container -->
+
+<!-- エクスポートモーダル -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>回答データ エクスポート</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-body"><textarea id="exportText" readonly></textarea></div>
+    <div class="modal-footer">
+      <button class="modal-btn primary" onclick="copyExport()">コピー</button>
+      <button class="modal-btn secondary" onclick="closeModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleCard(header) { header.parentElement.classList.toggle('open'); }
+
+function selectOpt(label) {
+  const parent = label.closest('.options');
+  parent.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+  label.classList.add('selected');
+  label.querySelector('input[type="radio"]').checked = true;
+  updateProgress();
+}
+
+function updateProgress() {
+  const allCards = document.querySelectorAll('.item-card');
+  let total = 0, answered = 0;
+  allCards.forEach(card => {
+    const radios = card.querySelectorAll('input[type="radio"]');
+    if (radios.length === 0) return;
+    total++;
+    if (card.querySelector('input[type="radio"]:checked')) {
+      answered++;
+      card.classList.add('answered');
+      const s = card.querySelector('.item-status');
+      if (s && !s.classList.contains('decided')) { s.className = 'item-status done'; s.textContent = '回答済'; }
+    }
+  });
+  document.getElementById('answeredCount').textContent = answered;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('progressBar').style.width = (total > 0 ? Math.round((answered/total)*100) : 0) + '%';
+
+  const cats = ['db','stripe','admin','alliance','app'];
+  const pre = {db:'DB',stripe:'ST',admin:'AD',alliance:'AL',app:'AP'};
+  cats.forEach(c => {
+    const cards = document.querySelectorAll(`.item-card[data-id^="${pre[c]}"]`);
+    let t=0,d=0;
+    cards.forEach(x => { const r=x.querySelectorAll('input[type="radio"]'); if(r.length>0){t++;if(x.querySelector('input[type="radio"]:checked'))d++;} });
+    const el = document.getElementById('count-'+c);
+    if(el) el.textContent = d+'/'+t+' 回答済';
+  });
+
+  const el = document.getElementById('counters');
+  el.innerHTML = `
+    <span class="counter new-count">新規作成: ${document.querySelectorAll('.item-card[data-type="new"]').length}件</span>
+    <span class="counter change-count">変更: ${document.querySelectorAll('.item-card[data-type="change"]').length}件</span>
+    <span class="counter reuse-count">流用: ${document.querySelectorAll('.item-card[data-type="reuse"]').length}件</span>
+    <span class="counter na-count">不要: ${document.querySelectorAll('.item-card[data-type="na"]').length}件</span>
+  `;
+}
+
+function exportData() {
+  const lines = ['# 期間パス 全項目チェックリスト 回答データ',`# ${new Date().toLocaleString('ja-JP')}`,''];
+  const catNames = {DB:'DB設計',ST:'Stripe・バッチ',AD:'管理画面(本部)',AL:'管理画面(加盟法人)',AP:'アプリ'};
+  const typeLabel = {new:'新規',change:'変更',reuse:'流用',na:'不要'};
+  let currentCat = '';
+  document.querySelectorAll('.item-card').forEach(card => {
+    const id = card.dataset.id;
+    const type = card.dataset.type;
+    const title = card.querySelector('.item-title')?.textContent || '';
+    const cat = id.replace(/[0-9-]/g,'');
+    if(cat!==currentCat){currentCat=cat;lines.push(`\n## ${catNames[cat]||cat}`);}
+    lines.push(`\n### [${id}] [${typeLabel[type]||''}] ${title}`);
+    card.querySelectorAll('input[type="radio"]:checked').forEach((r,i) => {
+      lines.push(`${i===0?'回答':'追加'}: ${r.value}`);
+    });
+    const note = card.querySelector('.note-input');
+    if(note && note.value) lines.push(`メモ: ${note.value}`);
+    if(!card.querySelector('input[type="radio"]:checked')) lines.push('回答: (未回答)');
+  });
+  document.getElementById('exportText').value = lines.join('\n');
+  document.getElementById('exportModal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('exportModal').classList.remove('show');}
+function copyExport(){const t=document.getElementById('exportText');t.select();document.execCommand('copy');alert('コピーしました');}
+function saveToLocal(){
+  const d={};
+  document.querySelectorAll('input[type="radio"]:checked').forEach(r=>{d[r.name]=r.value;});
+  document.querySelectorAll('.note-input').forEach(n=>{if(n.value)d['note_'+n.dataset.note]=n.value;});
+  localStorage.setItem('periodPassFullChecklist',JSON.stringify(d));
+  alert('一時保存しました');
+}
+function loadFromLocal(){
+  const s=localStorage.getItem('periodPassFullChecklist');
+  if(!s)return;
+  const d=JSON.parse(s);
+  Object.entries(d).forEach(([k,v])=>{
+    if(k.startsWith('note_')){const el=document.querySelector(`.note-input[data-note="${k.replace('note_','')}"]`);if(el)el.value=v;}
+    else{const r=document.querySelector(`input[name="${k}"][value="${v}"]`);if(r){r.checked=true;const o=r.closest('.opt');if(o){o.closest('.options').querySelectorAll('.opt').forEach(x=>x.classList.remove('selected'));o.classList.add('selected');}}}
+  });
+  updateProgress();
+}
+loadFromLocal();
+updateProgress();
+</script>
+</body>
+</html>
