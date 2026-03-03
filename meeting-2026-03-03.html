@@ -219,7 +219,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>スタディGO 開発会議</h1>
-      <div class="sub">2026/03/03 — 8つの議題</div>
+      <div class="sub">2026/03/03 — 14の議題</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -241,6 +241,12 @@
     <button class="main-tab" onclick="showTopic(5)"><span class="tab-num">6</span>会員データ出力<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(6)"><span class="tab-num">7</span>ドロップイン条件表示<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(7)"><span class="tab-num">8</span>システム利用制御<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(8)"><span class="tab-num">9</span>ダイナミックプライシング<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(9)"><span class="tab-num">10</span>Push通知基盤<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(10)"><span class="tab-num">11</span>店舗詳細UI/UX<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(11)"><span class="tab-num">12</span>検索機能改善<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(12)"><span class="tab-num">13</span>ログイン・認証改善<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(13)"><span class="tab-num">14</span>見学予約WEB対応<span class="memo-dot"></span></button>
   </div>
 </div>
 
@@ -2504,6 +2510,600 @@ Wi-Fiパスワード: studygo2026
   <div class="memo-area">
     <div class="memo-area-header">会議メモ</div>
     <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(7)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 9. ダイナミックプライシング機能 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-8" data-title="ダイナミックプライシング機能">
+
+  <div class="overview-card">
+    <h3>9. ダイナミックプライシング機能</h3>
+    <p>
+      時間帯・曜日・混雑状況などの条件に応じて、<strong>ドロップイン料金を動的に変更</strong>する仕組みを導入します。<br>
+      <span class="highlight">ピーク時は高め、オフピーク時は割引</span>とすることで、利用の分散と収益の最適化を図ります。
+    </p>
+  </div>
+
+  <!-- 仕組みの概要 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      ダイナミックプライシングの仕組み <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>対象プラン</th><td><strong>ドロップイン（都度利用）</strong>が主な対象</td></tr>
+        <tr><th>変動の基準</th><td>曜日・時間帯・特定日（祝日等）・混雑率</td></tr>
+        <tr><th>料金パターン例</th><td>
+          <strong>平日昼間:</strong> 通常料金<br>
+          <strong>平日夜間:</strong> 割増 or 割引<br>
+          <strong>土日祝:</strong> 割増<br>
+          <strong>早朝割:</strong> 開店直後は割引
+        </td></tr>
+        <tr><th>表示方法</th><td>アプリ上で<strong>現在の料金</strong>をリアルタイム表示</td></tr>
+        <tr><th>設定方法</th><td>管理画面で曜日×時間帯のマトリクスで料金を設定</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 管理画面イメージ -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
+      管理画面イメージ（料金テーブル設定） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body" style="background:#f0f0f0;">
+      <div class="admin-mock">
+        <div class="admin-mock-header blue">
+          ダイナミックプライシング設定
+          <span class="role-badge">運営管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+          <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">曜日×時間帯 料金テーブル（15分あたり）</div>
+          <div class="mock-table-wrap">
+            <table class="mock-table" style="font-size:12px;">
+              <thead><tr><th></th><th>7:00-10:00</th><th>10:00-13:00</th><th>13:00-17:00</th><th>17:00-21:00</th><th>21:00-23:00</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600;">月〜金</td>
+                  <td style="color:var(--green);font-weight:600;">&#165;80</td>
+                  <td>&#165;110</td>
+                  <td>&#165;110</td>
+                  <td style="color:var(--red);font-weight:600;">&#165;130</td>
+                  <td>&#165;110</td>
+                </tr>
+                <tr><td style="font-weight:600;">土日祝</td>
+                  <td style="color:var(--green);font-weight:600;">&#165;100</td>
+                  <td style="color:var(--red);font-weight:600;">&#165;150</td>
+                  <td style="color:var(--red);font-weight:600;">&#165;150</td>
+                  <td style="color:var(--red);font-weight:600;">&#165;150</td>
+                  <td>&#165;110</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:12px;font-size:11px;">
+            <span style="color:var(--green);">&#9632; 割引帯</span>
+            <span>&#9632; 通常</span>
+            <span style="color:var(--red);">&#9632; ピーク帯</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">ダイナミックプライシングの<strong>対象はドロップインのみ</strong>でよいか？（期間パスも対象にする？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金変動の<strong>上限・下限</strong>は設けるか？（通常料金の±何%まで等）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金設定は<strong>運営のみ</strong>か、<strong>法人/店舗にも権限</strong>を与えるか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">チェックイン中に<strong>料金帯が変わった場合</strong>の計算方法は？（時間帯ごとに按分？チェックイン時の料金固定？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(8)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 10. Push通知基盤 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-9" data-title="Push通知基盤">
+
+  <div class="overview-card">
+    <h3>10. Push通知基盤の整備</h3>
+    <p>
+      アプリの<strong>Push通知（プッシュ通知）の基盤</strong>を整備し、さまざまな場面で通知を送れるようにします。<br>
+      <span class="highlight">期間パスの期限切れ、チェックアウト忘れ、キャンペーン案内</span>など、多目的に活用できる共通基盤を構築します。
+    </p>
+  </div>
+
+  <!-- 通知の種類 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
+      通知の種類と用途 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th style="width:140px;">カテゴリ</th><td><strong>具体例</strong></td></tr>
+        <tr><th style="color:var(--blue);">トランザクション通知</th><td>チェックイン完了、チェックアウト完了、決済完了、決済失敗、承認完了</td></tr>
+        <tr><th style="color:var(--orange);">リマインダー通知</th><td>期間パス期限切れ予告（3日前/1日前/当日）、自動チェックアウト警告（15分前）、月額更新日</td></tr>
+        <tr><th style="color:var(--green);">マーケティング通知</th><td>キャンペーン案内、新機能のお知らせ、クーポン配布</td></tr>
+        <tr><th style="color:var(--purple);">管理通知</th><td>店舗からのメッセージ、アカウント関連（パスワード変更等）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 技術基盤 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      技術基盤 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>プラットフォーム</th><td><strong>FCM</strong>（Firebase Cloud Messaging）を使用（iOS/Android両対応）</td></tr>
+        <tr><th>デバイストークン</th><td>アプリ初回起動時に取得・サーバーに登録、定期的に更新</td></tr>
+        <tr><th>配信制御</th><td>通知カテゴリごとにON/OFF設定可能</td></tr>
+        <tr><th>頻度制限</th><td>マーケティング通知は1日○通まで等の制限を検討</td></tr>
+        <tr><th>ディープリンク</th><td>通知タップで関連画面に直接遷移</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知カテゴリごとの<strong>ON/OFF設定</strong>をお客様に提供するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">マーケティング通知の<strong>配信頻度上限</strong>は？（1日○通まで）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">法人/店舗から<strong>独自のPush通知</strong>を送る機能は必要か？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？（期間パスの前提として先に実装？）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(9)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 11. 店舗詳細のUI/UX変更 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-10" data-title="店舗詳細のUI/UX変更">
+
+  <div class="overview-card">
+    <h3>11. 店舗詳細ページのUI/UX改善</h3>
+    <p>
+      アプリ内の<strong>店舗詳細ページのデザインとユーザー体験を改善</strong>します。<br>
+      <span class="highlight">情報の整理、視認性の向上、アクション導線の最適化</span>を行い、お客様がスムーズにチェックインや契約につながるようにします。
+    </p>
+  </div>
+
+  <!-- 改善ポイント -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      改善ポイント <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>情報の優先度</th><td>営業時間・料金・空き状況など<strong>重要情報を上部に配置</strong></td></tr>
+        <tr><th>写真・ギャラリー</th><td>店舗の雰囲気が伝わる写真をスワイプで閲覧</td></tr>
+        <tr><th>料金表示</th><td>プランごとの料金を<strong>見やすく比較</strong>できるレイアウト</td></tr>
+        <tr><th>アクションボタン</th><td>「チェックイン」「見学予約」「プラン申込」を分かりやすく配置</td></tr>
+        <tr><th>営業状況</th><td><strong>現在営業中/閉店中</strong>をリアルタイム表示</td></tr>
+        <tr><th>口コミ・評価</th><td>将来的に追加する場合の設計も考慮</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">店舗詳細ページの<strong>レイアウト変更の範囲</strong>は？（全面改修 / 部分改善）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>参考にするデザイン</strong>やサービスはあるか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(10)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 12. 検索機能の改善 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-11" data-title="検索機能の改善">
+
+  <div class="overview-card">
+    <h3>12. 店舗検索機能の改善</h3>
+    <p>
+      店舗検索の使い勝手を大幅に改善します。<br>
+      <span class="highlight">「営業中」フィルター追加</span>、<strong>検索条件の見直し</strong>、<br>
+      <strong>いいオフィス参考</strong>: 検索エリアに店舗がなくても<span class="highlight">近くの店舗を自動表示</span>する機能を実装します。
+    </p>
+  </div>
+
+  <!-- 改善項目1: 営業中フィルター -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
+      改善1: 検索条件に「営業中」フィルター追加 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div class="overview-card" style="background:#E8F5E9;border-color:#A5D6A7;">
+        <p style="font-size:13px;">
+          お客様が今すぐ使える店舗を探しやすいよう、検索結果に<strong>「営業中」フィルター</strong>を追加します。<br>
+          営業カレンダーと連動し、<strong>現在の営業状況をリアルタイムで反映</strong>します。
+        </p>
+      </div>
+      <table class="simple">
+        <tr><th>フィルター名</th><td><strong>営業中の店舗のみ表示</strong>（トグルスイッチ）</td></tr>
+        <tr><th>判定ロジック</th><td>営業カレンダーの曜日×時間帯を参照し、現在時刻が営業時間内かを判定</td></tr>
+        <tr><th>臨時休業</th><td>臨時休業設定がある場合は<strong>閉店扱い</strong></td></tr>
+        <tr><th>表示方法</th><td>検索結果の各店舗に「営業中」「本日休業」のバッジ表示</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 改善項目2: 検索条件変更 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      改善2: 検索条件の見直し <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div class="overview-card" style="background:#E3F2FD;border-color:#90CAF9;">
+        <p style="font-size:13px;">
+          現在の検索条件を見直し、お客様が<strong>目的に合った店舗を見つけやすい</strong>よう改善します。
+        </p>
+      </div>
+      <table class="simple">
+        <tr><th>現在の検索条件</th><td>エリア、距離、キーワード</td></tr>
+        <tr><th>追加候補</th><td>
+          ・プランの種類（月額/期間パス/ドロップイン対応）<br>
+          ・設備（Wi-Fi/電源/個室/ドリンク等）<br>
+          ・料金帯<br>
+          ・営業中のみ
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 改善項目3: 近い店舗表示 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
+      改善3: 近い店舗の自動表示（いいオフィス参考） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div class="overview-card" style="background:#F3E8FF;border-color:#CE93D8;">
+        <p style="font-size:13px;">
+          <strong>いいオフィス</strong>を参考に、検索エリアに該当する店舗がない場合でも<br>
+          <span class="highlight">位置情報をもとに近くの店舗を自動的に表示</span>する機能を追加します。<br>
+          「このエリアに店舗はありませんが、近くにこれらの店舗があります」という形で案内します。
+        </p>
+      </div>
+      <table class="simple">
+        <tr><th>発動条件</th><td>検索結果が<strong>0件</strong>の場合に自動的に近い店舗を表示</td></tr>
+        <tr><th>表示方法</th><td>「お近くの店舗」として距離順にリスト表示</td></tr>
+        <tr><th>距離表示</th><td>各店舗まで「<strong>徒歩○分 / ○km</strong>」を表示</td></tr>
+        <tr><th>上限</th><td>最大<strong>5〜10件</strong>まで表示</td></tr>
+        <tr><th>参考サービス</th><td><strong>いいオフィス</strong>の近くの店舗表示UIを参考にする</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">「<strong>営業中</strong>」フィルターを検索条件に追加する方針でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">追加する<strong>検索条件</strong>はどれか？（設備/料金帯/プラン種類 等）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">検索結果0件時に<strong>近い店舗を自動表示</strong>する機能を追加するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">近い店舗の<strong>表示上限</strong>と<strong>距離上限</strong>は？</span>
+          <span class="d-note"><input placeholder="○件 / ○km" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(11)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 13. ログイン・認証の改善 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-12" data-title="ログイン・認証の改善">
+
+  <div class="overview-card">
+    <h3>13. ログインの簡略化・SNSログイン対応</h3>
+    <p>
+      <strong>ログイン時に必要な情報を削減</strong>し、特に見学予約など初回利用のハードルを下げます。<br>
+      また、<span class="highlight">Googleログイン・LINEログイン</span>に対応し、アカウント作成の手間を大幅に軽減します。
+    </p>
+  </div>
+
+  <!-- ログイン簡略化 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      ログインの簡略化（見学で必要な情報の削減） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div class="overview-card" style="background:#E3F2FD;border-color:#90CAF9;">
+        <p style="font-size:13px;">
+          現在は見学予約にも多くの個人情報が必要ですが、<strong>最小限の情報だけで見学予約</strong>できるようにします。<br>
+          契約時に追加情報を入力してもらう段階的な情報収集に切り替えます。
+        </p>
+      </div>
+      <table class="simple">
+        <tr><th>現在の必須項目</th><td>氏名、メールアドレス、電話番号、生年月日、性別、住所、職業 等</td></tr>
+        <tr><th>見学予約の必須項目（案）</th><td><strong>氏名</strong>、<strong>メールアドレス</strong>（または電話番号）のみ</td></tr>
+        <tr><th>追加情報の入力タイミング</th><td>契約（月額/期間パス申込）時に詳細情報を入力</td></tr>
+        <tr><th>メリット</th><td>
+          ・見学予約の離脱率を大幅に削減<br>
+          ・気軽に見学してもらいやすくなる<br>
+          ・契約意思のあるユーザーにのみ詳細情報を求める
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SNSログイン -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
+      Googleログイン / LINEログイン対応 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>Googleログイン</th><td>
+          <strong>Google Sign-In</strong>を利用<br>
+          ・Googleアカウントのメールアドレス・氏名を自動取得<br>
+          ・ワンタップでアカウント作成/ログイン
+        </td></tr>
+        <tr><th>LINEログイン</th><td>
+          <strong>LINE Login</strong>を利用<br>
+          ・LINEの表示名・メールアドレス（許可時）を取得<br>
+          ・日本のユーザーに馴染みやすい
+        </td></tr>
+        <tr><th>既存アカウントとの連携</th><td>既にメールで登録済みのアカウントにSNSを<strong>紐づけ可能</strong></td></tr>
+        <tr><th>注意事項</th><td>
+          ・個人情報の取得範囲を明示（プライバシーポリシー更新）<br>
+          ・LINE: メールアドレス取得はユーザーの許可が必要<br>
+          ・Apple Sign-In: iOS要件のため将来的に追加検討
+        </td></tr>
+      </table>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">ログイン画面イメージ</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="background:white;border:2px solid #4285F4;border-radius:8px;padding:12px 20px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#4285F4;">
+            <span style="font-size:18px;">G</span> Googleでログイン
+          </div>
+          <div style="background:#06C755;border-radius:8px;padding:12px 20px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:white;">
+            <span style="font-size:18px;">L</span> LINEでログイン
+          </div>
+          <div style="background:black;border-radius:8px;padding:12px 20px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:white;">
+            <span style="font-size:18px;">&#63743;</span> Appleでサインイン
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">見学予約の<strong>必須入力項目</strong>はどこまで減らすか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>Googleログイン</strong>を導入するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>LINEログイン</strong>を導入するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>Apple Sign-In</strong>も同時に対応するか？（iOSの場合は必須の場合あり）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(12)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 14. 見学予約のWEB対応 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-13" data-title="見学予約のWEB対応">
+
+  <div class="overview-card">
+    <h3>14. 見学予約をWEBから可能にする</h3>
+    <p>
+      現在はアプリからのみ可能な見学予約を、<strong>WEBブラウザからも行えるようにする</strong>改善です。<br>
+      <span class="highlight">アプリをインストールしなくても見学予約ができる</span>ので、初回接触のハードルが大幅に下がります。
+    </p>
+  </div>
+
+  <!-- 概要 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      WEB見学予約の仕組み <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>対象ユーザー</th><td>まだアプリをインストールしていない<strong>新規のお客様</strong></td></tr>
+        <tr><th>導線</th><td>
+          ・店舗のWebサイト/Googleマップ → 「見学予約」リンク<br>
+          ・SNS広告/チラシのQRコード → WEB予約ページ<br>
+          ・検索エンジン（「渋谷 勉強カフェ 見学」等）
+        </td></tr>
+        <tr><th>入力項目（最小限）</th><td><strong>氏名</strong>、<strong>メールアドレス</strong>、<strong>希望日時</strong>、<strong>希望店舗</strong></td></tr>
+        <tr><th>予約完了後</th><td>確認メール送信 + アプリダウンロードの案内</td></tr>
+        <tr><th>アプリとの連携</th><td>WEBで予約 → アプリインストール後に<strong>同じアカウントで引き継ぎ</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- メリット -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
+      導入メリット <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table class="simple">
+        <tr><th>コンバージョン率向上</th><td>アプリインストールの壁をなくし、<strong>見学予約率を大幅向上</strong></td></tr>
+        <tr><th>SEO効果</th><td>WEB予約ページが検索エンジンにインデックスされ、<strong>自然流入が増加</strong></td></tr>
+        <tr><th>広告効果</th><td>WEB広告から直接予約ページに誘導可能（アプリストア経由が不要）</td></tr>
+        <tr><th>店舗の活用</th><td>店頭のQRコードやチラシから直接予約ページへ案内可能</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
+      決めること <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB見学予約を<strong>導入する方針</strong>でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB予約ページは<strong>既存のフロントエンド（Next.js）に組み込む</strong>か、<strong>別ページとして作成</strong>するか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEBで予約した人が<strong>アプリをインストールした際のアカウント連携方法</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(13)"></textarea>
   </div>
 </div>
 
