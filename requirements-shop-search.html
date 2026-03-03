@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyGO 店舗・検索機能 要件定義シート</title>
+<style>
+  :root {
+    --purple:#7C3AED; --purple-light:#F3E8FF;
+    --blue:#1a73e8; --blue-light:#E3F2FD;
+    --green:#4CAF50; --green-light:#E8F5E9;
+    --orange:#FF9800; --orange-light:#FFF3E0;
+    --red:#F44336; --red-light:#FFEBEE;
+    --text:#333; --text-sub:#757575; --border:#E0E0E0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#1a1a2e;min-height:100vh;}
+  .top-header{background:linear-gradient(135deg,#4a148c,#7C3AED);color:white;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;top:0;z-index:100;}
+  .top-header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .top-title h1{font-size:20px;margin-bottom:2px;}
+  .top-title .sub{font-size:12px;opacity:0.7;}
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .top-actions button{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-save{background:var(--green);color:white;}
+  .btn-export{background:white;color:var(--purple);}
+  .btn-clear{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)!important;}
+  .save-status{font-size:11px;color:rgba(255,255,255,0.5);}
+  .nav{background:#16213e;padding:0 24px;border-bottom:1px solid rgba(255,255,255,0.1);overflow-x:auto;white-space:nowrap;position:sticky;top:64px;z-index:99;}
+  .nav-inner{max-width:1200px;margin:0 auto;display:flex;gap:0;}
+  .nav-tab{padding:12px 16px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
+  .nav-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+  .nav-tab.active{color:white;border-bottom-color:var(--purple);}
+  .main{max-width:1200px;margin:0 auto;padding:24px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:white;border-radius:12px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+  .card-header{padding:14px 20px;font-size:15px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .card-header .toggle{margin-left:auto;font-size:12px;opacity:0.7;}
+  .card-body{padding:20px;}
+  .card.collapsed .card-body{display:none;}
+  .intro{background:linear-gradient(135deg,#f8f9fa,#fff);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);}
+  .intro h2{font-size:18px;color:var(--purple);margin-bottom:10px;}
+  .intro p{font-size:14px;color:var(--text);line-height:1.8;}
+  .highlight{color:var(--purple);font-weight:700;}
+  table.spec{width:100%;border-collapse:collapse;font-size:14px;}
+  table.spec th,table.spec td{padding:12px 16px;text-align:left;border-bottom:1px solid #eee;}
+  table.spec th{background:#f8f9fa;font-weight:600;color:var(--text-sub);width:200px;vertical-align:top;}
+  table.spec td{color:var(--text);line-height:1.7;}
+  .decision-list{list-style:none;padding:0;}
+  .decision-item{display:flex;align-items:flex-start;gap:10px;padding:14px 0;border-bottom:1px solid #f0f0f0;}
+  .decision-item:last-child{border-bottom:none;}
+  .decision-item select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;min-width:100px;}
+  .decision-item select.decided{border-color:var(--green);background:var(--green-light);}
+  .decision-item select.pending{border-color:var(--orange);background:var(--orange-light);}
+  .decision-item select.rejected{border-color:var(--red);background:var(--red-light);}
+  .decision-item .d-label{font-size:14px;color:var(--text);flex:1;line-height:1.7;}
+  .decision-item .d-note{width:260px;}
+  .decision-item .d-note input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;}
+  .decision-item .d-note input:focus{outline:none;border-color:var(--purple);}
+  .important-box{background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .important-box h4{color:#E65100;font-size:15px;margin-bottom:8px;}
+  .important-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .rethink-box{background:var(--purple-light);border:2px solid var(--purple);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .rethink-box h4{color:var(--purple);font-size:15px;margin-bottom:8px;}
+  .rethink-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:16px 0;}
+  .phone-wrapper{text-align:center;}
+  .phone-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
+  .phone{width:280px;background:#000;border-radius:32px;border:6px solid #1a1a1a;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+  .phone-notch{width:100px;height:24px;background:#000;border-radius:0 0 14px 14px;margin:0 auto;}
+  .phone-status{display:flex;justify-content:space-between;padding:0 16px;font-size:10px;color:white;margin-top:-18px;position:relative;z-index:5;}
+  .app-header{background:var(--purple);color:white;padding:10px 14px;text-align:center;font-size:14px;font-weight:600;}
+  .phone-body{background:#f5f5f5;min-height:420px;position:relative;padding:12px;}
+  .admin-mock{background:#f8f9fa;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--border);margin-bottom:16px;}
+  .admin-mock-header{color:white;padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;}
+  .admin-mock-header.purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
+  .admin-mock-header .role-badge{background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:10px;font-size:10px;margin-left:auto;}
+  .admin-mock-body{padding:20px;}
+  .flow-steps{max-width:700px;margin:0 auto;}
+  .flow-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px;}
+  .flow-num{width:30px;height:30px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+  .flow-box{flex:1;padding:10px 14px;border-radius:6px;border:1px solid var(--border);font-size:13px;line-height:1.6;background:#fafafa;}
+  .flow-arrow{text-align:center;color:var(--purple);font-size:14px;margin:2px 0 2px 10px;}
+  .memo-area{margin-top:16px;background:#FFFDE7;border:1px solid #FFE082;border-radius:8px;overflow:hidden;}
+  .memo-area-header{background:#FFE082;padding:8px 14px;font-size:12px;font-weight:600;color:#F57F17;}
+  .memo-area textarea{width:100%;border:none;padding:12px 14px;font-size:13px;font-family:inherit;min-height:80px;resize:vertical;background:transparent;line-height:1.6;}
+  .memo-area textarea:focus{outline:none;background:#FFF9C4;}
+  .progress{margin-bottom:20px;}
+  .progress-bar{background:#eee;border-radius:10px;height:10px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:10px;background:linear-gradient(135deg,var(--purple),#9333EA);transition:width 0.5s;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);}
+  .tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;color:white;}
+  .tag.decided{background:var(--green);}
+  .tag.pending{background:var(--orange);}
+  .tag.new{background:var(--red);}
+  @media print{
+    .top-header,.nav{position:static;}
+    .panel{display:block!important;page-break-before:always;}
+    .nav{display:none;}
+    .btn-save,.btn-export,.btn-clear{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="top-header-inner">
+    <div class="top-title">
+      <h1>StudyGO 店舗・検索機能 要件定義シート</h1>
+      <div class="sub">4機能の要件定義 &mdash; 店舗詳細UI / 営業中検索 / 検索条件 / 近い店舗</div>
+    </div>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus"></span>
+      <button class="btn-save" onclick="saveAll()">保存</button>
+      <button class="btn-export" onclick="exportAll()">エクスポート</button>
+      <button class="btn-clear" onclick="if(confirm('すべての入力をクリアしますか？')){clearAll();}">クリア</button>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner" id="navTabs">
+    <button class="nav-tab active" onclick="showPanel(0)">店舗UI</button>
+    <button class="nav-tab" onclick="showPanel(1)">営業中検索</button>
+    <button class="nav-tab" onclick="showPanel(2)">検索条件</button>
+    <button class="nav-tab" onclick="showPanel(3)">近い店舗</button>
+  </div>
+</div>
+
+<div class="main">
+
+<div class="panel active" id="panel-0">
+
+  <div class="intro">
+    <h2>店舗詳細UI/UX改善</h2>
+    <p>
+      <span class="highlight">店舗詳細ページのデザイン改善</span>を行います。<br>
+      情報の優先度整理、写真の見せ方、料金比較、CTAボタンの最適化により、コンバージョン率の向上を目指します。
+    </p>
+  </div>
+
+  <div class="progress" id="progressArea">
+    <div class="progress-label">
+      <span>決定項目の進捗</span>
+      <span id="progressText">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      改善ポイント <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>情報優先度</th><td>1. 営業状況 → 2. 写真 → 3. 料金プラン比較 → 4. CTA → 5. 設備・アクセス</td></tr>
+        <tr><th>店舗写真</th><td>ヘッダーにカルーセル写真（最大5枚）。タップで拡大表示</td></tr>
+        <tr><th>料金表示</th><td>ドロップイン/期間パス/月額を<strong>比較カード形式</strong>で横並び表示</td></tr>
+        <tr><th>CTAボタン</th><td>「見学予約」「チェックイン」「期間パス購入」の3つを常時表示</td></tr>
+        <tr><th>営業状況</th><td><strong>営業中/準備中/休業</strong>バッジをリアルタイム表示</td></tr>
+        <tr><th>レビュー</th><td>★評価と口コミ件数をヘッダー下に表示（将来対応）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      改善後の画面イメージ <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">店舗詳細</div>
+          <div class="phone-body">
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);height:120px;display:flex;align-items:flex-end;padding:10px;">
+              <div style="color:white;font-size:10px;">&#9664; 1 / 5 &#9654;</div>
+            </div>
+            <div style="padding:10px;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                <span style="font-size:11px;color:#999;">9:00-22:00</span>
+              </div>
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px;">渋谷スタジオ</div>
+              <div style="font-size:11px;color:#999;margin-bottom:10px;">渋谷区道玄坂1-2-3</div>
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;">料金プラン</div>
+              <div style="display:flex;gap:6px;margin-bottom:10px;">
+                <div style="flex:1;background:white;border:1px solid #eee;border-radius:8px;padding:8px;text-align:center;">
+                  <div style="font-size:10px;color:#999;">ドロップイン</div>
+                  <div style="font-weight:700;font-size:13px;">&#165;500/h</div>
+                </div>
+                <div style="flex:1;background:var(--purple-light);border:2px solid var(--purple);border-radius:8px;padding:8px;text-align:center;">
+                  <div style="font-size:10px;color:var(--purple);">期間パス</div>
+                  <div style="font-weight:700;font-size:13px;color:var(--purple);">&#165;3,500~</div>
+                </div>
+                <div style="flex:1;background:white;border:1px solid #eee;border-radius:8px;padding:8px;text-align:center;">
+                  <div style="font-size:10px;color:#999;">月額</div>
+                  <div style="font-weight:700;font-size:13px;">&#165;9,800~</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button style="flex:1;padding:10px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">見学予約</button>
+                <button style="flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">チェックイン</button>
+                <button style="flex:1;padding:10px;background:var(--blue);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">パス購入</button>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">店舗写真の<strong>最大枚数</strong>は？</span>
+          <span class="d-note"><input placeholder="5枚 / 10枚" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金比較カードで<strong>「おすすめ」バッジ</strong>を表示するか？</span>
+          <span class="d-note"><input placeholder="表示する / しない" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">CTAボタンの<strong>優先順位</strong>（色の強さ）はどうするか？</span>
+          <span class="d-note"><input placeholder="見学 > パス > チェックイン" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">営業状況バッジの<strong>更新頻度</strong>は？（リアルタイム/5分/30分）</span>
+          <span class="d-note"><input placeholder="リアルタイム / 5分" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>レビュー機能</strong>は初期リリースに含めるか？</span>
+          <span class="d-note"><input placeholder="含める / 将来対応" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（店舗UI/UX）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-1">
+
+  <div class="intro">
+    <h2>検索「営業中」フィルター追加</h2>
+    <p>
+      <span class="highlight">営業中の店舗のみを絞り込めるフィルター</span>を検索機能に追加します。<br>
+      ユーザーが今すぐ利用できる店舗を素早く見つけられるようにします。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>フィルター名</th><td>「営業中のみ表示」トグルスイッチ</td></tr>
+        <tr><th>判定ロジック</th><td>現在時刻が店舗の営業時間内かどうかで判定</td></tr>
+        <tr><th>営業カレンダー連動</th><td>店舗ごとの営業カレンダー（定休日・営業時間変更）と連動</td></tr>
+        <tr><th>臨時休業</th><td>管理画面で設定された臨時休業日は「休業中」として表示</td></tr>
+        <tr><th>バッジ表示</th><td>検索結果の各店舗に<strong>営業中（緑）/準備中（黄）/休業（グレー）</strong>バッジ</td></tr>
+        <tr><th>準備中の定義</th><td>営業開始30分前から「まもなく営業」として表示</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      アプリ画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">店舗検索</div>
+          <div class="phone-body">
+            <div style="padding:8px;">
+              <div style="background:white;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <span style="color:#999;">&#128269;</span>
+                <span style="color:#999;font-size:13px;">エリア・駅名で検索</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;">営業中のみ表示</span>
+                <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
+                  <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                </div>
+                <div style="font-size:11px;color:#999;margin-top:2px;">9:00-22:00 | 徒歩5分</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-weight:600;font-size:13px;">新宿スタジオ</div>
+                  <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                </div>
+                <div style="font-size:11px;color:#999;margin-top:2px;">7:00-23:00 | 徒歩8分</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;opacity:0.5;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="font-weight:600;font-size:13px;">池袋スタジオ</div>
+                  <span style="background:#999;color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">休業中</span>
+                </div>
+                <div style="font-size:11px;color:#999;margin-top:2px;">定休日 | 徒歩10分</div>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">「営業中のみ」フィルターの<strong>デフォルト</strong>はONかOFFか？</span>
+          <span class="d-note"><input placeholder="ON / OFF" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">「<strong>まもなく営業</strong>」の表示は営業開始何分前からか？</span>
+          <span class="d-note"><input placeholder="30分前 / 60分前" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">休業中の店舗は<strong>非表示</strong>にするか、<strong>グレーアウト</strong>で表示するか？</span>
+          <span class="d-note"><input placeholder="非表示 / グレーアウト" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">営業時間の<strong>データソース</strong>は？（管理画面入力/Googleマップ連携）</span>
+          <span class="d-note"><input placeholder="管理画面 / Google" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">祝日の営業時間は<strong>自動判定</strong>するか？（祝日カレンダー連動）</span>
+          <span class="d-note"><input placeholder="自動 / 手動設定" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（営業中検索）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-2">
+
+  <div class="intro">
+    <h2>検索条件の拡充</h2>
+    <p>
+      <span class="highlight">検索フィルターの拡充</span>により、ユーザーが自分に合った店舗をより見つけやすくします。<br>
+      現行の検索条件に加え、プラン種類・設備・料金帯などのフィルターを追加します。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      現行vs追加フィルター <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>現行: エリア検索</th><td>都道府県・市区町村・駅名で絞り込み</td></tr>
+        <tr><th>現行: マップ検索</th><td>地図上で店舗を探す</td></tr>
+        <tr><th>追加: プラン種類</th><td>ドロップイン対応 / 期間パス対応 / 月額プラン対応</td></tr>
+        <tr><th>追加: 設備</th><td>Wi-Fi / 電源 / 個室 / 会議室 / ドリンク / プリンター</td></tr>
+        <tr><th>追加: 料金帯</th><td>ドロップイン: ~500円/h, 500-1000円/h, 1000円~/h</td></tr>
+        <tr><th>追加: 営業時間</th><td>早朝営業(7時前) / 深夜営業(22時以降) / 24時間</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      アプリ画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">検索フィルター</div>
+          <div class="phone-body">
+            <div style="padding:8px;">
+              <div style="font-size:14px;font-weight:700;margin-bottom:10px;">絞り込み</div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">プラン種類</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--purple);color:white;font-weight:600;">期間パス</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">月額プラン</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">ドロップイン</span>
+                </div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">設備</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--blue);color:white;font-weight:600;">Wi-Fi</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--blue);color:white;font-weight:600;">電源</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">個室</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">会議室</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">ドリンク</span>
+                </div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">料金帯（ドロップイン）</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">~500円/h</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--green);color:white;font-weight:600;">500-1000円</span>
+                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">1000円~/h</span>
+                </div>
+              </div>
+              <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;">この条件で検索</button>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">設備フィルターの<strong>項目</strong>は？（Wi-Fi/電源/個室/会議室/ドリンク/プリンター）</span>
+          <span class="d-note"><input placeholder="項目リスト" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金帯の<strong>区切り</strong>はどうするか？</span>
+          <span class="d-note"><input placeholder="~500 / 500-1000 / 1000~" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">フィルターの<strong>UI形式</strong>はチップ選択式でよいか？</span>
+          <span class="d-note"><input placeholder="チップ / ドロップダウン" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">フィルター条件の<strong>AND/OR</strong>は？（設備は全て満たす？いずれか？）</span>
+          <span class="d-note"><input placeholder="AND / OR" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">検索結果の<strong>ソート順</strong>に新しい基準を追加するか？（距離/料金/評価）</span>
+          <span class="d-note"><input placeholder="追加する項目" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（検索条件）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-3">
+
+  <div class="intro">
+    <h2>近い店舗の自動表示</h2>
+    <p>
+      <span class="highlight">検索結果が0件の時に、近くの店舗を自動表示</span>する機能です。<br>
+      いいオフィスなどの他サービスを参考に、ユーザーの離脱を防ぎ、代替店舗への誘導を行います。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>発動条件</th><td>検索結果が<strong>0件</strong>の場合に自動発動</td></tr>
+        <tr><th>表示方法</th><td>「お近くの店舗」セクションとしてリスト表示</td></tr>
+        <tr><th>距離計算</th><td>ユーザーの現在地（GPS）からの直線距離で算出</td></tr>
+        <tr><th>表示上限</th><td><strong>最大5件</strong>（距離が近い順）</td></tr>
+        <tr><th>表示情報</th><td>店舗名 / 距離（km） / 営業中バッジ / 料金の最安値</td></tr>
+        <tr><th>位置情報未取得時</th><td>「位置情報を許可すると近くの店舗を表示できます」メッセージ</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      アプリ画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">検索結果0件</div>
+          <div class="phone-body">
+            <div style="padding:8px;">
+              <div style="text-align:center;padding:20px 0;">
+                <div style="font-size:32px;margin-bottom:8px;">&#128270;</div>
+                <div style="font-size:14px;font-weight:600;color:var(--text);">検索結果がありません</div>
+                <div style="font-size:12px;color:#999;margin-top:4px;">条件を変更して再検索してください</div>
+              </div>
+              <div style="background:var(--purple-light);border-radius:10px;padding:12px;margin-bottom:8px;">
+                <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:8px;">&#128205; お近くの店舗</div>
+                <div style="background:white;border-radius:8px;padding:10px;margin-bottom:6px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
+                      <div style="font-size:11px;color:#999;">0.8km</div>
+                    </div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                </div>
+                <div style="background:white;border-radius:8px;padding:10px;margin-bottom:6px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">恵比寿スタジオ</div>
+                      <div style="font-size:11px;color:#999;">1.2km</div>
+                    </div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                </div>
+                <div style="background:white;border-radius:8px;padding:10px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">代官山スタジオ</div>
+                      <div style="font-size:11px;color:#999;">1.5km</div>
+                    </div>
+                    <span style="background:#999;color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">休業中</span>
+                  </div>
+                </div>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>ユーザーが検索を実行</strong>（エリア・条件を指定）</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>検索結果が0件</strong> → 近い店舗表示を発動</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>位置情報を取得</strong>（未許可の場合は許可を求める）</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>近い店舗リストを表示</strong>（距離順、最大5件）</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">近い店舗の<strong>表示上限</strong>は何件か？</span>
+          <span class="d-note"><input placeholder="3件 / 5件 / 10件" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">距離の<strong>上限</strong>は設けるか？（例: 10km以内のみ）</span>
+          <span class="d-note"><input placeholder="10km / 制限なし" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">検索結果が<strong>少ない場合</strong>（1-2件）にも近い店舗を追加表示するか？</span>
+          <span class="d-note"><input placeholder="0件のみ / 少ない場合も" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">位置情報が<strong>取得できない場合</strong>のフォールバックは？</span>
+          <span class="d-note"><input placeholder="都道府県ベース / 非表示" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">近い店舗の<strong>表示順</strong>は距離順のみか？営業中優先か？</span>
+          <span class="d-note"><input placeholder="距離順 / 営業中優先" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（近い店舗）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+var PANEL_NAMES = ['店舗UI','営業中検索','検索条件','近い店舗'];
+var STORAGE_KEY = 'requirements-shop-search-v1';
+
+function showPanel(idx) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('panel-' + idx).classList.add('active');
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+function toggleCard(header) {
+  header.parentElement.classList.toggle('collapsed');
+  var toggle = header.querySelector('.toggle');
+  toggle.textContent = header.parentElement.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
+}
+
+function updateStyle(sel) {
+  sel.className = sel.value;
+  autoSave();
+  updateProgress();
+}
+
+function updateProgress() {
+  var all = document.querySelectorAll('.decision-item select');
+  var decided = 0;
+  all.forEach(function(sel) { if (sel.value === 'decided') decided++; });
+  var pct = all.length > 0 ? Math.round(decided / all.length * 100) : 0;
+  document.getElementById('progressText').textContent = decided + ' / ' + all.length;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+var saveTimeout;
+function autoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() { saveAll(); }, 1000);
+}
+
+function saveAll() {
+  var data = {
+    memos: [],
+    decisions: [],
+    timestamp: new Date().toISOString()
+  };
+
+  document.querySelectorAll('.section-memo').forEach(function(ta) {
+    data.memos.push(ta.value);
+  });
+
+  document.querySelectorAll('.decision-item').forEach(function(item) {
+    var sel = item.querySelector('select');
+    var input = item.querySelector('.memo-input');
+    data.decisions.push({
+      status: sel ? sel.value : '',
+      note: input ? input.value : ''
+    });
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
+}
+
+function loadAll() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    var data = JSON.parse(raw);
+
+    if (data.memos) {
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
+        if (data.memos[i] !== undefined) ta.value = data.memos[i];
+      });
+    }
+
+    if (data.decisions) {
+      document.querySelectorAll('.decision-item').forEach(function(item, i) {
+        if (data.decisions[i]) {
+          var sel = item.querySelector('select');
+          var input = item.querySelector('.memo-input');
+          if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
+          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+        }
+      });
+    }
+
+    document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
+  } catch(e) { console.error(e); }
+}
+
+function clearAll() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.section-memo').forEach(function(ta) { ta.value = ''; });
+  document.querySelectorAll('.memo-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.selectedIndex = 0; sel.className = sel.value; });
+  document.getElementById('saveStatus').textContent = '\u30AF\u30EA\u30A2\u6E08\u307F';
+  updateProgress();
+}
+
+function exportAll() {
+  var text = '# StudyGO 店舗・検索機能 要件定義 エクスポート\n\n';
+
+  document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
+    text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
+    var decisions = panel.querySelectorAll('.decision-item');
+    if (decisions.length > 0) {
+      text += '### 決定事項\n';
+      decisions.forEach(function(item) {
+        var sel = item.querySelector('select');
+        var label = item.querySelector('.d-label').textContent;
+        var note = item.querySelector('.memo-input').value;
+        var statusMap = { decided: '決定', pending: '保留', rejected: '却下' };
+        text += '- [' + (statusMap[sel.value] || sel.value) + '] ' + label;
+        if (note) text += ' -> ' + note;
+        text += '\n';
+      });
+      text += '\n';
+    }
+    var memo = panel.querySelector('.section-memo');
+    if (memo && memo.value.trim()) {
+      text += '### メモ\n' + memo.value.trim() + '\n';
+    }
+    text += '\n---\n\n';
+  });
+
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.btn-export');
+    btn.textContent = 'コピーしました!';
+    btn.style.background = '#4CAF50';
+    btn.style.color = 'white';
+    setTimeout(function() { btn.textContent = 'エクスポート'; btn.style.background = 'white'; btn.style.color = 'var(--purple)'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('クリップボードにコピーしました');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadAll();
+  document.querySelectorAll('.decision-item select').forEach(function(sel) {
+    sel.className = sel.value;
+  });
+  updateProgress();
+});
+</script>
+
+</body>
+</html>

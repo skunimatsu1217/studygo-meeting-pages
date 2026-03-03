@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyGO ログイン・見学機能 要件定義シート</title>
+<style>
+  :root {
+    --purple:#7C3AED; --purple-light:#F3E8FF;
+    --blue:#1a73e8; --blue-light:#E3F2FD;
+    --green:#4CAF50; --green-light:#E8F5E9;
+    --orange:#FF9800; --orange-light:#FFF3E0;
+    --red:#F44336; --red-light:#FFEBEE;
+    --text:#333; --text-sub:#757575; --border:#E0E0E0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#1a1a2e;min-height:100vh;}
+  .top-header{background:linear-gradient(135deg,#4a148c,#7C3AED);color:white;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;top:0;z-index:100;}
+  .top-header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .top-title h1{font-size:20px;margin-bottom:2px;}
+  .top-title .sub{font-size:12px;opacity:0.7;}
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .top-actions button{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-save{background:var(--green);color:white;}
+  .btn-export{background:white;color:var(--purple);}
+  .btn-clear{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)!important;}
+  .save-status{font-size:11px;color:rgba(255,255,255,0.5);}
+  .nav{background:#16213e;padding:0 24px;border-bottom:1px solid rgba(255,255,255,0.1);overflow-x:auto;white-space:nowrap;position:sticky;top:64px;z-index:99;}
+  .nav-inner{max-width:1200px;margin:0 auto;display:flex;gap:0;}
+  .nav-tab{padding:12px 16px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
+  .nav-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+  .nav-tab.active{color:white;border-bottom-color:var(--purple);}
+  .main{max-width:1200px;margin:0 auto;padding:24px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:white;border-radius:12px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+  .card-header{padding:14px 20px;font-size:15px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .card-header .toggle{margin-left:auto;font-size:12px;opacity:0.7;}
+  .card-body{padding:20px;}
+  .card.collapsed .card-body{display:none;}
+  .intro{background:linear-gradient(135deg,#f8f9fa,#fff);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);}
+  .intro h2{font-size:18px;color:var(--purple);margin-bottom:10px;}
+  .intro p{font-size:14px;color:var(--text);line-height:1.8;}
+  .highlight{color:var(--purple);font-weight:700;}
+  table.spec{width:100%;border-collapse:collapse;font-size:14px;}
+  table.spec th,table.spec td{padding:12px 16px;text-align:left;border-bottom:1px solid #eee;}
+  table.spec th{background:#f8f9fa;font-weight:600;color:var(--text-sub);width:200px;vertical-align:top;}
+  table.spec td{color:var(--text);line-height:1.7;}
+  .decision-list{list-style:none;padding:0;}
+  .decision-item{display:flex;align-items:flex-start;gap:10px;padding:14px 0;border-bottom:1px solid #f0f0f0;}
+  .decision-item:last-child{border-bottom:none;}
+  .decision-item select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;min-width:100px;}
+  .decision-item select.decided{border-color:var(--green);background:var(--green-light);}
+  .decision-item select.pending{border-color:var(--orange);background:var(--orange-light);}
+  .decision-item select.rejected{border-color:var(--red);background:var(--red-light);}
+  .decision-item .d-label{font-size:14px;color:var(--text);flex:1;line-height:1.7;}
+  .decision-item .d-note{width:260px;}
+  .decision-item .d-note input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;}
+  .decision-item .d-note input:focus{outline:none;border-color:var(--purple);}
+  .important-box{background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .important-box h4{color:#E65100;font-size:15px;margin-bottom:8px;}
+  .important-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:16px 0;}
+  .phone-wrapper{text-align:center;}
+  .phone{width:280px;background:#000;border-radius:32px;border:6px solid #1a1a1a;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+  .phone-notch{width:100px;height:24px;background:#000;border-radius:0 0 14px 14px;margin:0 auto;}
+  .phone-status{display:flex;justify-content:space-between;padding:0 16px;font-size:10px;color:white;margin-top:-18px;position:relative;z-index:5;}
+  .app-header{background:var(--purple);color:white;padding:10px 14px;text-align:center;font-size:14px;font-weight:600;}
+  .phone-body{background:#f5f5f5;min-height:420px;position:relative;padding:12px;}
+  .admin-mock{background:#f8f9fa;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--border);margin-bottom:16px;}
+  .admin-mock-header{color:white;padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;}
+  .admin-mock-header.purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
+  .admin-mock-header .role-badge{background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:10px;font-size:10px;margin-left:auto;}
+  .admin-mock-body{padding:20px;}
+  .flow-steps{max-width:700px;margin:0 auto;}
+  .flow-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px;}
+  .flow-num{width:30px;height:30px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+  .flow-box{flex:1;padding:10px 14px;border-radius:6px;border:1px solid var(--border);font-size:13px;line-height:1.6;background:#fafafa;}
+  .flow-arrow{text-align:center;color:var(--purple);font-size:14px;margin:2px 0 2px 10px;}
+  .memo-area{margin-top:16px;background:#FFFDE7;border:1px solid #FFE082;border-radius:8px;overflow:hidden;}
+  .memo-area-header{background:#FFE082;padding:8px 14px;font-size:12px;font-weight:600;color:#F57F17;}
+  .memo-area textarea{width:100%;border:none;padding:12px 14px;font-size:13px;font-family:inherit;min-height:80px;resize:vertical;background:transparent;line-height:1.6;}
+  .memo-area textarea:focus{outline:none;background:#FFF9C4;}
+  .progress{margin-bottom:20px;}
+  .progress-bar{background:#eee;border-radius:10px;height:10px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:10px;background:linear-gradient(135deg,var(--purple),#9333EA);transition:width 0.5s;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);}
+  .tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;color:white;}
+  .tag.decided{background:var(--green);}
+  .tag.pending{background:var(--orange);}
+  .tag.new{background:var(--red);}
+  @media print{
+    .top-header,.nav{position:static;}
+    .panel{display:block!important;page-break-before:always;}
+    .nav{display:none;}
+    .btn-save,.btn-export,.btn-clear{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="top-header-inner">
+    <div class="top-title">
+      <h1>StudyGO ログイン・見学機能 要件定義シート</h1>
+      <div class="sub">3機能の要件定義 &mdash; ログイン簡略化 / 見学予約WEB / SNSログイン</div>
+    </div>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus"></span>
+      <button class="btn-save" onclick="saveAll()">保存</button>
+      <button class="btn-export" onclick="exportAll()">エクスポート</button>
+      <button class="btn-clear" onclick="if(confirm('すべての入力をクリアしますか？')){clearAll();}">クリア</button>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner" id="navTabs">
+    <button class="nav-tab active" onclick="showPanel(0)">ログイン簡略</button>
+    <button class="nav-tab" onclick="showPanel(1)">見学WEB</button>
+    <button class="nav-tab" onclick="showPanel(2)">SNSログイン</button>
+  </div>
+</div>
+
+<div class="main">
+
+<div class="panel active" id="panel-0">
+
+  <div class="intro">
+    <h2>ログイン簡略化（見学予約の入力削減）</h2>
+    <p>
+      <span class="highlight">見学予約時の入力項目を大幅に削減</span>し、コンバージョン率を向上させます。<br>
+      現行の必須7項目を2項目に減らし、追加情報は来店時・契約時に入力してもらう段階的な設計です。
+    </p>
+  </div>
+
+  <div class="progress" id="progressArea">
+    <div class="progress-label">
+      <span>決定項目の進捗</span>
+      <span id="progressText">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      現行vs改善フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>現行: 必須項目</th><td>氏名 / メールアドレス / 電話番号 / 生年月日 / 性別 / 職業 / 利用目的（計7項目）</td></tr>
+        <tr><th>改善後: 必須項目</th><td><strong>氏名 / メールアドレス</strong>（計2項目のみ）</td></tr>
+        <tr><th>追加入力タイミング</th><td>来店時または契約時に残りの情報を入力</td></tr>
+        <tr><th>メリット</th><td>登録離脱率の大幅削減（目標: 離脱率50%→20%）</td></tr>
+        <tr><th>リスク対策</th><td>電話番号なしでも連絡可能（メール通知で対応）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      登録フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>STEP1: 簡易登録</strong> — 氏名 + メールアドレスのみで登録完了</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>STEP2: 見学予約</strong> — 店舗・希望日時を選択して予約</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>来店</strong> — 見学後、気に入ったら契約手続きへ</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>STEP3: 契約時に追加情報入力</strong> — 電話番号・生年月日・性別・職業・利用目的・クレジットカード</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      アプリ画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">簡易登録</div>
+          <div class="phone-body">
+            <div style="padding:12px;">
+              <div style="text-align:center;margin-bottom:16px;">
+                <div style="font-size:16px;font-weight:700;">アカウント登録</div>
+                <div style="font-size:12px;color:#999;margin-top:4px;">まずは簡単2ステップで登録</div>
+              </div>
+              <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">お名前 <span style="color:var(--red);font-size:10px;">必須</span></label>
+                <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;" placeholder="山田 太郎">
+              </div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">メールアドレス <span style="color:var(--red);font-size:10px;">必須</span></label>
+                <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;" placeholder="example@email.com">
+              </div>
+              <button style="width:100%;padding:14px;background:var(--purple);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;">登録する</button>
+              <div style="text-align:center;margin-top:12px;font-size:11px;color:#999;">
+                登録することで<span style="color:var(--purple);">利用規約</span>に同意します
+              </div>
+              <div style="text-align:center;margin-top:16px;">
+                <div style="font-size:12px;color:#999;margin-bottom:8px;">または</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <button style="width:100%;padding:10px;background:white;border:1px solid var(--border);border-radius:8px;font-size:12px;">Googleで登録</button>
+                  <button style="width:100%;padding:10px;background:#06C755;color:white;border:none;border-radius:8px;font-size:12px;">LINEで登録</button>
+                </div>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">簡易登録の必須項目は<strong>氏名+メール</strong>の2項目でよいか？</span>
+          <span class="d-note"><input placeholder="OK / 電話番号も追加" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">電話番号なしで<strong>予約確認の連絡</strong>はメールのみで対応可能か？</span>
+          <span class="d-note"><input placeholder="メールのみ / SMS必要" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">追加情報の入力は<strong>来店時</strong>か<strong>契約時</strong>か？</span>
+          <span class="d-note"><input placeholder="来店時 / 契約時" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">既存ユーザーの情報が未入力の場合、<strong>後から入力を促す</strong>か？</span>
+          <span class="d-note"><input placeholder="促す / 任意" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">簡易登録ユーザーの<strong>機能制限</strong>はあるか？（見学予約のみ？ドロップインも？）</span>
+          <span class="d-note"><input placeholder="見学のみ / ドロップインも" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">パスワード設定は<strong>いつ</strong>行うか？（登録時/初回ログイン時/契約時）</span>
+          <span class="d-note"><input placeholder="登録時 / 初回ログイン" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（ログイン簡略化）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-1">
+
+  <div class="intro">
+    <h2>見学予約WEB対応</h2>
+    <p>
+      <span class="highlight">ブラウザから見学予約ができるWEBフォーム</span>を提供します。<br>
+      アプリをインストールしなくても見学予約が可能になり、SEO効果による新規獲得も期待できます。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      仕様・メリット <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>対象ユーザー</th><td>アプリ未インストールの<strong>新規見込み客</strong></td></tr>
+        <tr><th>導線</th><td>Google検索 → WEBサイト → 見学予約フォーム → 確認メール</td></tr>
+        <tr><th>入力項目</th><td>氏名 / メールアドレス / 希望店舗 / 希望日時（簡易登録と同じ最小項目）</td></tr>
+        <tr><th>アプリ連携</th><td>予約完了後に「アプリで管理するとさらに便利」とアプリDL案内</td></tr>
+        <tr><th>SEO効果</th><td>店舗ごとのランディングページでローカルSEO強化</td></tr>
+        <tr><th>レスポンシブ</th><td>スマホ・タブレット・PCすべて対応</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      WEB予約フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>WEBアクセス</strong> — Google検索やSNSからWEB予約ページへ</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>フォーム入力</strong> — 店舗選択・氏名・メール・希望日時を入力</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>確認メール送信</strong> — 予約確認メールを自動送信（管理者にも通知）</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>来店</strong> — 見学予約日に来店</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:#9333EA;">5</div><div class="flow-box"><strong>アプリ案内</strong> — 来店時にアプリDLを案内、アカウント連携</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      WEB予約ページイメージ <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">見学予約 - StudyGO<span class="role-badge">WEBページ</span></div>
+        <div class="admin-mock-body">
+          <p style="font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.7;">勉強カフェの見学予約フォームです。お気軽にお申し込みください。</p>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">ご希望の店舗 <span style="color:var(--red);font-size:10px;">必須</span></label>
+            <select style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+              <option>店舗を選択してください</option><option>渋谷スタジオ</option><option>新宿スタジオ</option><option>新宿BPスタジオ</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">お名前 <span style="color:var(--red);font-size:10px;">必須</span></label>
+            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="山田 太郎">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">メールアドレス <span style="color:var(--red);font-size:10px;">必須</span></label>
+            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="example@email.com">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">ご希望の日時 <span style="color:var(--red);font-size:10px;">必須</span></label>
+            <input type="date" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">備考（任意）</label>
+            <textarea style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-height:60px;" placeholder="ご質問やご要望があればご記入ください"></textarea>
+          </div>
+          <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;">見学予約を送信</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB予約の<strong>ドメイン</strong>は？（studygo.jp/visit 等）</span>
+          <span class="d-note"><input placeholder="ドメイン/パス" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB予約ページは<strong>店舗ごと</strong>に個別URLを持つか？</span>
+          <span class="d-note"><input placeholder="個別URL / 共通1ページ" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB予約完了時に<strong>アカウント自動作成</strong>するか？</span>
+          <span class="d-note"><input placeholder="自動作成 / 手動" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">予約の<strong>空き状況</strong>をWEBページで表示するか？</span>
+          <span class="d-note"><input placeholder="表示する / しない" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB予約の<strong>キャンセル</strong>はメールリンクからできるか？</span>
+          <span class="d-note"><input placeholder="できる / 店舗連絡" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">WEB経由の予約に<strong>特典</strong>をつけるか？（初回クーポン等）</span>
+          <span class="d-note"><input placeholder="つける / つけない" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（見学予約WEB）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-2">
+
+  <div class="intro">
+    <h2>SNSログイン（Google / LINE / Apple）</h2>
+    <p>
+      <span class="highlight">Google・LINE・Appleアカウントでのログイン</span>に対応します。<br>
+      パスワード管理の手間を省き、ログインのハードルを下げることで新規登録率の向上を目指します。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      各プラットフォーム仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>Google</th><td>取得情報: メール・氏名・プロフィール画像<br>OAuth 2.0対応。Webでも利用可能</td></tr>
+        <tr><th>LINE</th><td>取得情報: LINE表示名・メール（許可時）・プロフィール画像<br><strong>注意: メールアドレスは任意設定のため取得できない場合あり</strong></td></tr>
+        <tr><th>Apple</th><td>取得情報: メール（リレーメール含む）・氏名（初回のみ）<br><strong>iOS要件: Sign in with Appleはアプリ提出時に必須</strong></td></tr>
+        <tr><th>共通仕様</th><td>既存メールアドレスと一致する場合はアカウント連携を提案</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      ログイン画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">ログイン</div>
+          <div class="phone-body">
+            <div style="padding:16px;text-align:center;">
+              <div style="font-size:24px;font-weight:700;color:var(--purple);margin-bottom:4px;">StudyGO</div>
+              <div style="font-size:12px;color:#999;margin-bottom:24px;">勉強カフェの利用をもっと便利に</div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+                <button style="width:100%;padding:12px;background:white;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;">
+                  <span style="color:#4285F4;font-weight:700;">G</span> Googleでログイン
+                </button>
+                <button style="width:100%;padding:12px;background:#06C755;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
+                  LINEでログイン
+                </button>
+                <button style="width:100%;padding:12px;background:#000;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
+                  &#63743; Appleでサインイン
+                </button>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+                <span style="font-size:11px;color:#999;">または</span>
+                <div style="flex:1;height:1px;background:var(--border);"></div>
+              </div>
+              <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
+                メールアドレスでログイン
+              </button>
+              <div style="margin-top:16px;font-size:12px;">
+                <span style="color:#999;">アカウントをお持ちでない方は</span>
+                <span style="color:var(--purple);font-weight:600;">新規登録</span>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      アカウント連携フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>SNSログインボタンをタップ</strong> — Google/LINE/Appleの認証画面を表示</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>SNS認証・メールアドレス取得</strong> — SNSプロバイダからメール・名前を取得</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>既存アカウント検索</strong> — 取得したメールで既存ユーザーを検索</div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>連携 or 新規作成</strong> — 既存あり: SNSアカウント連携を提案 / 既存なし: 新規アカウント作成</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">初期リリースで対応する<strong>SNSの種類</strong>は？（Google/LINE/Apple全部？段階的？）</span>
+          <span class="d-note"><input placeholder="全部 / 段階的" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">LINEのメール未設定ユーザーへの<strong>対応方針</strong>は？</span>
+          <span class="d-note"><input placeholder="メール入力必須 / LINE IDで代替" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">Appleの<strong>リレーメール</strong>（プライベートメール）への対応は？</span>
+          <span class="d-note"><input placeholder="そのまま利用 / 実メール要求" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">既存アカウントとの<strong>自動連携</strong>はするか？（メール一致時に自動紐付け）</span>
+          <span class="d-note"><input placeholder="自動連携 / 確認ダイアログ" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">1つのアカウントに<strong>複数SNS</strong>を紐付け可能にするか？</span>
+          <span class="d-note"><input placeholder="可能 / 1つのみ" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">SNSログインユーザーの<strong>パスワード</strong>は設定させるか？</span>
+          <span class="d-note"><input placeholder="任意 / 必須 / 不要" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">SNS連携の<strong>解除</strong>は可能にするか？（パスワード設定済みの場合のみ）</span>
+          <span class="d-note"><input placeholder="可能 / 不可" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（SNSログイン）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+var PANEL_NAMES = ['ログイン簡略','見学WEB','SNSログイン'];
+var STORAGE_KEY = 'requirements-login-visit-v1';
+
+function showPanel(idx) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('panel-' + idx).classList.add('active');
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+function toggleCard(header) {
+  header.parentElement.classList.toggle('collapsed');
+  var toggle = header.querySelector('.toggle');
+  toggle.textContent = header.parentElement.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
+}
+
+function updateStyle(sel) {
+  sel.className = sel.value;
+  autoSave();
+  updateProgress();
+}
+
+function updateProgress() {
+  var all = document.querySelectorAll('.decision-item select');
+  var decided = 0;
+  all.forEach(function(sel) { if (sel.value === 'decided') decided++; });
+  var pct = all.length > 0 ? Math.round(decided / all.length * 100) : 0;
+  document.getElementById('progressText').textContent = decided + ' / ' + all.length;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+var saveTimeout;
+function autoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() { saveAll(); }, 1000);
+}
+
+function saveAll() {
+  var data = {
+    memos: [],
+    decisions: [],
+    timestamp: new Date().toISOString()
+  };
+
+  document.querySelectorAll('.section-memo').forEach(function(ta) {
+    data.memos.push(ta.value);
+  });
+
+  document.querySelectorAll('.decision-item').forEach(function(item) {
+    var sel = item.querySelector('select');
+    var input = item.querySelector('.memo-input');
+    data.decisions.push({
+      status: sel ? sel.value : '',
+      note: input ? input.value : ''
+    });
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
+}
+
+function loadAll() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    var data = JSON.parse(raw);
+
+    if (data.memos) {
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
+        if (data.memos[i] !== undefined) ta.value = data.memos[i];
+      });
+    }
+
+    if (data.decisions) {
+      document.querySelectorAll('.decision-item').forEach(function(item, i) {
+        if (data.decisions[i]) {
+          var sel = item.querySelector('select');
+          var input = item.querySelector('.memo-input');
+          if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
+          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+        }
+      });
+    }
+
+    document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
+  } catch(e) { console.error(e); }
+}
+
+function clearAll() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.section-memo').forEach(function(ta) { ta.value = ''; });
+  document.querySelectorAll('.memo-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.selectedIndex = 0; sel.className = sel.value; });
+  document.getElementById('saveStatus').textContent = '\u30AF\u30EA\u30A2\u6E08\u307F';
+  updateProgress();
+}
+
+function exportAll() {
+  var text = '# StudyGO ログイン・見学機能 要件定義 エクスポート\n\n';
+
+  document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
+    text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
+    var decisions = panel.querySelectorAll('.decision-item');
+    if (decisions.length > 0) {
+      text += '### 決定事項\n';
+      decisions.forEach(function(item) {
+        var sel = item.querySelector('select');
+        var label = item.querySelector('.d-label').textContent;
+        var note = item.querySelector('.memo-input').value;
+        var statusMap = { decided: '決定', pending: '保留', rejected: '却下' };
+        text += '- [' + (statusMap[sel.value] || sel.value) + '] ' + label;
+        if (note) text += ' -> ' + note;
+        text += '\n';
+      });
+      text += '\n';
+    }
+    var memo = panel.querySelector('.section-memo');
+    if (memo && memo.value.trim()) {
+      text += '### メモ\n' + memo.value.trim() + '\n';
+    }
+    text += '\n---\n\n';
+  });
+
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.btn-export');
+    btn.textContent = 'コピーしました!';
+    btn.style.background = '#4CAF50';
+    btn.style.color = 'white';
+    setTimeout(function() { btn.textContent = 'エクスポート'; btn.style.background = 'white'; btn.style.color = 'var(--purple)'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('クリップボードにコピーしました');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadAll();
+  document.querySelectorAll('.decision-item select').forEach(function(sel) {
+    sel.className = sel.value;
+  });
+  updateProgress();
+});
+</script>
+
+</body>
+</html>

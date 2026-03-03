@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyGO 基盤系機能 要件定義シート</title>
+<style>
+  :root {
+    --purple:#7C3AED; --purple-light:#F3E8FF;
+    --blue:#1a73e8; --blue-light:#E3F2FD;
+    --green:#4CAF50; --green-light:#E8F5E9;
+    --orange:#FF9800; --orange-light:#FFF3E0;
+    --red:#F44336; --red-light:#FFEBEE;
+    --text:#333; --text-sub:#757575; --border:#E0E0E0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#1a1a2e;min-height:100vh;}
+  .top-header{background:linear-gradient(135deg,#4a148c,#7C3AED);color:white;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;top:0;z-index:100;}
+  .top-header-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .top-title h1{font-size:20px;margin-bottom:2px;}
+  .top-title .sub{font-size:12px;opacity:0.7;}
+  .top-actions{display:flex;gap:8px;align-items:center;}
+  .top-actions button{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+  .btn-save{background:var(--green);color:white;}
+  .btn-export{background:white;color:var(--purple);}
+  .btn-clear{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)!important;}
+  .save-status{font-size:11px;color:rgba(255,255,255,0.5);}
+  .nav{background:#16213e;padding:0 24px;border-bottom:1px solid rgba(255,255,255,0.1);overflow-x:auto;white-space:nowrap;position:sticky;top:64px;z-index:99;}
+  .nav-inner{max-width:1200px;margin:0 auto;display:flex;gap:0;}
+  .nav-tab{padding:12px 16px;color:rgba(255,255,255,0.45);font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;transition:all 0.2s;white-space:nowrap;}
+  .nav-tab:hover{color:rgba(255,255,255,0.8);background:rgba(255,255,255,0.04);}
+  .nav-tab.active{color:white;border-bottom-color:var(--purple);}
+  .main{max-width:1200px;margin:0 auto;padding:24px;}
+  .panel{display:none;}
+  .panel.active{display:block;}
+  .card{background:white;border-radius:12px;border:1px solid var(--border);margin-bottom:20px;overflow:hidden;}
+  .card-header{padding:14px 20px;font-size:15px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .card-header .toggle{margin-left:auto;font-size:12px;opacity:0.7;}
+  .card-body{padding:20px;}
+  .card.collapsed .card-body{display:none;}
+  .intro{background:linear-gradient(135deg,#f8f9fa,#fff);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid var(--border);}
+  .intro h2{font-size:18px;color:var(--purple);margin-bottom:10px;}
+  .intro p{font-size:14px;color:var(--text);line-height:1.8;}
+  .highlight{color:var(--purple);font-weight:700;}
+  table.spec{width:100%;border-collapse:collapse;font-size:14px;}
+  table.spec th,table.spec td{padding:12px 16px;text-align:left;border-bottom:1px solid #eee;}
+  table.spec th{background:#f8f9fa;font-weight:600;color:var(--text-sub);width:200px;vertical-align:top;}
+  table.spec td{color:var(--text);line-height:1.7;}
+  .decision-list{list-style:none;padding:0;}
+  .decision-item{display:flex;align-items:flex-start;gap:10px;padding:14px 0;border-bottom:1px solid #f0f0f0;}
+  .decision-item:last-child{border-bottom:none;}
+  .decision-item select{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;min-width:100px;}
+  .decision-item select.decided{border-color:var(--green);background:var(--green-light);}
+  .decision-item select.pending{border-color:var(--orange);background:var(--orange-light);}
+  .decision-item select.rejected{border-color:var(--red);background:var(--red-light);}
+  .decision-item .d-label{font-size:14px;color:var(--text);flex:1;line-height:1.7;}
+  .decision-item .d-note{width:260px;}
+  .decision-item .d-note input{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:inherit;}
+  .decision-item .d-note input:focus{outline:none;border-color:var(--purple);}
+  .important-box{background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .important-box h4{color:#E65100;font-size:15px;margin-bottom:8px;}
+  .important-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .rethink-box{background:var(--purple-light);border:2px solid var(--purple);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .rethink-box h4{color:var(--purple);font-size:15px;margin-bottom:8px;}
+  .rethink-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:16px 0;}
+  .phone-wrapper{text-align:center;}
+  .phone-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
+  .phone{width:280px;background:#000;border-radius:32px;border:6px solid #1a1a1a;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
+  .phone-notch{width:100px;height:24px;background:#000;border-radius:0 0 14px 14px;margin:0 auto;}
+  .phone-status{display:flex;justify-content:space-between;padding:0 16px;font-size:10px;color:white;margin-top:-18px;position:relative;z-index:5;}
+  .app-header{background:var(--purple);color:white;padding:10px 14px;text-align:center;font-size:14px;font-weight:600;}
+  .phone-body{background:#f5f5f5;min-height:420px;position:relative;padding:12px;}
+  .admin-mock{background:#f8f9fa;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid var(--border);margin-bottom:16px;}
+  .admin-mock-header{color:white;padding:14px 20px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;}
+  .admin-mock-header.purple{background:linear-gradient(135deg,#7C3AED,#5B21B6);}
+  .admin-mock-header .role-badge{background:rgba(255,255,255,0.2);padding:3px 10px;border-radius:10px;font-size:10px;margin-left:auto;}
+  .admin-mock-body{padding:20px;}
+  .flow-steps{max-width:700px;margin:0 auto;}
+  .flow-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:4px;}
+  .flow-num{width:30px;height:30px;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+  .flow-box{flex:1;padding:10px 14px;border-radius:6px;border:1px solid var(--border);font-size:13px;line-height:1.6;background:#fafafa;}
+  .flow-arrow{text-align:center;color:var(--purple);font-size:14px;margin:2px 0 2px 10px;}
+  .memo-area{margin-top:16px;background:#FFFDE7;border:1px solid #FFE082;border-radius:8px;overflow:hidden;}
+  .memo-area-header{background:#FFE082;padding:8px 14px;font-size:12px;font-weight:600;color:#F57F17;}
+  .memo-area textarea{width:100%;border:none;padding:12px 14px;font-size:13px;font-family:inherit;min-height:80px;resize:vertical;background:transparent;line-height:1.6;}
+  .memo-area textarea:focus{outline:none;background:#FFF9C4;}
+  .progress{margin-bottom:20px;}
+  .progress-bar{background:#eee;border-radius:10px;height:10px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;border-radius:10px;background:linear-gradient(135deg,var(--purple),#9333EA);transition:width 0.5s;}
+  .progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);}
+  .tag{display:inline-block;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;color:white;}
+  .tag.decided{background:var(--green);}
+  .tag.pending{background:var(--orange);}
+  .tag.new{background:var(--red);}
+  @media print{
+    .top-header,.nav{position:static;}
+    .panel{display:block!important;page-break-before:always;}
+    .nav{display:none;}
+    .btn-save,.btn-export,.btn-clear{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <div class="top-header-inner">
+    <div class="top-title">
+      <h1>StudyGO 基盤系機能 要件定義シート</h1>
+      <div class="sub">2機能の要件定義 &mdash; ダイナミックプライシング / Push通知基盤</div>
+    </div>
+    <div class="top-actions">
+      <span class="save-status" id="saveStatus"></span>
+      <button class="btn-save" onclick="saveAll()">保存</button>
+      <button class="btn-export" onclick="exportAll()">エクスポート</button>
+      <button class="btn-clear" onclick="if(confirm('すべての入力をクリアしますか？')){clearAll();}">クリア</button>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner" id="navTabs">
+    <button class="nav-tab active" onclick="showPanel(0)">ダイナミックP</button>
+    <button class="nav-tab" onclick="showPanel(1)">Push通知</button>
+  </div>
+</div>
+
+<div class="main">
+
+<div class="panel active" id="panel-0">
+
+  <div class="intro">
+    <h2>ダイナミックプライシング（期間パス向け）</h2>
+    <p>
+      <span class="highlight">シーズン・需要に応じて期間パスの料金を動的に変更する仕組み</span>です。<br>
+      ドロップイン料金ではなく、<strong>期間パスの料金変動</strong>が対象です。繁忙期には料金を上げ、閑散期には割引することで収益最適化を図ります。<br>
+      既存の期間パス機能との統合が重要なポイントです。
+    </p>
+  </div>
+
+
+  <div class="progress" id="progressArea">
+    <div class="progress-label">
+      <span>決定項目の進捗</span>
+      <span id="progressText">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="important-box">
+    <h4>重要: ドロップインではなく「期間パス」の料金変動</h4>
+    <p>ダイナミックプライシングの対象は<strong>期間パスの料金</strong>です。期間パスの購入タイミングや利用開始月によって料金が変動します。期間パス要件定義シートとの整合性を常に確認してください。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      料金変動の基本仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>対象商品</th><td><strong>期間パス</strong>（ドロップインは対象外）</td></tr>
+        <tr><th>変動基準</th><td>シーズン（月単位）/ 曜日 / 需要（販売数ベース）</td></tr>
+        <tr><th>料金の上限</th><td>通常料金の <strong>1.5倍</strong> まで（上限倍率は管理画面で設定可能）</td></tr>
+        <tr><th>料金の下限</th><td>通常料金の <strong>0.5倍</strong> まで（下限倍率は管理画面で設定可能）</td></tr>
+        <tr><th>表示方法</th><td>通常価格と変動後価格を併記。割引時は取消線+特別価格表示</td></tr>
+        <tr><th>適用タイミング</th><td>パス購入時の日付に基づいて料金決定（開始日ベース）</td></tr>
+        <tr><th>既存パスへの影響</th><td>購入済みパスの料金は変動しない（購入時点の価格で確定）</td></tr>
+      </table>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金変動の<strong>基準</strong>は何にするか？（シーズン/曜日/需要/複合）</span>
+          <span class="d-note"><input placeholder="シーズン / 曜日 / 需要" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金の<strong>上限倍率</strong>は通常価格の何倍までか？</span>
+          <span class="d-note"><input placeholder="1.5倍 / 2.0倍" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金の<strong>下限倍率</strong>は通常価格の何倍までか？</span>
+          <span class="d-note"><input placeholder="0.5倍 / 0.8倍" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      シーズン料金テーブル <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">シーズン料金倍率マトリクス<span class="role-badge">管理画面</span></div>
+        <div class="admin-mock-body">
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">月ごとの料金倍率を設定します。1.0が通常価格です。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:#f8f9fa;">
+              <th style="padding:8px;border-bottom:2px solid var(--border);">月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">1月</th><th style="padding:8px;border-bottom:2px solid var(--border);">2月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">3月</th><th style="padding:8px;border-bottom:2px solid var(--border);">4月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">5月</th><th style="padding:8px;border-bottom:2px solid var(--border);">6月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">7月</th><th style="padding:8px;border-bottom:2px solid var(--border);">8月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">9月</th><th style="padding:8px;border-bottom:2px solid var(--border);">10月</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">11月</th><th style="padding:8px;border-bottom:2px solid var(--border);">12月</th>
+            </tr></thead>
+            <tbody><tr>
+              <td style="padding:8px;font-weight:600;">倍率</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;">1.0x</td>
+              <td style="padding:8px;">1.0x</td><td style="padding:8px;color:var(--green);font-weight:600;">0.8x</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td>
+              <td style="padding:8px;">1.0x</td><td style="padding:8px;">1.0x</td>
+              <td style="padding:8px;color:var(--green);font-weight:600;">0.8x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.1x</td>
+            </tr>
+            <tr style="color:var(--text-sub);font-size:11px;">
+              <td style="padding:4px 8px;">区分</td>
+              <td style="padding:4px 8px;">繁忙</td><td style="padding:4px 8px;">繁忙</td>
+              <td style="padding:4px 8px;">繁忙</td><td style="padding:4px 8px;">通常</td>
+              <td style="padding:4px 8px;">通常</td><td style="padding:4px 8px;">閑散</td>
+              <td style="padding:4px 8px;">繁忙</td><td style="padding:4px 8px;">繁忙</td>
+              <td style="padding:4px 8px;">通常</td><td style="padding:4px 8px;">通常</td>
+              <td style="padding:4px 8px;">閑散</td><td style="padding:4px 8px;">やや繁忙</td>
+            </tr></tbody>
+          </table></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      期間パスとの連動 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>統合方法</th><td>既存の期間パス設定画面に「シーズン料金」タブを追加</td></tr>
+        <tr><th>料金計算式</th><td>最終料金 = 基本料金 × シーズン倍率（端数は切り捨て）</td></tr>
+        <tr><th>アプリ表示</th><td>パス選択画面で通常価格と変動後価格を併記</td></tr>
+        <tr><th>クーポン適用順</th><td>シーズン料金算出後にクーポン割引を適用</td></tr>
+        <tr><th>管理画面</th><td>パスごとにダイナミックプライシングの有効/無効を切替可能</td></tr>
+      </table>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">シーズン料金は<strong>全パス一律</strong>か、<strong>パスごとに個別設定</strong>か？</span>
+          <span class="d-note"><input placeholder="一律 / パスごと" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">料金計算の<strong>端数処理</strong>はどうするか？（切り捨て/切り上げ/四捨五入）</span>
+          <span class="d-note"><input placeholder="切り捨て / 四捨五入" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">クーポンとの<strong>併用</strong>は可能か？ 適用順序は？</span>
+          <span class="d-note"><input placeholder="可能 / 不可" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">ダイナミックプライシングの<strong>有効/無効</strong>は誰が切り替えられるか？</span>
+          <span class="d-note"><input placeholder="運営のみ / 店舗も" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      アプリ表示 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">期間パス選択</div>
+          <div class="phone-body">
+            <div style="padding:8px;">
+              <div style="font-size:12px;color:#999;margin-bottom:8px;">渋谷スタジオ</div>
+              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);position:relative;">
+                <div style="position:absolute;top:-8px;right:10px;background:var(--red);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">シーズン割引中</div>
+                <div style="font-weight:700;font-size:14px;">7日パス</div>
+                <div style="margin-top:4px;">
+                  <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;3,500</span>
+                  <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;2,800</span>
+                </div>
+                <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF（閑散期割引）</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+                <div style="font-weight:700;font-size:14px;">14日パス</div>
+                <div style="margin-top:4px;">
+                  <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;5,600</span>
+                  <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;4,480</span>
+                </div>
+                <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF（閑散期割引）</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+                <div style="font-weight:700;font-size:14px;">30日パス</div>
+                <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;9,000</div>
+                <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">通常価格</div>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">割引バッジの<strong>表示文言</strong>は？（シーズン割引/期間限定/特別価格）</span>
+          <span class="d-note"><input placeholder="シーズン割引 / 期間限定" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（ダイナミックプライシング）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<div class="panel" id="panel-1">
+
+  <div class="intro">
+    <h2>Push通知基盤</h2>
+    <p>
+      <span class="highlight">FCMベースの共通Push通知基盤</span>を構築します。<br>
+      期間パスの期限通知、マーケティング通知、トランザクション通知など、全機能で利用できる共通基盤です。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      技術基盤 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>通知サービス</th><td><strong>Firebase Cloud Messaging（FCM）</strong></td></tr>
+        <tr><th>デバイストークン</th><td>ログイン時にトークン取得・サーバーに保存。ログアウト時に無効化</td></tr>
+        <tr><th>配信制御</th><td>ユーザーセグメント（全員/特定店舗/特定プラン利用者）で配信対象を絞り込み</td></tr>
+        <tr><th>ディープリンク</th><td>通知タップ時にアプリ内の該当画面へ直接遷移</td></tr>
+        <tr><th>頻度制限</th><td>同一ユーザーへの通知は<strong>1日最大5件</strong>まで（設定変更可能）</td></tr>
+        <tr><th>リトライ</th><td>配信失敗時は最大3回リトライ（指数バックオフ）</td></tr>
+        <tr><th>配信ログ</th><td>全通知の送信/開封/タップを記録し、管理画面で分析可能</td></tr>
+      </table>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">1日あたりの<strong>通知上限</strong>は何件にするか？</span>
+          <span class="d-note"><input placeholder="5件 / 10件 / 制限なし" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知の<strong>配信時間帯</strong>に制限を設けるか？（例: 8:00-21:00のみ）</span>
+          <span class="d-note"><input placeholder="制限あり / なし" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      通知カテゴリ <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>トランザクション</th><td>購入完了通知 / 決済失敗通知 / チェックイン確認 / 期間パス開始通知</td></tr>
+        <tr><th>リマインダー</th><td>期間パス期限通知（残3日/1日/当日）/ 見学予約リマインダー / チェックアウト忘れ</td></tr>
+        <tr><th>マーケティング</th><td>新店舗オープン / キャンペーン告知 / シーズン割引告知 / クーポン配布</td></tr>
+        <tr><th>管理通知</th><td>メンテナンス予告 / 利用規約変更 / アプリアップデート案内</td></tr>
+      </table>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">マーケティング通知の<strong>オプトイン方式</strong>は？（デフォルトON/OFF）</span>
+          <span class="d-note"><input placeholder="デフォルトON / OFF" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">トランザクション通知は<strong>オフ不可</strong>にするか？</span>
+          <span class="d-note"><input placeholder="オフ不可 / オフ可能" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知カテゴリの<strong>追加・変更</strong>は運営のみか？</span>
+          <span class="d-note"><input placeholder="運営のみ / 店舗も" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      管理画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">Push通知 送信フォーム<span class="role-badge">管理画面</span></div>
+        <div class="admin-mock-body">
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">対象セグメント</label>
+            <select style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+              <option>全ユーザー</option><option>期間パス利用者</option><option>月額プラン利用者</option><option>特定店舗の利用者</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">テンプレート選択</label>
+            <select style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+              <option>キャンペーン告知</option><option>新店舗オープン</option><option>シーズン割引</option><option>カスタム</option>
+            </select>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">タイトル</label>
+            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="【期間限定】閑散期割引スタート！">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">本文</label>
+            <textarea style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-height:60px;">6月限定！期間パスが20%OFF。この機会にぜひお試しください。</textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button style="padding:8px 20px;background:var(--purple);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;">プレビュー</button>
+            <button style="padding:8px 20px;background:var(--green);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;">送信</button>
+          </div></div>
+      </div>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知送信の<strong>承認フロー</strong>は必要か？（送信前に上長承認）</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      アプリ設定画面 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+          <div class="app-header">通知設定</div>
+          <div class="phone-body">
+            <div style="padding:8px;">
+              <div style="font-size:14px;font-weight:700;margin-bottom:12px;">通知設定</div>
+              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+                  <div><div style="font-size:13px;font-weight:600;">購入・決済</div><div style="font-size:11px;color:#999;">購入完了、決済失敗の通知</div></div>
+                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+                  <div><div style="font-size:13px;font-weight:600;">リマインダー</div><div style="font-size:11px;color:#999;">期限通知、予約リマインダー</div></div>
+                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
+                  <div><div style="font-size:13px;font-weight:600;">キャンペーン</div><div style="font-size:11px;color:#999;">割引、新店舗、クーポン情報</div></div>
+                  <div style="width:40px;height:22px;background:#ccc;border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;left:2px;top:2px;"></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+                  <div><div style="font-size:13px;font-weight:600;">お知らせ</div><div style="font-size:11px;color:#999;">メンテナンス、規約変更</div></div>
+                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+                </div>
+              </div>
+            </div></div>
+        </div>
+      </div></div>
+      <ul class="decision-list" style="margin-top:16px;">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知設定画面の<strong>デフォルト状態</strong>は全ONか？</span>
+          <span class="d-note"><input placeholder="全ON / マーケのみOFF" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知の<strong>サウンド設定</strong>は必要か？（カテゴリ別に音を変える等）</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（Push通知）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+var PANEL_NAMES = ['ダイナミックP','Push通知'];
+var STORAGE_KEY = 'requirements-infrastructure-v1';
+
+function showPanel(idx) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('panel-' + idx).classList.add('active');
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+}
+
+function toggleCard(header) {
+  header.parentElement.classList.toggle('collapsed');
+  var toggle = header.querySelector('.toggle');
+  toggle.textContent = header.parentElement.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
+}
+
+function updateStyle(sel) {
+  sel.className = sel.value;
+  autoSave();
+  updateProgress();
+}
+
+function updateProgress() {
+  var all = document.querySelectorAll('.decision-item select');
+  var decided = 0;
+  all.forEach(function(sel) { if (sel.value === 'decided') decided++; });
+  var pct = all.length > 0 ? Math.round(decided / all.length * 100) : 0;
+  document.getElementById('progressText').textContent = decided + ' / ' + all.length;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+var saveTimeout;
+function autoSave() {
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(function() { saveAll(); }, 1000);
+}
+
+function saveAll() {
+  var data = {
+    memos: [],
+    decisions: [],
+    timestamp: new Date().toISOString()
+  };
+
+  document.querySelectorAll('.section-memo').forEach(function(ta) {
+    data.memos.push(ta.value);
+  });
+
+  document.querySelectorAll('.decision-item').forEach(function(item) {
+    var sel = item.querySelector('select');
+    var input = item.querySelector('.memo-input');
+    data.decisions.push({
+      status: sel ? sel.value : '',
+      note: input ? input.value : ''
+    });
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
+}
+
+function loadAll() {
+  var raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+  try {
+    var data = JSON.parse(raw);
+
+    if (data.memos) {
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
+        if (data.memos[i] !== undefined) ta.value = data.memos[i];
+      });
+    }
+
+    if (data.decisions) {
+      document.querySelectorAll('.decision-item').forEach(function(item, i) {
+        if (data.decisions[i]) {
+          var sel = item.querySelector('select');
+          var input = item.querySelector('.memo-input');
+          if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
+          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+        }
+      });
+    }
+
+    document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
+  } catch(e) { console.error(e); }
+}
+
+function clearAll() {
+  localStorage.removeItem(STORAGE_KEY);
+  document.querySelectorAll('.section-memo').forEach(function(ta) { ta.value = ''; });
+  document.querySelectorAll('.memo-input').forEach(function(inp) { inp.value = ''; });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.selectedIndex = 0; sel.className = sel.value; });
+  document.getElementById('saveStatus').textContent = '\u30AF\u30EA\u30A2\u6E08\u307F';
+  updateProgress();
+}
+
+function exportAll() {
+  var text = '# StudyGO 基盤系機能 要件定義 エクスポート\n\n';
+
+  document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
+    text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
+    var decisions = panel.querySelectorAll('.decision-item');
+    if (decisions.length > 0) {
+      text += '### 決定事項\n';
+      decisions.forEach(function(item) {
+        var sel = item.querySelector('select');
+        var label = item.querySelector('.d-label').textContent;
+        var note = item.querySelector('.memo-input').value;
+        var statusMap = { decided: '決定', pending: '保留', rejected: '却下' };
+        text += '- [' + (statusMap[sel.value] || sel.value) + '] ' + label;
+        if (note) text += ' -> ' + note;
+        text += '\n';
+      });
+      text += '\n';
+    }
+    var memo = panel.querySelector('.section-memo');
+    if (memo && memo.value.trim()) {
+      text += '### メモ\n' + memo.value.trim() + '\n';
+    }
+    text += '\n---\n\n';
+  });
+
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.btn-export');
+    btn.textContent = 'コピーしました!';
+    btn.style.background = '#4CAF50';
+    btn.style.color = 'white';
+    setTimeout(function() { btn.textContent = 'エクスポート'; btn.style.background = 'white'; btn.style.color = 'var(--purple)'; }, 2000);
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('クリップボードにコピーしました');
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadAll();
+  document.querySelectorAll('.decision-item select').forEach(function(sel) {
+    sel.className = sel.value;
+  });
+  updateProgress();
+});
+</script>
+
+</body>
+</html>
