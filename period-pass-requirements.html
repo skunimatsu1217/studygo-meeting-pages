@@ -154,7 +154,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>期間パス 要件定義</h1>
-      <div class="sub">スタディGO — 日数・料金・ルールを自由に設計</div>
+      <div class="sub">スタディGO — 会議決定事項反映済み（通知以外ほぼ決定）</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -205,11 +205,13 @@
   </div>
 
   <!-- 日数設定（メイン） -->
-  <div class="rethink-box">
-    <h4>ここが今回の要件定義のポイント</h4>
-    <p>
-      前回は「7日・14日・30日の3種類」としていましたが、<strong>店舗が日数を自由に決められる</strong>仕組みにするかを改めて検討します。<br>
-      例: 3日パス、5日パス、10日パス、60日パスなど、店舗のニーズに合った日数を設定可能にするか？
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">決定済み: 店舗が自由に日数を設定可能</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>店舗（加盟法人ではなく店舗単位）が自由に日数を設定</strong>してパスを作成できる方式に決定。<br>
+      最短<strong>0日（当日）</strong>〜最長<strong>365日</strong>。種類数は<strong>制限なし</strong>。<br>
+      ただし<strong>1人が同じ店舗で同時に購入できるパスは1つまで</strong>。入会金は<strong>不要</strong>。<br>
+      <span style="color:var(--orange);font-weight:600;">追加要望:</span> 各パスに<strong>販売可能枚数</strong>を設定でき、上限到達時はグレーアウト表示にしたい。
     </p>
   </div>
 
@@ -1172,12 +1174,117 @@ function exportAll() {
   });
 }
 
+// ===== プリセットデータ（会議決定事項） =====
+var PRESET_DATA = {
+  decisions: [
+    // --- パネル0: 概要・日数設定 (6項目) ---
+    { status: 'decided', note: '自由に設定可能。加盟法人ではなく、店舗が作成' },
+    { status: 'decided', note: '0（当日）' },
+    { status: 'decided', note: '365' },
+    { status: 'decided', note: '制限なし。ただ1人が同じ店舗で同時に購入できるパスは１つまで' },
+    { status: 'decided', note: '' },
+    { status: 'decided', note: '不要' },
+    // --- パネル1: 料金・お支払い (12項目) ---
+    { status: 'decided', note: '運営' },
+    { status: 'decided', note: '店舗が税込で入力 → そのまま表示' },
+    { status: 'decided', note: '出したい' },
+    { status: 'decided', note: '50円以上' },
+    { status: 'decided', note: 'PAYPAYのみ現在は検討' },
+    { status: 'pending', note: '' },
+    { status: 'decided', note: '使える' },
+    { status: 'decided', note: 'パス選択時' },
+    { status: 'decided', note: 'デフォルトは同じ設定、別の手数料を設定可能' },
+    { status: 'decided', note: '月末締めの翌月末払い' },
+    { status: 'decided', note: '' },
+    { status: 'decided', note: '既存の仕組み、アプリ内で利用履歴が見れて、メールでストライプから連絡' },
+    // --- パネル2: 契約ルール (14項目) ---
+    { status: 'decided', note: 'カレンダー' },
+    { status: 'decided', note: '30日後まで' },
+    { status: 'decided', note: 'よい' },
+    { status: 'decided', note: '現状の月額プランの仕様と合わせる' },
+    { status: 'decided', note: '' },
+    { status: 'decided', note: '不可' },
+    { status: 'decided', note: 'しない' },
+    { status: 'decided', note: 'きれてから' },
+    { status: 'decided', note: '延長＝別途購入なので、可能' },
+    { status: 'decided', note: '設けない' },
+    { status: 'decided', note: '使える' },
+    { status: 'decided', note: '' },
+    { status: 'decided', note: 'プラン選択画面を表示。ドロップイン、期間パス、月額プランの順で上から並ぶ想定' },
+    { status: 'decided', note: '現状の決済エラーフローに合わせる' },
+    // --- パネル3: アプリ画面 (8項目) ---
+    { status: 'decided', note: '' },
+    { status: 'decided', note: '非表示' },
+    { status: 'decided', note: '閲覧可能' },
+    { status: 'decided', note: '' },
+    { status: 'decided', note: 'パス名/期間/料金/購入日' },
+    { status: 'rejected', note: '延長ではなく、再購入を促したい' },
+    { status: 'decided', note: '利用可能日数：0日を表示 → 期限終了後、月額か期間パスを購入しない限り7日間で非表示' },
+    { status: 'decided', note: '' },
+    // --- パネル4: 管理画面 (8項目) ---
+    { status: 'decided', note: '運営（本部）のみ' },
+    { status: 'rejected', note: '今は不可' },
+    { status: 'decided', note: '契約ユーザーがいない場合には直接変更可能、過去に利用履歴がある場合には新しいプランを作り直す' },
+    { status: 'decided', note: '不要。パスの強制契約・解約機能は運営で設けたい' },
+    { status: 'decided', note: '不要' },
+    { status: 'decided', note: '不要' },
+    { status: 'rejected', note: '' },
+    { status: 'rejected', note: '' },
+    // --- パネル5: 通知・お知らせ (8項目) ---
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    { status: 'pending', note: '' },
+    // --- パネル6: 導入計画 (5項目) ---
+    { status: 'decided', note: 'パスをオプション同様に管理画面から作成できる仕様にする。一部店舗でテストしてから広げる' },
+    { status: 'decided', note: '勉強カフェ新宿スタジオ、勉強カフェ新宿BPスタジオ' },
+    { status: 'decided', note: '他の機能と並行もしくは先にこちら' },
+    { status: 'decided', note: '根本' },
+    { status: 'decided', note: '警告表示 → 削除可能 → 返金なし' }
+  ],
+  memos: [
+    '期間パスについて、各パスについて、販売可能枚数を設定できるようにしたい。販売可能枚数が10で10人が契約している場合、11人目はそのプランはグレーアウトになっていて契約できないようにしたい',
+    '', '', '', '', '', ''
+  ],
+  durations: [
+    { days: '3', label: 'お試しパス' },
+    { days: '7', label: '1週間パス' },
+    { days: '14', label: '2週間パス' },
+    { days: '30', label: '1ヶ月パス' }
+  ]
+};
+
+function applyPreset() {
+  var items = document.querySelectorAll('.decision-item');
+  items.forEach(function(item, i) {
+    if (PRESET_DATA.decisions[i]) {
+      var sel = item.querySelector('select');
+      var input = item.querySelector('.memo-input');
+      if (sel) { sel.value = PRESET_DATA.decisions[i].status; sel.className = PRESET_DATA.decisions[i].status; }
+      if (input) input.value = PRESET_DATA.decisions[i].note;
+    }
+  });
+  var memos = document.querySelectorAll('.section-memo');
+  memos.forEach(function(ta, i) {
+    if (PRESET_DATA.memos[i]) ta.value = PRESET_DATA.memos[i];
+  });
+}
+
 // ===== 初期化 =====
 document.addEventListener('DOMContentLoaded', function() {
+  var hasLocalData = localStorage.getItem('period-pass-requirements-v1');
+  if (hasLocalData) {
+    loadAll();
+  } else {
+    applyPreset();
+  }
   document.querySelectorAll('.decision-item select').forEach(function(sel) {
     sel.className = sel.value;
   });
-  loadAll();
   updateProgress();
 });
 </script>
