@@ -219,7 +219,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>スタディGO 開発会議</h1>
-      <div class="sub">2026/03/03 — 7つの議題</div>
+      <div class="sub">2026/03/03 — 8つの議題</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -240,6 +240,7 @@
     <button class="main-tab" onclick="showTopic(4)"><span class="tab-num">5</span>一斉送信<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(5)"><span class="tab-num">6</span>会員データ出力<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(6)"><span class="tab-num">7</span>ドロップイン条件表示<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(7)"><span class="tab-num">8</span>システム利用制御<span class="memo-dot"></span></button>
   </div>
 </div>
 
@@ -2177,6 +2178,450 @@ Wi-Fiパスワード: studygo2026
   <div class="memo-area">
     <div class="memo-area-header">会議メモ</div>
     <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(6)"></textarea>
+  </div>
+</div>
+
+<!-- ======================================== -->
+<!-- 8. 店舗管理「システム利用」制御 -->
+<!-- ======================================== -->
+<div class="topic-panel" id="topic-7" data-title="店舗管理「システム利用」制御">
+
+  <div class="overview-card">
+    <h3>8. 運営の店舗管理画面に「システム利用」チェックボックスを追加</h3>
+    <p>
+      運営（StudyGO管理者）が店舗管理画面で<strong>「システム利用 ✅」を ON にした店舗だけ</strong>が、
+      <span class="highlight">プランの作成・公開</span>と<span class="highlight">店舗情報ページ（HTML）の変更</span>を行えるようにします。<br>
+      未チェックの店舗はこれらの操作がロックされ、誤操作や未契約店舗の不正利用を防止します。
+    </p>
+  </div>
+
+  <!-- 現状の問題 -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      現状の問題 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:#FFF3E0;border-radius:10px;padding:16px;border-left:4px solid var(--orange);">
+          <div style="font-weight:700;color:var(--orange);margin-bottom:8px;">問題 1: プラン管理</div>
+          <div style="font-size:13px;color:#333;line-height:1.6;">
+            登録されたすべての店舗がプランを作成・公開できてしまう。<br>
+            <strong>システム利用契約をしていない店舗</strong>でもプランが公開可能な状態。
+          </div>
+        </div>
+        <div style="background:#FFEBEE;border-radius:10px;padding:16px;border-left:4px solid #E53935;">
+          <div style="font-weight:700;color:#E53935;margin-bottom:8px;">問題 2: 店舗情報変更</div>
+          <div style="font-size:13px;color:#333;line-height:1.6;">
+            店舗情報ページ（HTML）をどの店舗でも編集できてしまう。<br>
+            <strong>未契約・テスト店舗</strong>による不正な情報公開のリスク。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 運営管理画面イメージ -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,#E53935,#C62828);" onclick="toggleSection(this)">
+      運営管理画面イメージ（店舗管理 → システム利用） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body" style="background:#f0f0f0;">
+      <div class="admin-mock">
+        <div class="admin-mock-header" style="background:linear-gradient(135deg,#E53935,#C62828);">
+          店舗管理 — システム利用設定
+          <span class="role-badge">運営管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+
+          <!-- 店舗一覧テーブル -->
+          <div style="font-weight:700;font-size:14px;margin-bottom:8px;">店舗一覧</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;background:white;border-radius:6px;overflow:hidden;">
+            <thead>
+              <tr style="background:#FFEBEE;">
+                <th style="padding:10px 8px;text-align:left;border-bottom:2px solid #E53935;">店舗名</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #E53935;">法人名</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #E53935;white-space:nowrap;">システム利用</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #E53935;">プラン数</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #E53935;">最終更新</th>
+                <th style="padding:10px 8px;text-align:center;border-bottom:2px solid #E53935;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:10px 8px;font-weight:600;">StudyGO 渋谷店</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#666;">株式会社ABC</td>
+                <td style="padding:10px 8px;text-align:center;"><span style="display:inline-block;background:#4CAF50;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">✅ 有効</span></td>
+                <td style="padding:10px 8px;text-align:center;">3</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#888;">2026/02/28</td>
+                <td style="padding:10px 8px;text-align:center;"><button style="background:white;border:1px solid #ddd;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">編集</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:10px 8px;font-weight:600;">StudyGO 新宿店</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#666;">株式会社ABC</td>
+                <td style="padding:10px 8px;text-align:center;"><span style="display:inline-block;background:#4CAF50;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">✅ 有効</span></td>
+                <td style="padding:10px 8px;text-align:center;">2</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#888;">2026/03/01</td>
+                <td style="padding:10px 8px;text-align:center;"><button style="background:white;border:1px solid #ddd;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">編集</button></td>
+              </tr>
+              <tr style="border-bottom:1px solid #eee;background:#FFF8E1;">
+                <td style="padding:10px 8px;font-weight:600;color:#999;">テスト店舗A</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#666;">株式会社テスト</td>
+                <td style="padding:10px 8px;text-align:center;"><span style="display:inline-block;background:#9E9E9E;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">— 無効</span></td>
+                <td style="padding:10px 8px;text-align:center;color:#999;">0</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#888;">—</td>
+                <td style="padding:10px 8px;text-align:center;"><button style="background:white;border:1px solid #ddd;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">編集</button></td>
+              </tr>
+              <tr style="background:#FFF8E1;">
+                <td style="padding:10px 8px;font-weight:600;color:#999;">未契約カフェ</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#666;">個人事業主D</td>
+                <td style="padding:10px 8px;text-align:center;"><span style="display:inline-block;background:#9E9E9E;color:white;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;">— 無効</span></td>
+                <td style="padding:10px 8px;text-align:center;color:#999;">0</td>
+                <td style="padding:10px 8px;text-align:center;font-size:11px;color:#888;">—</td>
+                <td style="padding:10px 8px;text-align:center;"><button style="background:white;border:1px solid #ddd;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">編集</button></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:16px;padding:12px;background:#E8F5E9;border-radius:8px;font-size:12px;color:#2E7D32;">
+            <strong>有効店舗:</strong> 2件 / 全4件 &nbsp;|&nbsp; <strong>有効店舗のプラン合計:</strong> 5件
+          </div>
+        </div>
+      </div>
+
+      <!-- 店舗編集画面 -->
+      <div class="admin-mock" style="margin-top:16px;">
+        <div class="admin-mock-header" style="background:linear-gradient(135deg,#E53935,#C62828);">
+          店舗編集 — StudyGO 渋谷店
+          <span class="role-badge">運営管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+          <div style="display:grid;grid-template-columns:120px 1fr;gap:8px 12px;font-size:13px;align-items:center;">
+            <span style="font-weight:600;color:#666;">店舗名:</span>
+            <span>StudyGO 渋谷店</span>
+            <span style="font-weight:600;color:#666;">法人名:</span>
+            <span>株式会社ABC</span>
+            <span style="font-weight:600;color:#666;">契約状態:</span>
+            <span><span style="background:#E3F2FD;color:#1565C0;padding:2px 8px;border-radius:4px;font-size:11px;">契約中</span></span>
+          </div>
+
+          <div style="margin-top:16px;padding:16px;background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;">
+            <div style="font-weight:700;font-size:14px;color:var(--orange);margin-bottom:8px;">システム利用設定</div>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;">
+              <input type="checkbox" checked style="width:20px;height:20px;accent-color:#4CAF50;">
+              <span><strong>システム利用を有効にする</strong></span>
+            </label>
+            <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.6;">
+              有効にすると、この店舗でプランの作成・公開、店舗情報ページ（HTML）の編集が可能になります。<br>
+              無効にすると、既存のプランは<strong>非公開</strong>になり、店舗情報の編集はロックされます。
+            </div>
+          </div>
+
+          <div style="margin-top:12px;text-align:right;">
+            <button style="background:#E53935;color:white;border:none;border-radius:6px;padding:8px 24px;font-size:13px;font-weight:600;cursor:pointer;">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 制御の仕組み -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
+      制御の仕組み（ON/OFFで何が変わるか） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:linear-gradient(135deg,var(--purple),#5B21B6);color:white;">
+            <th style="padding:10px 12px;text-align:left;">機能</th>
+            <th style="padding:10px 12px;text-align:center;white-space:nowrap;">✅ 有効時</th>
+            <th style="padding:10px 12px;text-align:center;white-space:nowrap;">— 無効時</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:10px 12px;font-weight:600;">プラン新規作成</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能</td>
+            <td style="padding:10px 12px;text-align:center;color:#E53935;font-weight:700;">不可（ボタン非表示）</td>
+          </tr>
+          <tr style="border-bottom:1px solid #eee;background:#f9f9f9;">
+            <td style="padding:10px 12px;font-weight:600;">プラン編集・公開</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能</td>
+            <td style="padding:10px 12px;text-align:center;color:#E53935;font-weight:700;">不可（既存プランは非公開化）</td>
+          </tr>
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:10px 12px;font-weight:600;">プランのアーカイブ</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能（店舗・運営とも）</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能（店舗・運営とも）</td>
+          </tr>
+          <tr style="border-bottom:1px solid #eee;background:#f9f9f9;">
+            <td style="padding:10px 12px;font-weight:600;">店舗情報ページ（HTML）編集</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能</td>
+            <td style="padding:10px 12px;text-align:center;color:#E53935;font-weight:700;">不可（編集ボタン非表示）</td>
+          </tr>
+          <tr style="border-bottom:1px solid #eee;background:#f9f9f9;">
+            <td style="padding:10px 12px;font-weight:600;">店舗情報の閲覧（アプリ表示）</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">通常表示</td>
+            <td style="padding:10px 12px;text-align:center;color:#FF9800;font-weight:700;">要検討（非表示 or 表示のみ）</td>
+          </tr>
+          <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:10px 12px;font-weight:600;">チェックイン受付</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">可能</td>
+            <td style="padding:10px 12px;text-align:center;color:#E53935;font-weight:700;">不可（QR無効化）</td>
+          </tr>
+          <tr style="background:#f9f9f9;">
+            <td style="padding:10px 12px;font-weight:600;">店舗基本情報（名前・住所等）</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">編集可能</td>
+            <td style="padding:10px 12px;text-align:center;color:#4CAF50;font-weight:700;">編集可能（影響なし）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 法人管理画面での表示 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
+      法人管理画面での表示（システム利用OFF時） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body" style="background:#f0f0f0;">
+      <div class="admin-mock">
+        <div class="admin-mock-header green">
+          プラン管理
+          <span class="role-badge">法人管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+          <div style="padding:20px;background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;text-align:center;">
+            <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+            <div style="font-weight:700;font-size:15px;color:var(--orange);margin-bottom:4px;">システム利用が無効です</div>
+            <div style="font-size:12px;color:#888;line-height:1.6;">
+              プランの作成・編集を行うには、運営にお問い合わせください。<br>
+              <a href="#" style="color:var(--blue);">お問い合わせはこちら</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-mock" style="margin-top:16px;">
+        <div class="admin-mock-header green">
+          店舗情報ページ編集
+          <span class="role-badge">法人管理画面</span>
+        </div>
+        <div class="admin-mock-body">
+          <div style="padding:20px;background:#FFEBEE;border:2px solid #E53935;border-radius:10px;text-align:center;">
+            <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+            <div style="font-weight:700;font-size:15px;color:#E53935;margin-bottom:4px;">店舗情報の編集は現在ロックされています</div>
+            <div style="font-size:12px;color:#888;line-height:1.6;">
+              HTML編集を行うには、システム利用を有効にする必要があります。<br>
+              <a href="#" style="color:var(--blue);">運営へ連絡</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 無効化時のフロー -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,#FF9800,#F57C00);" onclick="toggleSection(this)">
+      無効化時の処理フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;">
+        <div style="background:#FFEBEE;border:2px solid #E53935;border-radius:10px;padding:10px 14px;font-weight:600;text-align:center;">
+          運営が<br>✅→ — に変更
+        </div>
+        <div style="font-size:18px;color:#999;">→</div>
+        <div style="background:#FFF3E0;border:1px solid var(--orange);border-radius:10px;padding:10px 14px;text-align:center;font-size:12px;">
+          公開中プランを<br><strong>すべて非公開</strong>に
+        </div>
+        <div style="font-size:18px;color:#999;">→</div>
+        <div style="background:#FFF3E0;border:1px solid var(--orange);border-radius:10px;padding:10px 14px;text-align:center;font-size:12px;">
+          店舗情報ページ<br><strong>編集ロック</strong>
+        </div>
+        <div style="font-size:18px;color:#999;">→</div>
+        <div style="background:#FFF3E0;border:1px solid var(--orange);border-radius:10px;padding:10px 14px;text-align:center;font-size:12px;">
+          チェックイン<br><strong>QR無効化</strong>
+        </div>
+        <div style="font-size:18px;color:#999;">→</div>
+        <div style="background:#E3F2FD;border:1px solid var(--blue);border-radius:10px;padding:10px 14px;text-align:center;font-size:12px;">
+          法人管理画面に<br><strong>ロック画面表示</strong>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:12px;background:#E8F5E9;border-radius:8px;border-left:4px solid var(--green);">
+        <div style="font-weight:700;font-size:13px;color:#2E7D32;margin-bottom:4px;">再有効化時</div>
+        <div style="font-size:12px;color:#333;line-height:1.6;">
+          ✅ 有効に戻すと、非公開化されたプランは<strong>自動では復元しない</strong>（法人が手動で再公開）。<br>
+          店舗情報ページの編集ロックは即時解除。QRコードも再有効化。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- プランのアーカイブ機能 -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleSection(this)">
+      プランのアーカイブ機能 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <div style="padding:14px;background:#E3F2FD;border-radius:10px;border-left:4px solid var(--blue);margin-bottom:16px;">
+        <div style="font-weight:700;font-size:14px;color:var(--blue);margin-bottom:6px;">アーカイブとは</div>
+        <div style="font-size:13px;color:#333;line-height:1.6;">
+          <strong>非公開</strong>かつ<strong>契約者（利用中の会員）がいない</strong>プランを、一覧から整理して「アーカイブ」に移動できる機能。<br>
+          削除とは異なり、データは保持されたまま管理画面の表示から除外されます。<br>
+          <strong>店舗（法人管理画面）・運営（運営管理画面）の両方</strong>から操作可能。
+        </div>
+      </div>
+
+      <!-- アーカイブ条件 -->
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">アーカイブ可能条件</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;background:#E8F5E9;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">📋</div>
+          <div style="font-weight:700;font-size:13px;color:#2E7D32;">条件1: 非公開</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">プランが非公開状態であること</div>
+        </div>
+        <div style="font-size:24px;color:#999;display:flex;align-items:center;">+</div>
+        <div style="flex:1;min-width:200px;background:#E8F5E9;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">👥</div>
+          <div style="font-weight:700;font-size:13px;color:#2E7D32;">条件2: 契約者なし</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">このプランを利用中の会員が0人</div>
+        </div>
+        <div style="font-size:24px;color:#999;display:flex;align-items:center;">=</div>
+        <div style="flex:1;min-width:200px;background:#FFF3E0;border-radius:10px;padding:14px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">📦</div>
+          <div style="font-weight:700;font-size:13px;color:var(--orange);">アーカイブ可能</div>
+          <div style="font-size:11px;color:#666;margin-top:4px;">店舗・運営どちらも操作OK</div>
+        </div>
+      </div>
+
+      <!-- 管理画面イメージ -->
+      <div style="font-weight:700;font-size:14px;margin-bottom:8px;">プラン管理画面での表示</div>
+      <div class="admin-mock">
+        <div class="admin-mock-header green">
+          プラン管理
+          <span class="role-badge">法人 / 運営 共通</span>
+        </div>
+        <div class="admin-mock-body">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;background:white;border-radius:6px;overflow:hidden;">
+            <thead>
+              <tr style="background:#E8F5E9;">
+                <th style="padding:8px;text-align:left;border-bottom:2px solid var(--green);">プラン名</th>
+                <th style="padding:8px;text-align:center;border-bottom:2px solid var(--green);">状態</th>
+                <th style="padding:8px;text-align:center;border-bottom:2px solid var(--green);">契約者数</th>
+                <th style="padding:8px;text-align:center;border-bottom:2px solid var(--green);">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;font-weight:600;">月額プラン A</td>
+                <td style="padding:8px;text-align:center;"><span style="background:#4CAF50;color:white;padding:2px 8px;border-radius:8px;font-size:10px;">公開中</span></td>
+                <td style="padding:8px;text-align:center;">12人</td>
+                <td style="padding:8px;text-align:center;font-size:11px;">編集 | 非公開</td>
+              </tr>
+              <tr style="border-bottom:1px solid #eee;background:#f9f9f9;">
+                <td style="padding:8px;font-weight:600;">ドロップイン B</td>
+                <td style="padding:8px;text-align:center;"><span style="background:#9E9E9E;color:white;padding:2px 8px;border-radius:8px;font-size:10px;">非公開</span></td>
+                <td style="padding:8px;text-align:center;">3人</td>
+                <td style="padding:8px;text-align:center;font-size:11px;color:#999;">アーカイブ不可（契約者あり）</td>
+              </tr>
+              <tr style="border-bottom:1px solid #eee;background:#FFF8E1;">
+                <td style="padding:8px;font-weight:600;color:#888;">旧キャンペーンプラン</td>
+                <td style="padding:8px;text-align:center;"><span style="background:#9E9E9E;color:white;padding:2px 8px;border-radius:8px;font-size:10px;">非公開</span></td>
+                <td style="padding:8px;text-align:center;">0人</td>
+                <td style="padding:8px;text-align:center;"><button style="background:#607D8B;color:white;border:none;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;">📦 アーカイブ</button></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:12px;padding:8px 12px;background:#ECEFF1;border-radius:6px;font-size:12px;color:#607D8B;cursor:pointer;">
+            📦 アーカイブ済み（2件）を表示 ▶
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;padding:12px;background:#ECEFF1;border-radius:8px;font-size:12px;color:#333;line-height:1.6;">
+        <strong>アーカイブ後:</strong> プラン一覧からは非表示になり「アーカイブ済み」セクションで確認可能。<br>
+        <strong>復元:</strong> アーカイブから「復元」すると非公開状態でプラン一覧に戻る。
+      </div>
+    </div>
+  </div>
+
+  <!-- 決定事項 -->
+  <div class="section">
+    <div class="section-header" onclick="toggleSection(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">DBの<strong>カラム名・型</strong>は？（例: isSystemEnabled TINYINT(1) DEFAULT 0）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">無効化時に<strong>公開中プランを自動で非公開にする</strong>か？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">再有効化時に<strong>非公開化したプランを自動復元する</strong>か？（手動再公開 / 自動復元）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">無効店舗は<strong>アプリの検索結果・地図上に表示する</strong>か？（非表示 / 表示のみ / グレーアウト）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">無効化時に<strong>チェックインも停止</strong>するか？（QR無効化するか）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">無効化時に<strong>法人への通知</strong>は送るか？（メール通知 / 管理画面のみ）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">無効化の<strong>操作ログ</strong>を残すか？（誰が・いつ・ON→OFF変更）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">既存店舗の<strong>初期値</strong>は？（全店舗OFF→順次有効化 / 全店舗ON）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item" style="border-left:3px solid #607D8B;padding-left:12px;">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">【アーカイブ】アーカイブしたプランを<strong>完全削除</strong>する機能も必要か？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item" style="border-left:3px solid #607D8B;padding-left:12px;">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">【アーカイブ】アーカイブからの<strong>復元時</strong>、非公開状態で戻すか？（自動公開しない）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item" style="border-left:3px solid #607D8B;padding-left:12px;">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">【アーカイブ】アーカイブの<strong>DB実装</strong>は？（ステータスカラム追加 / 論理削除フラグ）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select class="d-status"><option>未決定</option><option>決定</option><option>保留</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？（すぐ対応 / 期間パスの後 / 保留）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">会議メモ</div>
+    <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(7)"></textarea>
   </div>
 </div>
 
