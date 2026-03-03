@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スタディGO 新機能 要件定義シート</title>
+<style>
+  :root{--blue:#1a73e8;--green:#4CAF50;--purple:#7C3AED;--orange:#FF9800;--red:#F44336;--text:#333;--text-sub:#757575;--border:#E0E0E0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#f5f5f5;color:var(--text);line-height:1.7;}
+
+  /* ヘッダー */
+  .header{background:linear-gradient(135deg,#1a1a2e,#16213e);color:white;padding:24px;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--purple);}
+  .header-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+  .header h1{font-size:20px;}
+  .header .sub{font-size:12px;opacity:0.6;margin-top:2px;}
+  .header-actions{display:flex;gap:8px;}
+  .header-actions button{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;}
+  .btn-export{background:var(--blue);color:white;}
+  .btn-export:hover{background:#1557b0;}
+
+  /* ナビ */
+  .nav{background:white;border-bottom:1px solid var(--border);padding:8px 24px;overflow-x:auto;white-space:nowrap;position:sticky;top:72px;z-index:99;}
+  .nav-inner{max-width:900px;margin:0 auto;display:flex;gap:4px;}
+  .nav a{padding:6px 12px;font-size:12px;font-weight:600;color:var(--text-sub);text-decoration:none;border-radius:6px;white-space:nowrap;transition:all 0.2s;}
+  .nav a:hover{background:#f0f0f0;color:var(--text);}
+  .nav a.active{background:var(--purple);color:white;}
+
+  /* メイン */
+  .main{max-width:900px;margin:0 auto;padding:24px;}
+
+  /* 機能ブロック */
+  .feature{background:white;border-radius:12px;border:1px solid var(--border);margin-bottom:24px;overflow:hidden;scroll-margin-top:140px;}
+  .feature-header{padding:16px 20px;color:white;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+  .feature-header .num{background:rgba(255,255,255,0.3);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .feature-header h2{font-size:16px;flex:1;}
+  .feature-header .toggle{font-size:12px;opacity:0.7;}
+  .feature-body{padding:20px;}
+  .feature.collapsed .feature-body{display:none;}
+
+  /* セクション */
+  .req-section{margin-bottom:20px;}
+  .req-section:last-child{margin-bottom:0;}
+  .req-section-title{font-size:14px;font-weight:700;color:var(--text);padding-bottom:6px;border-bottom:2px solid var(--purple);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  .req-section-title .icon{font-size:16px;}
+
+  /* テーブル */
+  table.req{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;}
+  table.req th,table.req td{padding:10px 14px;text-align:left;border:1px solid #eee;vertical-align:top;}
+  table.req th{background:#f8f9fa;font-weight:600;color:var(--text-sub);width:160px;}
+  table.req td{color:var(--text);line-height:1.7;}
+
+  /* 要件リスト */
+  .req-list{list-style:none;padding:0;}
+  .req-list li{padding:8px 12px;border-bottom:1px solid #f0f0f0;font-size:13px;display:flex;align-items:flex-start;gap:8px;}
+  .req-list li:last-child{border-bottom:none;}
+  .req-list .req-id{background:var(--purple);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-top:2px;}
+  .req-list .priority{font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap;margin-top:2px;}
+  .priority.must{background:#FFEBEE;color:var(--red);}
+  .priority.want{background:#FFF3E0;color:var(--orange);}
+  .priority.later{background:#E0E0E0;color:#757575;}
+
+  /* 承認欄 */
+  .approval-box{background:#f8f9fa;border:2px solid var(--border);border-radius:8px;padding:16px;margin-top:16px;}
+  .approval-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px;}
+  .approval-row{display:flex;gap:12px;margin-bottom:8px;align-items:center;font-size:13px;}
+  .approval-row label{width:80px;font-weight:600;color:var(--text-sub);}
+  .approval-row select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;}
+  .approval-row select.approved{background:#E8F5E9;border-color:var(--green);color:var(--green);font-weight:600;}
+  .approval-row select.rejected{background:#FFEBEE;border-color:var(--red);color:var(--red);font-weight:600;}
+  .approval-row select.pending{background:#FFF3E0;border-color:var(--orange);color:var(--orange);}
+  .approval-row input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;}
+  .approval-row textarea{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-height:36px;resize:vertical;}
+
+  /* ステータスバッジ */
+  .status-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;color:white;}
+  .status-badge.draft{background:#9E9E9E;}
+  .status-badge.review{background:var(--orange);}
+  .status-badge.approved{background:var(--green);}
+
+  /* 補足・注意 */
+  .note-box{padding:10px 14px;border-radius:6px;font-size:12px;line-height:1.7;margin-top:8px;}
+  .note-box.info{background:#E3F2FD;border-left:4px solid var(--blue);color:#1565C0;}
+  .note-box.warn{background:#FFF3E0;border-left:4px solid var(--orange);color:#E65100;}
+  .note-box.ref{background:#F3E8FF;border-left:4px solid var(--purple);color:#6A1B9A;}
+
+  /* フッター */
+  .footer{text-align:center;padding:40px 24px;font-size:12px;color:#999;}
+
+  @media print{
+    .header,.nav{position:static;}
+    .feature{break-inside:avoid;}
+    .header-actions{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <h1>StudyGO 新機能 要件定義シート</h1>
+      <div class="sub">作成日: 2026/03/03 — 9機能の要件定義（上長確認用）</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-export" onclick="exportAll()">テキストコピー</button>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner">
+    <a href="#f1" class="active">ダイナミックP</a>
+    <a href="#f2">Push通知</a>
+    <a href="#f3">店舗詳細UI</a>
+    <a href="#f4">営業中検索</a>
+    <a href="#f5">検索条件変更</a>
+    <a href="#f6">近い店舗表示</a>
+    <a href="#f7">ログイン簡略化</a>
+    <a href="#f8">見学予約WEB</a>
+    <a href="#f9">SNSログイン</a>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ============================================================ -->
+<!-- 1. ダイナミックプライシング機能 -->
+<!-- ============================================================ -->
+<div class="feature" id="f1">
+  <div class="feature-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleFeature(this)">
+    <div class="num">1</div>
+    <h2>ダイナミックプライシング機能</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>ダイナミックプライシング（動的料金設定）</td></tr>
+        <tr><th>目的</th><td>時間帯・曜日に応じてドロップイン料金を変動させ、<strong>利用の分散と収益の最適化</strong>を図る</td></tr>
+        <tr><th>対象ユーザー</th><td>ドロップイン（都度利用）のお客様</td></tr>
+        <tr><th>対象画面</th><td>管理画面（設定）、アプリ（料金表示）</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">DP-01</span><span class="priority must">必須</span><div>管理画面で曜日×時間帯のマトリクスで15分あたりの料金を設定できる</div></li>
+        <li><span class="req-id">DP-02</span><span class="priority must">必須</span><div>アプリ上で現在の料金（15分あたり）をリアルタイムに表示する</div></li>
+        <li><span class="req-id">DP-03</span><span class="priority must">必須</span><div>チェックイン中に料金帯が変わった場合の計算ロジックを実装する（時間帯ごと按分 or チェックイン時固定）</div></li>
+        <li><span class="req-id">DP-04</span><span class="priority want">希望</span><div>特定日（祝日・イベント日等）に対する料金設定ができる</div></li>
+        <li><span class="req-id">DP-05</span><span class="priority want">希望</span><div>料金変動の上限・下限を設定できる（通常料金の±○%等）</div></li>
+        <li><span class="req-id">DP-06</span><span class="priority later">将来</span><div>混雑率に応じたリアルタイム料金変動（IoT連携等）</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>料金計算方法</th><td>チェックイン中に料金帯が変わった場合、<strong>時間帯ごとに按分</strong>するか、<strong>チェックイン時の料金で固定</strong>するか？</td></tr>
+        <tr><th>設定権限</th><td>料金設定は<strong>運営のみ</strong>か、<strong>法人/店舗にも権限</strong>を与えるか？</td></tr>
+        <tr><th>期間パスへの適用</th><td>期間パスの料金にもダイナミックプライシングを適用するか？（当面はドロップインのみ？）</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 2. Push通知基盤 -->
+<!-- ============================================================ -->
+<div class="feature" id="f2">
+  <div class="feature-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleFeature(this)">
+    <div class="num">2</div>
+    <h2>Push通知基盤</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>Push通知基盤（プッシュ通知共通インフラ）</td></tr>
+        <tr><th>目的</th><td>期間パス期限切れ通知、チェックアウト忘れ、キャンペーン案内等を実現するための<strong>共通Push通知基盤</strong>を構築する</td></tr>
+        <tr><th>対象ユーザー</th><td>全アプリユーザー</td></tr>
+        <tr><th>技術基盤</th><td>FCM（Firebase Cloud Messaging） — iOS/Android両対応</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">PN-01</span><span class="priority must">必須</span><div>FCMを利用したPush通知の送信基盤をサーバー側に構築する</div></li>
+        <li><span class="req-id">PN-02</span><span class="priority must">必須</span><div>アプリ起動時にデバイストークンを取得しサーバーに登録する</div></li>
+        <li><span class="req-id">PN-03</span><span class="priority must">必須</span><div>通知カテゴリ別（トランザクション/リマインダー/マーケティング/管理）に分類して送信できる</div></li>
+        <li><span class="req-id">PN-04</span><span class="priority must">必須</span><div>通知タップ時にアプリ内の関連画面にディープリンクで遷移する</div></li>
+        <li><span class="req-id">PN-05</span><span class="priority want">希望</span><div>お客様がカテゴリごとに通知ON/OFFを切り替えられる設定画面</div></li>
+        <li><span class="req-id">PN-06</span><span class="priority want">希望</span><div>マーケティング通知の配信頻度制限（1日○通まで等）</div></li>
+        <li><span class="req-id">PN-07</span><span class="priority want">希望</span><div>管理画面から対象を絞ってPush通知を送信できる（一斉送信機能との統合）</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">通知種別の一覧</div>
+      <table class="req">
+        <tr><th>トランザクション</th><td>チェックイン完了、チェックアウト完了、決済完了、決済失敗、月額承認完了</td></tr>
+        <tr><th>リマインダー</th><td>期間パス期限切れ予告（3日前/1日前/当日）、自動チェックアウト警告（15分前）、月額更新日通知</td></tr>
+        <tr><th>マーケティング</th><td>キャンペーン案内、新機能お知らせ、クーポン配布</td></tr>
+        <tr><th>管理</th><td>店舗からのメッセージ、アカウント関連通知</td></tr>
+      </table>
+      <div class="note-box info">
+        <strong>期間パスとの関連:</strong> 期間パスの通知機能はPush通知基盤に依存するため、<strong>Push通知基盤の開発が先行</strong>する必要がある。
+      </div>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>ON/OFF設定の粒度</th><td>カテゴリごとか、個別通知ごとか？</td></tr>
+        <tr><th>マーケティング通知の頻度上限</th><td>1日何通まで？</td></tr>
+        <tr><th>法人/店舗独自の通知</th><td>法人/店舗がPush通知を送る機能は必要か？</td></tr>
+        <tr><th>開発優先度</th><td>期間パスの前提として先に実装すべきか？</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 3. 店舗詳細のUI/UX変更 -->
+<!-- ============================================================ -->
+<div class="feature" id="f3">
+  <div class="feature-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleFeature(this)">
+    <div class="num">3</div>
+    <h2>店舗詳細のUI/UX変更</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>店舗詳細ページのUI/UX改善</td></tr>
+        <tr><th>目的</th><td>店舗詳細ページの情報整理と視認性向上により、<strong>チェックインや契約への導線を最適化</strong>する</td></tr>
+        <tr><th>対象ユーザー</th><td>全アプリユーザー（特に新規・見学検討者）</td></tr>
+        <tr><th>対象画面</th><td>アプリの店舗詳細ページ</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">SD-01</span><span class="priority must">必須</span><div>営業時間・料金・空き状況など重要情報を画面上部に配置する</div></li>
+        <li><span class="req-id">SD-02</span><span class="priority must">必須</span><div>「現在営業中」「本日休業」のステータスをリアルタイム表示する</div></li>
+        <li><span class="req-id">SD-03</span><span class="priority must">必須</span><div>プランごとの料金を見やすく比較できるレイアウトにする</div></li>
+        <li><span class="req-id">SD-04</span><span class="priority must">必須</span><div>「チェックイン」「見学予約」「プラン申込」のアクションボタンを分かりやすく配置する</div></li>
+        <li><span class="req-id">SD-05</span><span class="priority want">希望</span><div>店舗の写真をスワイプで閲覧できるギャラリーを設置する</div></li>
+        <li><span class="req-id">SD-06</span><span class="priority want">希望</span><div>アクセス情報（地図・最寄り駅）を分かりやすく表示する</div></li>
+        <li><span class="req-id">SD-07</span><span class="priority later">将来</span><div>口コミ・評価機能の追加を見据えたUI設計にする</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>改修範囲</th><td>全面改修か、部分的な改善か？</td></tr>
+        <tr><th>参考デザイン</th><td>参考にするサービスやデザインはあるか？</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. 検索条件に「営業中」追加 -->
+<!-- ============================================================ -->
+<div class="feature" id="f4">
+  <div class="feature-header" style="background:linear-gradient(135deg,#00897B,#00695C);" onclick="toggleFeature(this)">
+    <div class="num">4</div>
+    <h2>検索条件に「営業中」追加</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>店舗検索に「営業中」フィルター追加</td></tr>
+        <tr><th>目的</th><td>今すぐ利用できる店舗を素早く見つけられるようにする</td></tr>
+        <tr><th>対象ユーザー</th><td>全アプリユーザー</td></tr>
+        <tr><th>対象画面</th><td>アプリの店舗検索画面</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">SO-01</span><span class="priority must">必須</span><div>検索画面にに「営業中の店舗のみ表示」トグルスイッチを追加する</div></li>
+        <li><span class="req-id">SO-02</span><span class="priority must">必須</span><div>営業カレンダー（曜日×時間帯）と連動して現在の営業状況を判定する</div></li>
+        <li><span class="req-id">SO-03</span><span class="priority must">必須</span><div>臨時休業設定がある場合は閉店扱いとする</div></li>
+        <li><span class="req-id">SO-04</span><span class="priority must">必須</span><div>検索結果の各店舗カードに「営業中」「本日休業」のバッジを表示する</div></li>
+        <li><span class="req-id">SO-05</span><span class="priority want">希望</span><div>「あと○時間で閉店」等の残り時間表示</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>デフォルトON/OFF</th><td>フィルターのデフォルトは「営業中のみ」ONにするか、OFFにするか？</td></tr>
+        <tr><th>営業時間の判定</th><td>ラストオーダー時間も考慮するか？（閉店30分前は「まもなく閉店」等）</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 5. 検索条件変更 -->
+<!-- ============================================================ -->
+<div class="feature" id="f5">
+  <div class="feature-header" style="background:linear-gradient(135deg,#5C6BC0,#3949AB);" onclick="toggleFeature(this)">
+    <div class="num">5</div>
+    <h2>検索条件変更</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>店舗検索条件の見直し・拡充</td></tr>
+        <tr><th>目的</th><td>お客様が目的に合った店舗を見つけやすいよう、<strong>検索条件を充実</strong>させる</td></tr>
+        <tr><th>対象ユーザー</th><td>全アプリユーザー</td></tr>
+        <tr><th>対象画面</th><td>アプリの店舗検索・フィルター画面</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">SC-01</span><span class="priority must">必須</span><div>プランの種類で絞り込みできる（月額対応/期間パス対応/ドロップイン対応）</div></li>
+        <li><span class="req-id">SC-02</span><span class="priority want">希望</span><div>設備で絞り込みできる（Wi-Fi/電源/個室/フリードリンク/ロッカー等）</div></li>
+        <li><span class="req-id">SC-03</span><span class="priority want">希望</span><div>料金帯で絞り込みできる（〜500円/500〜1000円/1000円〜等）</div></li>
+        <li><span class="req-id">SC-04</span><span class="priority want">希望</span><div>フィルター条件をリセットするボタンを設置する</div></li>
+        <li><span class="req-id">SC-05</span><span class="priority later">将来</span><div>検索条件をお気に入り保存する機能</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>追加するフィルター</th><td>上記の候補からどれを実装するか？</td></tr>
+        <tr><th>フィルターUI</th><td>チップ選択式（タグ）か、プルダウン式か？</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 6. 店舗の検索条件・いいオフィス参考 -->
+<!-- ============================================================ -->
+<div class="feature" id="f6">
+  <div class="feature-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleFeature(this)">
+    <div class="num">6</div>
+    <h2>近い店舗の自動表示（いいオフィス参考）</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>検索エリアに店舗がなくても近い店舗を表示</td></tr>
+        <tr><th>目的</th><td>検索結果が0件でもお客様を離脱させず、<strong>最寄りの店舗へ案内</strong>する</td></tr>
+        <tr><th>参考サービス</th><td><strong>いいオフィス</strong>の近くの店舗表示UIを参考</td></tr>
+        <tr><th>対象ユーザー</th><td>全アプリユーザー（特にエリア外のユーザー）</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">NS-01</span><span class="priority must">必須</span><div>検索結果が0件の場合、位置情報をもとに近くの店舗を距離順に自動表示する</div></li>
+        <li><span class="req-id">NS-02</span><span class="priority must">必須</span><div>「このエリアに店舗はありませんが、お近くにこれらの店舗があります」のメッセージを表示する</div></li>
+        <li><span class="req-id">NS-03</span><span class="priority must">必須</span><div>各店舗に「徒歩○分 / ○km」の距離表示をする</div></li>
+        <li><span class="req-id">NS-04</span><span class="priority want">希望</span><div>地図上にピンで近い店舗を表示する</div></li>
+        <li><span class="req-id">NS-05</span><span class="priority want">希望</span><div>0件でなくても「他にも近くの店舗があります」として追加表示する</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>表示上限</th><td>最大何件まで表示するか？（5件 / 10件）</td></tr>
+        <tr><th>距離上限</th><td>何kmまでの店舗を対象にするか？</td></tr>
+        <tr><th>位置情報未許可時</th><td>位置情報の許可がない場合の代替手段は？（エリア選択等）</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+      <div class="note-box ref">
+        <strong>参考:</strong> いいオフィスでは検索エリア外でも近隣スポットを距離付きで表示し、ユーザーの離脱を防いでいる。
+      </div>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 7. ログインの簡略化 -->
+<!-- ============================================================ -->
+<div class="feature" id="f7">
+  <div class="feature-header" style="background:linear-gradient(135deg,#EC407A,#C2185B);" onclick="toggleFeature(this)">
+    <div class="num">7</div>
+    <h2>ログインの簡略化（見学で必要な情報の削減）</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>アカウント登録・ログインの簡略化</td></tr>
+        <tr><th>目的</th><td>見学予約など初回利用時のハードルを下げ、<strong>新規ユーザーの離脱を防止</strong>する</td></tr>
+        <tr><th>対象ユーザー</th><td>新規ユーザー（特に見学予約者）</td></tr>
+        <tr><th>基本方針</th><td>段階的情報収集 — 見学時は最小限、契約時に詳細情報を入力</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">LS-01</span><span class="priority must">必須</span><div>見学予約時の必須入力項目を「氏名」「メールアドレス（または電話番号）」のみに削減する</div></li>
+        <li><span class="req-id">LS-02</span><span class="priority must">必須</span><div>契約（月額/期間パス申込）時に追加の個人情報（住所・生年月日等）を入力してもらうフローにする</div></li>
+        <li><span class="req-id">LS-03</span><span class="priority must">必須</span><div>見学予約のみのアカウントと契約アカウントを同一IDで管理する</div></li>
+        <li><span class="req-id">LS-04</span><span class="priority want">希望</span><div>見学予約フォームのステップ数を3ステップ以内にする</div></li>
+        <li><span class="req-id">LS-05</span><span class="priority want">希望</span><div>入力項目ごとにスキップ可能なオプション項目を明示する</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">現行との比較</div>
+      <table class="req">
+        <tr><th>現在の必須項目</th><td>氏名、メールアドレス、電話番号、生年月日、性別、住所、職業 等</td></tr>
+        <tr><th>改善後（見学時）</th><td><strong>氏名</strong>、<strong>メールアドレス</strong>（または電話番号）のみ</td></tr>
+        <tr><th>改善後（契約時）</th><td>見学時の情報 + 生年月日、電話番号、住所等を追加入力</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>見学時の必須項目</th><td>メールアドレスと電話番号、どちらを必須にするか？ 両方？</td></tr>
+        <tr><th>SNSログインとの統合</th><td>SNSログイン導入時に、見学予約のフローも統合するか？</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 8. 見学予約をWEBから可能に -->
+<!-- ============================================================ -->
+<div class="feature" id="f8">
+  <div class="feature-header" style="background:linear-gradient(135deg,#26A69A,#00897B);" onclick="toggleFeature(this)">
+    <div class="num">8</div>
+    <h2>見学予約をWEBから可能にする</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>WEBブラウザからの見学予約</td></tr>
+        <tr><th>目的</th><td>アプリインストール不要で見学予約を可能にし、<strong>新規接触のハードルを大幅に下げる</strong></td></tr>
+        <tr><th>対象ユーザー</th><td>まだアプリをインストールしていない新規のお客様</td></tr>
+        <tr><th>対象画面</th><td>WEB予約ページ（新規作成）</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">WB-01</span><span class="priority must">必須</span><div>WEBブラウザから見学予約が完了できるページを作成する</div></li>
+        <li><span class="req-id">WB-02</span><span class="priority must">必須</span><div>入力項目は最小限（氏名、メールアドレス、希望日時、希望店舗）</div></li>
+        <li><span class="req-id">WB-03</span><span class="priority must">必須</span><div>予約完了時に確認メールを送信する</div></li>
+        <li><span class="req-id">WB-04</span><span class="priority must">必須</span><div>予約完了後にアプリダウンロードの案内を表示する</div></li>
+        <li><span class="req-id">WB-05</span><span class="priority must">必須</span><div>WEBで作成したアカウントをアプリインストール後に引き継げるようにする</div></li>
+        <li><span class="req-id">WB-06</span><span class="priority want">希望</span><div>店舗のWebサイト・Googleマップ・SNS広告・チラシQRコードから直接遷移できる導線</div></li>
+        <li><span class="req-id">WB-07</span><span class="priority want">希望</span><div>SEO対策（「渋谷 勉強カフェ 見学」等で検索ヒット）</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">導入メリット</div>
+      <table class="req">
+        <tr><th>コンバージョン率</th><td>アプリインストールの壁をなくし見学予約率を大幅向上</td></tr>
+        <tr><th>SEO効果</th><td>WEB予約ページが検索エンジンにインデックスされ自然流入増加</td></tr>
+        <tr><th>広告効果</th><td>WEB広告から直接予約ページへ誘導可能</td></tr>
+        <tr><th>店舗の活用</th><td>店頭QRコード・チラシから直接予約ページへ案内</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>技術選定</th><td>既存のフロントエンド（Next.js）に組み込むか、別ページとして作成するか？</td></tr>
+        <tr><th>アカウント連携方法</th><td>WEB予約 → アプリインストール後の引き継ぎ方法（メールアドレス紐付け？ワンタイムコード？）</td></tr>
+        <tr><th>予約管理</th><td>WEB予約のデータは既存の見学予約管理と統合するか？</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- 9. Googleログイン/LINEログイン -->
+<!-- ============================================================ -->
+<div class="feature" id="f9">
+  <div class="feature-header" style="background:linear-gradient(135deg,#42A5F5,#1E88E5);" onclick="toggleFeature(this)">
+    <div class="num">9</div>
+    <h2>Googleログイン / LINEログイン</h2>
+    <span class="status-badge draft">未着手</span>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="feature-body">
+
+    <div class="req-section">
+      <div class="req-section-title">概要・目的</div>
+      <table class="req">
+        <tr><th>機能名</th><td>SNSログイン（ソーシャルログイン）対応</td></tr>
+        <tr><th>目的</th><td>アカウント作成の手間を大幅に軽減し、<strong>新規登録率を向上</strong>させる</td></tr>
+        <tr><th>対象ユーザー</th><td>全ユーザー（新規・既存とも）</td></tr>
+        <tr><th>対応プラットフォーム</th><td>Googleログイン、LINEログイン（+ Apple Sign-In検討）</td></tr>
+      </table>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">機能要件</div>
+      <ul class="req-list">
+        <li><span class="req-id">SL-01</span><span class="priority must">必須</span><div>Googleアカウントでのログイン/アカウント作成に対応する（Google Sign-In）</div></li>
+        <li><span class="req-id">SL-02</span><span class="priority must">必須</span><div>LINEアカウントでのログイン/アカウント作成に対応する（LINE Login）</div></li>
+        <li><span class="req-id">SL-03</span><span class="priority must">必須</span><div>SNSログイン時にメールアドレス・氏名を自動取得してアカウントを作成する</div></li>
+        <li><span class="req-id">SL-04</span><span class="priority must">必須</span><div>既存のメールアドレスで登録済みのアカウントにSNSアカウントを紐づけできる</div></li>
+        <li><span class="req-id">SL-05</span><span class="priority must">必須</span><div>ログイン画面に「Googleでログイン」「LINEでログイン」ボタンを追加する</div></li>
+        <li><span class="req-id">SL-06</span><span class="priority want">希望</span><div>Apple Sign-Inにも対応する（iOS App Storeの要件で必須になる場合あり）</div></li>
+        <li><span class="req-id">SL-07</span><span class="priority want">希望</span><div>マイページでSNS連携の管理（連携/解除）ができる画面を追加する</div></li>
+      </ul>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">各プラットフォームの詳細</div>
+      <table class="req">
+        <tr><th>Google Sign-In</th><td>
+          ・取得情報: メールアドレス、氏名、プロフィール画像<br>
+          ・ワンタップでアカウント作成/ログイン<br>
+          ・Android/iOS/WEB対応
+        </td></tr>
+        <tr><th>LINE Login</th><td>
+          ・取得情報: 表示名、メールアドレス（ユーザーの許可が必要）<br>
+          ・日本のユーザーに馴染みやすい<br>
+          ・LINE公式アカウントとの連携も将来的に可能
+        </td></tr>
+        <tr><th>Apple Sign-In</th><td>
+          ・iOS要件: 他のSNSログインを提供する場合、Apple Sign-Inも必須の場合あり<br>
+          ・取得情報: メールアドレス（リレーメール機能あり）、氏名
+        </td></tr>
+      </table>
+      <div class="note-box warn">
+        <strong>注意:</strong> Apple Sign-Inについて — App Store審査ガイドライン上、GoogleやLINEなどサードパーティログインを提供するiOSアプリは、<strong>Apple Sign-Inも提供する必要がある</strong>場合があります。要確認。
+      </div>
+    </div>
+
+    <div class="req-section">
+      <div class="req-section-title">未決定事項</div>
+      <table class="req">
+        <tr><th>LINE メール取得</th><td>LINEユーザーがメールアドレスの提供を拒否した場合の対応は？（別途入力を求める？）</td></tr>
+        <tr><th>既存アカウントとの重複</th><td>SNSに紐づくメールアドレスが既存アカウントと同じ場合、自動連携するか確認するか？</td></tr>
+        <tr><th>Apple Sign-In</th><td>同時に対応するか、別フェーズとするか？</td></tr>
+        <tr><th>プライバシーポリシー</th><td>SNS連携による個人情報取得について利用規約・プライバシーポリシーの更新が必要</td></tr>
+        <tr><th>開発優先度</th><td>未定</td></tr>
+      </table>
+    </div>
+
+    <div class="approval-box">
+      <div class="approval-title">承認欄</div>
+      <div class="approval-row">
+        <label>判定</label>
+        <select onchange="updateApproval(this)">
+          <option value="pending">確認待ち</option>
+          <option value="approved">承認</option>
+          <option value="rejected">差し戻し</option>
+          <option value="hold">保留</option>
+        </select>
+      </div>
+      <div class="approval-row">
+        <label>コメント</label>
+        <textarea placeholder="コメント・指摘事項を入力..." oninput="autoSave()"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  StudyGO Development Team — 要件定義シート
+</div>
+
+<script>
+// ===== 開閉 =====
+function toggleFeature(el) {
+  el.closest('.feature').classList.toggle('collapsed');
+}
+
+// ===== 承認スタイル =====
+function updateApproval(sel) {
+  sel.className = sel.value;
+  autoSave();
+}
+
+// ===== ナビのアクティブ =====
+document.querySelectorAll('.nav a').forEach(a => {
+  a.addEventListener('click', function() {
+    document.querySelectorAll('.nav a').forEach(n => n.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// IntersectionObserver でスクロール追従
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      document.querySelectorAll('.nav a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-140px 0px -60% 0px' });
+
+document.querySelectorAll('.feature').forEach(f => observer.observe(f));
+
+// ===== 自動保存 =====
+let saveTimer;
+function autoSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const data = { approvals: [], comments: [], timestamp: new Date().toISOString() };
+    document.querySelectorAll('.approval-box').forEach((box, i) => {
+      const sel = box.querySelector('select');
+      const ta = box.querySelector('textarea');
+      data.approvals.push(sel ? sel.value : '');
+      data.comments.push(ta ? ta.value : '');
+    });
+    localStorage.setItem('requirements-new-features-v1', JSON.stringify(data));
+  }, 1000);
+}
+
+function loadAll() {
+  const raw = localStorage.getItem('requirements-new-features-v1');
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    document.querySelectorAll('.approval-box').forEach((box, i) => {
+      const sel = box.querySelector('select');
+      const ta = box.querySelector('textarea');
+      if (sel && data.approvals && data.approvals[i]) { sel.value = data.approvals[i]; sel.className = data.approvals[i]; }
+      if (ta && data.comments && data.comments[i]) ta.value = data.comments[i];
+    });
+  } catch(e) { console.error(e); }
+}
+
+// ===== テキストエクスポート =====
+function exportAll() {
+  let text = '# スタディGO 新機能 要件定義シート\n';
+  text += '作成日: 2026/03/03\n\n';
+
+  document.querySelectorAll('.feature').forEach((f, i) => {
+    const title = f.querySelector('h2').textContent;
+    text += '---\n## ' + (i+1) + '. ' + title + '\n\n';
+
+    // 要件
+    f.querySelectorAll('.req-list li').forEach(li => {
+      const id = li.querySelector('.req-id');
+      const priority = li.querySelector('.priority');
+      const content = li.querySelector('div');
+      text += '- [' + (id ? id.textContent : '') + '] ';
+      if (priority) text += '(' + priority.textContent + ') ';
+      text += (content ? content.textContent : '') + '\n';
+    });
+    text += '\n';
+
+    // 承認
+    const box = f.querySelector('.approval-box');
+    if (box) {
+      const sel = box.querySelector('select');
+      const ta = box.querySelector('textarea');
+      const statusMap = { pending: '確認待ち', approved: '承認', rejected: '差し戻し', hold: '保留' };
+      text += '【承認】' + (statusMap[sel.value] || sel.value) + '\n';
+      if (ta.value.trim()) text += '【コメント】' + ta.value.trim() + '\n';
+    }
+    text += '\n';
+  });
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-export');
+    btn.textContent = 'コピーしました!';
+    btn.style.background = '#4CAF50';
+    setTimeout(() => { btn.textContent = 'テキストコピー'; btn.style.background = ''; }, 2000);
+  }).catch(() => {
+    alert('コピーに失敗しました。手動でコピーしてください。');
+  });
+}
+
+// 初期化
+document.addEventListener('DOMContentLoaded', loadAll);
+</script>
+
+</body>
+</html>
