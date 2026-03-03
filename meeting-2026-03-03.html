@@ -235,7 +235,7 @@
   <div class="main-tabs-inner" id="mainTabs">
     <button class="main-tab active" onclick="showTopic(0)"><span class="tab-num">1</span>メッセージ分離<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(1)"><span class="tab-num">2</span>履歴の分離<span class="memo-dot"></span></button>
-    <button class="main-tab" onclick="showTopic(2)"><span class="tab-num">3</span>短期パス<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(2)"><span class="tab-num">3</span>期間パス（短期パス）<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(3)"><span class="tab-num">4</span>承認+オプション<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(4)"><span class="tab-num">5</span>一斉送信<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(5)"><span class="tab-num">6</span>会員データ出力<span class="memo-dot"></span></button>
@@ -545,21 +545,118 @@ Wi-Fiパスワード: studygo2026
 <!-- ======================================== -->
 <!-- 3. 短期パス（期間パス） -->
 <!-- ======================================== -->
-<div class="topic-panel" id="topic-2" data-title="短期パス（期間パス）">
+<div class="topic-panel" id="topic-2" data-title="期間パス（短期パス）">
 
   <div class="overview-card">
-    <h3>3. 短期パス（期間パス）の新機能</h3>
+    <h3>3. 期間パス（短期パス）の新機能</h3>
     <p>
-      <span class="highlight">7日・14日・30日の買い切りパス</span>を新たに販売できるようにします。<br>
-      月額契約とは別の商品で、<strong>購入した期間内は追加料金なしで使い放題</strong>。<br>
-      自動更新はなく、期間が終われば自動的に終了します。
+      店舗が<strong>自由に日数を設定</strong>して販売できる<span class="highlight">買い切りパス</span>を新たに導入します。<br>
+      最短<strong>0日（当日）</strong>～最長<strong>365日</strong>、種類数は<strong>制限なし</strong>。<br>
+      月額契約とは別の商品で、<strong>購入した期間内は追加料金なしで使い放題</strong>。自動更新はなく、期間が終われば自動的に終了します。
     </p>
   </div>
 
-  <!-- ========== アプリ画面：プラン選択 〜 購入フロー ========== -->
+  <!-- ========== 決定済みサマリー ========== -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,#4CAF50,#388E3C);" onclick="toggleSection(this)">
+      決定事項サマリー（要件定義より反映） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="section-body">
+
+      <!-- 概要・日数設定 -->
+      <div style="font-weight:700;font-size:14px;color:var(--purple);margin-bottom:8px;border-bottom:2px solid var(--purple);padding-bottom:4px;">1. 概要・日数設定</div>
+      <table class="simple" style="margin-bottom:16px;">
+        <tr><th>日数設定</th><td><strong>店舗が自由に設定</strong>（加盟法人ではなく店舗単位で作成）</td></tr>
+        <tr><th>最短日数</th><td><strong>0日</strong>（当日パス）</td></tr>
+        <tr><th>最長日数</th><td><strong>365日</strong></td></tr>
+        <tr><th>種類数</th><td><strong>制限なし</strong>。ただし1人が同じ店舗で同時に購入できるパスは<strong>1つまで</strong></td></tr>
+        <tr><th>入会金</th><td><strong>不要</strong></td></tr>
+        <tr><th>利用範囲</th><td>購入した<strong>1店舗のみ</strong>。営業時間内なら回数・時間の制限なし</td></tr>
+        <tr><th>月額プランとの併用</th><td><strong>可能</strong>。チェックイン時は期間パスが優先</td></tr>
+        <tr><th>2店舗制限</th><td>月額プランの2店舗制限には<strong>含めない</strong></td></tr>
+      </table>
+      <div style="background:#FFF3E0;border-left:4px solid var(--orange);padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:13px;color:#333;">
+        <strong style="color:var(--orange);">追加要望:</strong> 各パスに<strong>販売可能枚数</strong>を設定できるようにしたい。上限到達時はグレーアウト表示。
+      </div>
+
+      <!-- 料金・お支払い -->
+      <div style="font-weight:700;font-size:14px;color:var(--blue);margin-bottom:8px;border-bottom:2px solid var(--blue);padding-bottom:4px;">2. 料金・お支払い</div>
+      <table class="simple" style="margin-bottom:16px;">
+        <tr><th>料金設定</th><td><strong>運営</strong>が設定</td></tr>
+        <tr><th>料金表示</th><td>店舗が<strong>税込で入力</strong> → そのまま表示</td></tr>
+        <tr><th>日割り表示</th><td>「1日あたり○○円」を<strong>表示する</strong></td></tr>
+        <tr><th>最低料金</th><td><strong>50円以上</strong></td></tr>
+        <tr><th>支払い方法</th><td>クレジットカード（<strong>PAYPAYのみ検討中</strong>）</td></tr>
+        <tr><th>年齢割引</th><td style="color:var(--orange);font-weight:600;">保留</td></tr>
+        <tr><th>クーポン</th><td><strong>使える</strong>（入力タイミング: <strong>パス選択時</strong>）</td></tr>
+        <tr><th>手数料率</th><td>デフォルトは月額と<strong>同じ</strong>、<strong>別の手数料も設定可能</strong></td></tr>
+        <tr><th>法人への入金</th><td><strong>月末締めの翌月末払い</strong></td></tr>
+        <tr><th>領収書</th><td>既存の仕組み（アプリ内利用履歴 + Stripeからメール）</td></tr>
+      </table>
+
+      <!-- 契約ルール -->
+      <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;border-bottom:2px solid var(--green);padding-bottom:4px;">3. 契約ルール</div>
+      <table class="simple" style="margin-bottom:16px;">
+        <tr><th>開始日選択</th><td><strong>カレンダー</strong>表示。デフォルトは「今日」</td></tr>
+        <tr><th>選択可能範囲</th><td>今日～<strong>30日後</strong>まで</td></tr>
+        <tr><th>定休日</th><td>現状の<strong>月額プランの仕様と合わせる</strong></td></tr>
+        <tr><th>最終日の利用</th><td>営業時間の<strong>閉店まで</strong>利用可能</td></tr>
+        <tr><th>途中解約</th><td><strong>不可</strong>（返金なし）</td></tr>
+        <tr><th>臨時休業</th><td>期間延長<strong>しない</strong></td></tr>
+        <tr><th>再購入</th><td>期限が<strong>切れてから</strong>のみ。延長＝別途購入なので日数変更も<strong>可能</strong></td></tr>
+        <tr><th>連続購入</th><td>回数制限<strong>なし</strong></td></tr>
+        <tr><th>延長時クーポン</th><td><strong>使える</strong></td></tr>
+        <tr><th>チェックイン優先順位</th><td>期間パス → 月額 → ドロップイン</td></tr>
+        <tr><th>期限切れ後チェックイン</th><td><strong>プラン選択画面</strong>を表示（ドロップイン → 期間パス → 月額の順）</td></tr>
+        <tr><th>決済失敗</th><td>現状の決済エラーフローに合わせる</td></tr>
+      </table>
+
+      <!-- アプリ画面 -->
+      <div style="font-weight:700;font-size:14px;color:var(--orange);margin-bottom:8px;border-bottom:2px solid var(--orange);padding-bottom:4px;">4. アプリ画面</div>
+      <table class="simple" style="margin-bottom:16px;">
+        <tr><th>タブ順番</th><td>月額プラン → <strong>期間パス</strong> → 都度利用</td></tr>
+        <tr><th>未提供店舗</th><td>タブ<strong>非表示</strong></td></tr>
+        <tr><th>未ログイン閲覧</th><td><strong>閲覧可能</strong>（購入時にログイン促す）</td></tr>
+        <tr><th>マイページ表示</th><td>残り日数と進捗バーを表示</td></tr>
+        <tr><th>詳細画面</th><td><strong>パス名/期間/料金/購入日</strong>を表示</td></tr>
+        <tr><th>延長ボタン</th><td style="color:var(--red);">却下 → <strong>再購入を促す</strong></td></tr>
+        <tr><th>期限切れ後カード</th><td>「利用可能日数：0日」表示 → 未購入なら<strong>7日間で非表示</strong></td></tr>
+        <tr><th>検索フィルター</th><td>「期間パス対応」フィルターを追加</td></tr>
+      </table>
+
+      <!-- 管理画面 -->
+      <div style="font-weight:700;font-size:14px;color:#E53935;margin-bottom:8px;border-bottom:2px solid #E53935;padding-bottom:4px;">5. 管理画面</div>
+      <table class="simple" style="margin-bottom:16px;">
+        <tr><th>パス作成・料金変更</th><td><strong>運営（本部）のみ</strong></td></tr>
+        <tr><th>法人の有効/無効切替</th><td style="color:var(--red);">却下（今は不可）</td></tr>
+        <tr><th>料金変更方法</th><td>契約ユーザーなし → <strong>直接変更可能</strong>、利用履歴あり → <strong>新プラン作成</strong></td></tr>
+        <tr><th>手動期限切れ</th><td><strong>不要</strong>。運営で強制契約・解約機能を設ける</td></tr>
+        <tr><th>手動延長</th><td><strong>不要</strong></td></tr>
+        <tr><th>CSV出力</th><td><strong>不要</strong></td></tr>
+      </table>
+
+      <!-- 通知 -->
+      <div style="font-weight:700;font-size:14px;color:var(--orange);margin-bottom:8px;border-bottom:2px solid var(--orange);padding-bottom:4px;">6. 通知・お知らせ <span style="background:var(--orange);color:white;padding:2px 8px;border-radius:8px;font-size:10px;vertical-align:middle;">全項目保留</span></div>
+      <div style="background:#FFF3E0;border:1px solid #FFCC80;border-radius:8px;padding:12px;font-size:13px;color:#E65100;margin-bottom:16px;">
+        通知のタイミング（残り3日・1日・当日）、送信時刻、ON/OFF設定、メール形式、通知からの遷移先、既存会員への告知方法 → <strong>すべて保留中</strong>
+      </div>
+
+      <!-- 導入計画 -->
+      <div style="font-weight:700;font-size:14px;color:#607D8B;margin-bottom:8px;border-bottom:2px solid #607D8B;padding-bottom:4px;">7. 導入計画</div>
+      <table class="simple" style="margin-bottom:8px;">
+        <tr><th>導入方式</th><td>管理画面からパスを作成する仕様 → <strong>一部店舗でテスト</strong>してから拡大</td></tr>
+        <tr><th>テスト対象店舗</th><td><strong>勉強カフェ新宿スタジオ</strong>、<strong>勉強カフェ新宿BPスタジオ</strong></td></tr>
+        <tr><th>開発優先度</th><td><strong>他の機能と並行もしくは先にこちら</strong></td></tr>
+        <tr><th>利用規約の作成</th><td>担当: <strong>根本</strong></td></tr>
+        <tr><th>アカウント削除時</th><td>警告表示 → 削除可能 → <strong>返金なし</strong></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== アプリ画面：プラン選択 ～ 購入フロー ========== -->
   <div class="section">
     <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
-      アプリ画面 1: プラン選択 → 開始日カレンダー → 購入完了 <span class="toggle">▼</span>
+      アプリ画面 1: プラン選択 → 開始日カレンダー → 購入完了 <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body" style="background:#f0f0f0;">
       <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:16px;">
@@ -568,92 +665,84 @@ Wi-Fiパスワード: studygo2026
       <div class="phones-row">
         <!-- STEP1: プラン選択 -->
         <div class="phone-wrapper">
-          <div class="phone-label">STEP1: パスを選ぶ</div>
+          <div class="phone-label">STEP1: パスを選ぶ + クーポン</div>
           <div class="phone">
             <div class="phone-notch"></div>
             <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
             <div class="app-header" style="background:var(--purple);">スタディGO 渋谷店</div>
             <div class="phone-body" style="padding:12px;">
-              <div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+              <div style="display:flex;gap:0;margin-bottom:10px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
                 <div style="flex:1;padding:8px;text-align:center;font-size:11px;color:var(--text-sub);background:white;">月額プラン</div>
                 <div style="flex:1;padding:8px;text-align:center;font-size:11px;color:white;background:var(--purple);font-weight:600;">期間パス</div>
                 <div style="flex:1;padding:8px;text-align:center;font-size:11px;color:var(--text-sub);background:white;">都度利用</div>
               </div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                  <span style="font-size:14px;font-weight:700;color:var(--text);">7日パス</span>
-                  <span style="background:var(--purple);color:white;padding:2px 8px;border-radius:8px;font-size:10px;">人気</span>
+              <div style="background:white;border-radius:8px;padding:8px 10px;margin-bottom:8px;border:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <input type="text" placeholder="クーポンコード" style="flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-size:10px;">
+                  <button style="padding:5px 10px;background:var(--purple);color:white;border:none;border-radius:4px;font-size:10px;font-weight:600;">適用</button>
                 </div>
-                <div style="font-size:20px;font-weight:700;color:var(--purple);">&#165;3,500 <span style="font-size:11px;color:#999;font-weight:400;">（税込）</span></div>
-                <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">1日あたり &#165;500</div>
               </div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border);">
-                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">14日パス</div>
-                <div style="font-size:20px;font-weight:700;color:var(--purple);">&#165;5,600 <span style="font-size:11px;color:#999;font-weight:400;">（税込）</span></div>
-                <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">1日あたり &#165;400 <span style="color:var(--green);font-weight:600;">20%お得</span></div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:6px;border:2px solid var(--purple);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:13px;font-weight:700;color:var(--text);">3日お試しパス</span>
+                  <span style="background:var(--green);color:white;padding:2px 6px;border-radius:6px;font-size:9px;">残り5枠</span>
+                </div>
+                <div style="font-size:18px;font-weight:700;color:var(--purple);">&#165;1,500 <span style="font-size:10px;color:#999;font-weight:400;">（税込）</span></div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">1日あたり &#165;500</div>
               </div>
-              <div style="background:white;border-radius:10px;padding:12px;border:1px solid var(--border);">
-                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;">30日パス</div>
-                <div style="font-size:20px;font-weight:700;color:var(--purple);">&#165;9,000 <span style="font-size:11px;color:#999;font-weight:400;">（税込）</span></div>
-                <div style="font-size:11px;color:var(--text-sub);margin-top:4px;">1日あたり &#165;300 <span style="color:var(--green);font-weight:600;">40%お得</span></div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:6px;border:1px solid var(--border);">
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">7日パス</div>
+                <div style="font-size:18px;font-weight:700;color:var(--purple);">&#165;3,500 <span style="font-size:10px;color:#999;font-weight:400;">（税込）</span></div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">1日あたり &#165;500</div>
+              </div>
+              <div style="background:#f0f0f0;border-radius:10px;padding:10px;border:1px solid #ddd;opacity:0.5;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <span style="font-size:13px;font-weight:700;color:#999;">30日パス</span>
+                  <span style="background:#E53935;color:white;padding:2px 6px;border-radius:6px;font-size:9px;">売り切れ</span>
+                </div>
+                <div style="font-size:18px;font-weight:700;color:#999;">&#165;9,000</div>
               </div>
             </div>
           </div>
         </div>
         <!-- STEP2: カレンダー＋購入確認 -->
         <div class="phone-wrapper">
-          <div class="phone-label">STEP2: 開始日を選ぶ＋支払い</div>
+          <div class="phone-label">STEP2: 開始日を選ぶ（30日以内）</div>
           <div class="phone">
             <div class="phone-notch"></div>
             <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
             <div class="app-header" style="background:var(--purple);">購入確認</div>
             <div class="phone-body" style="padding:10px;">
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
                 <div style="font-size:12px;color:#999;">スタディGO 渋谷店</div>
                 <div style="font-size:15px;font-weight:700;color:var(--text);margin-top:2px;">7日パス</div>
               </div>
-              <!-- カレンダー -->
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);">
-                <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:8px;">開始日を選択</div>
-                <div style="text-align:center;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;">2026年 3月</div>
+              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;border:2px solid var(--purple);">
+                <div style="font-size:12px;font-weight:700;color:var(--purple);margin-bottom:6px;">開始日を選択</div>
+                <div style="text-align:center;font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;">2026年 3月</div>
                 <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px;text-align:center;">
                   <div style="color:var(--red);font-weight:600;">日</div><div style="font-weight:600;">月</div><div style="font-weight:600;">火</div><div style="font-weight:600;">水</div><div style="font-weight:600;">木</div><div style="font-weight:600;">金</div><div style="color:var(--blue);font-weight:600;">土</div>
                   <div style="color:#ccc;">1</div><div style="color:#ccc;">2</div>
-                  <div style="background:var(--purple);color:white;border-radius:50%;width:22px;height:22px;line-height:22px;margin:0 auto;font-weight:700;">3</div>
+                  <div style="background:var(--purple);color:white;border-radius:50%;width:20px;height:20px;line-height:20px;margin:0 auto;font-weight:700;">3</div>
                   <div style="padding:3px;">4</div><div style="padding:3px;">5</div><div style="padding:3px;">6</div><div style="padding:3px;">7</div>
-                  <div style="padding:3px;">8</div><div style="padding:3px;">9</div><div style="color:#ccc;">10</div><div style="color:#ccc;">11</div><div style="color:#ccc;">12</div><div style="color:#ccc;">13</div><div style="color:#ccc;">14</div>
+                  <div style="padding:3px;">8</div><div style="padding:3px;">9</div><div style="padding:3px;">10</div><div style="padding:3px;">11</div><div style="padding:3px;">12</div><div style="padding:3px;">13</div><div style="padding:3px;">14</div>
                 </div>
-                <div style="font-size:10px;color:var(--text-sub);margin-top:6px;text-align:center;">今日〜7日以内の日付を選べます</div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:4px;text-align:center;">今日～30日以内の日付を選べます</div>
               </div>
-              <!-- 期間表示 -->
-              <div style="background:var(--purple-light);border-radius:8px;padding:10px;margin-bottom:8px;text-align:center;">
-                <div style="font-size:11px;color:var(--purple);">利用期間</div>
-                <div style="font-size:15px;font-weight:700;color:var(--purple);">3/3（火）〜 3/9（月）</div>
+              <div style="background:var(--purple-light);border-radius:8px;padding:8px;margin-bottom:8px;text-align:center;">
+                <div style="font-size:10px;color:var(--purple);">利用期間</div>
+                <div style="font-size:14px;font-weight:700;color:var(--purple);">3/3（火）～ 3/9（月）</div>
               </div>
-              <!-- クーポン -->
-              <div style="background:white;border-radius:8px;padding:10px;margin-bottom:8px;border:1px solid var(--border);">
-                <div style="display:flex;align-items:center;gap:6px;">
-                  <input type="text" placeholder="クーポンコード" style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;">
-                  <button style="padding:6px 12px;background:var(--purple);color:white;border:none;border-radius:4px;font-size:11px;font-weight:600;">適用</button>
+              <div style="background:white;border-radius:8px;padding:8px;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;font-weight:700;">
+                  <span>お支払い合計</span><span style="color:var(--purple);">&#165;3,500</span>
                 </div>
               </div>
-              <!-- 金額 -->
-              <div style="background:white;border-radius:8px;padding:10px;margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #eee;">
-                  <span style="color:var(--text-sub);">パス料金</span><span style="color:var(--text);">&#165;3,500</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #eee;">
-                  <span style="color:var(--text-sub);">年齢割引</span><span style="color:var(--green);">-&#165;350</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;font-weight:700;">
-                  <span>お支払い合計</span><span style="color:var(--purple);">&#165;3,150</span>
-                </div>
-              </div>
-              <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;">お支払い・購入</button>
+              <button style="width:100%;padding:10px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;">お支払い・購入</button>
             </div>
           </div>
         </div>
-        <!-- STEP3: 完了 + マイページ -->
+        <!-- STEP3: 完了 -->
         <div class="phone-wrapper">
           <div class="phone-label">STEP3: 購入完了 → マイページ</div>
           <div class="phone">
@@ -661,34 +750,26 @@ Wi-Fiパスワード: studygo2026
             <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
             <div class="app-header" style="background:var(--green);">購入完了</div>
             <div class="phone-body" style="padding:14px;">
-              <div style="text-align:center;padding:12px 0;">
-                <div style="width:48px;height:48px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:24px;color:white;">&#10003;</div>
-                <div style="font-size:16px;font-weight:700;color:var(--text);">購入が完了しました！</div>
+              <div style="text-align:center;padding:10px 0;">
+                <div style="width:44px;height:44px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 6px;font-size:22px;color:white;">&#10003;</div>
+                <div style="font-size:15px;font-weight:700;color:var(--text);">購入が完了しました！</div>
               </div>
-              <!-- パスカード -->
-              <div style="background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:12px;padding:14px;color:white;margin-bottom:10px;">
-                <div style="font-size:10px;opacity:0.8;margin-bottom:3px;">期間パス</div>
-                <div style="font-size:15px;font-weight:700;margin-bottom:6px;">スタディGO 渋谷店</div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
-                  <span>03/03 〜 03/09</span><span style="font-weight:700;">残り7日</span>
+              <div style="background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:12px;padding:12px;color:white;margin-bottom:10px;">
+                <div style="font-size:10px;opacity:0.8;margin-bottom:2px;">期間パス（短期パス）</div>
+                <div style="font-size:14px;font-weight:700;margin-bottom:4px;">スタディGO 渋谷店</div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                  <span>03/03 ～ 03/09</span><span style="font-weight:700;">残り7日</span>
                 </div>
                 <div style="background:rgba(255,255,255,0.3);border-radius:4px;height:5px;overflow:hidden;">
                   <div style="background:white;height:100%;width:0%;border-radius:4px;"></div>
                 </div>
               </div>
-              <!-- 利用ガイド -->
-              <div style="background:white;border-radius:8px;padding:12px;font-size:11px;line-height:1.7;color:var(--text);">
-                <div style="font-weight:700;margin-bottom:4px;color:var(--purple);">ご利用方法</div>
-                1. 店舗のQRコードをスキャン<br>
-                2. 自動でチェックイン（追加料金なし）<br>
-                3. お帰りの際にチェックアウト<br><br>
-                <div style="color:var(--text-sub);font-size:10px;">※営業時間内であれば何回でもご利用いただけます</div>
-              </div>
-              <div class="bottom-tab">
-                <div class="bottom-tab-item"><span class="tab-icon">&#127968;</span>ホーム</div>
-                <div class="bottom-tab-item"><span class="tab-icon">&#128269;</span>検索</div>
-                <div class="bottom-tab-item"><span class="tab-icon">&#128172;</span>メッセージ</div>
-                <div class="bottom-tab-item"><span class="tab-icon">&#128100;</span>マイページ</div>
+              <div style="background:white;border-radius:8px;padding:10px;font-size:11px;line-height:1.7;color:var(--text);">
+                <div style="font-weight:700;margin-bottom:3px;color:var(--purple);">パス詳細</div>
+                パス名: 7日パス<br>
+                期間: 2026/03/03 ～ 2026/03/09<br>
+                料金: &#165;3,500<br>
+                購入日: 2026/03/03
               </div>
             </div>
           </div>
@@ -697,47 +778,15 @@ Wi-Fiパスワード: studygo2026
     </div>
   </div>
 
-  <!-- ========== アプリ画面：期限通知 ========== -->
+  <!-- ========== アプリ画面：期限切れ後 ========== -->
   <div class="section">
     <div class="section-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleSection(this)">
-      アプリ画面 2: 期限が近づいた時の通知 <span class="toggle">▼</span>
+      アプリ画面 2: 期限切れ後の表示（再購入誘導） <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body" style="background:#f0f0f0;">
-      <p style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:16px;">
-        期限切れが近づくと、お客様にお知らせが届きます
-      </p>
       <div class="phones-row">
-        <!-- 残り3日 -->
         <div class="phone-wrapper">
-          <div class="phone-label">残り3日（注意お知らせ）</div>
-          <div class="phone">
-            <div class="phone-notch"></div>
-            <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
-            <div class="app-header">マイページ</div>
-            <div class="phone-body" style="padding:14px;">
-              <div style="background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:12px;padding:14px;color:white;margin-bottom:10px;">
-                <div style="font-size:10px;opacity:0.8;">期間パス</div>
-                <div style="font-size:15px;font-weight:700;margin-bottom:6px;">スタディGO 渋谷店</div>
-                <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
-                  <span>03/03 〜 03/09</span><span style="font-weight:700;">残り3日</span>
-                </div>
-                <div style="background:rgba(255,255,255,0.3);border-radius:4px;height:5px;overflow:hidden;">
-                  <div style="background:#FFB74D;height:100%;width:57%;border-radius:4px;"></div>
-                </div>
-              </div>
-              <div style="background:#FFF3E0;border:1px solid #FFCC80;border-radius:8px;padding:12px;font-size:12px;line-height:1.6;">
-                <div style="font-weight:700;color:#E65100;margin-bottom:4px;">期間パスがまもなく終了します</div>
-                <div style="color:#E65100;">残り3日です。延長する場合は下のボタンから新しいパスをご購入ください。</div>
-              </div>
-              <div style="padding:12px 0;">
-                <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;">パスを延長する（再購入）</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- 期限切れ -->
-        <div class="phone-wrapper">
-          <div class="phone-label">期限切れ後</div>
+          <div class="phone-label">期限切れ（0日表示 → 7日間表示）</div>
           <div class="phone">
             <div class="phone-notch"></div>
             <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
@@ -747,7 +796,7 @@ Wi-Fiパスワード: studygo2026
                 <div style="font-size:10px;opacity:0.8;">期間パス（期限切れ）</div>
                 <div style="font-size:15px;font-weight:700;margin-bottom:6px;">スタディGO 渋谷店</div>
                 <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
-                  <span>03/03 〜 03/09</span><span style="font-weight:700;color:#FFB74D;">期限切れ</span>
+                  <span>03/03 ～ 03/09</span><span style="font-weight:700;color:#FFB74D;">利用可能日数：0日</span>
                 </div>
                 <div style="background:rgba(255,255,255,0.3);border-radius:4px;height:5px;overflow:hidden;">
                   <div style="background:white;height:100%;width:100%;border-radius:4px;"></div>
@@ -755,38 +804,36 @@ Wi-Fiパスワード: studygo2026
               </div>
               <div style="background:#FFEBEE;border:1px solid #EF9A9A;border-radius:8px;padding:12px;font-size:12px;line-height:1.6;">
                 <div style="font-weight:700;color:var(--red);margin-bottom:4px;">期間パスが終了しました</div>
-                <div style="color:var(--red);">同じ店舗のパスを再購入できます。</div>
+                <div style="color:var(--red);">新しいパスを購入できます。</div>
               </div>
               <div style="padding:12px 0;">
                 <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;">新しいパスを購入する</button>
               </div>
-              <div style="text-align:center;font-size:11px;color:#999;">※ このカードは7日後に非表示になります</div>
+              <div style="text-align:center;font-size:11px;color:#999;">※ 未購入の場合、このカードは7日後に非表示になります</div>
             </div>
           </div>
         </div>
-        <!-- プッシュ通知 -->
         <div class="phone-wrapper">
-          <div class="phone-label">プッシュ通知</div>
+          <div class="phone-label">期限切れ後チェックイン時</div>
           <div class="phone">
             <div class="phone-notch"></div>
-            <div class="phone-status"><span>9:00</span><span>5G 100%</span></div>
-            <div class="phone-body" style="background:#000;min-height:420px;padding:60px 14px 14px;">
-              <div style="background:rgba(255,255,255,0.95);border-radius:14px;padding:12px;margin-bottom:10px;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-                  <div style="width:20px;height:20px;background:var(--green);border-radius:4px;font-size:10px;color:white;display:flex;align-items:center;justify-content:center;">S</div>
-                  <span style="font-size:10px;color:#999;">スタディGO</span>
-                  <span style="font-size:9px;color:#bbb;margin-left:auto;">9:00</span>
-                </div>
-                <div style="font-size:12px;font-weight:600;color:var(--text);">期間パスがあと3日で終了します</div>
-                <div style="font-size:11px;color:var(--text-sub);">渋谷店の7日パスの有効期限が3/9です。延長はアプリから。</div>
+            <div class="phone-status"><span>10:00</span><span>5G 100%</span></div>
+            <div class="app-header" style="background:var(--orange);">プランを選択</div>
+            <div class="phone-body" style="padding:14px;">
+              <div style="background:#FFF3E0;border:1px solid #FFCC80;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#E65100;text-align:center;">
+                有効なプランがありません。利用方法を選んでください。
               </div>
-              <div style="background:rgba(255,255,255,0.95);border-radius:14px;padding:12px;opacity:0.5;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-                  <div style="width:20px;height:20px;background:var(--green);border-radius:4px;font-size:10px;color:white;display:flex;align-items:center;justify-content:center;">S</div>
-                  <span style="font-size:10px;color:#999;">スタディGO</span>
-                  <span style="font-size:9px;color:#bbb;margin-left:auto;">昨日</span>
-                </div>
-                <div style="font-size:12px;font-weight:600;color:var(--text);">チェックアウトを忘れていませんか？</div>
+              <div style="background:white;border-radius:10px;padding:14px;margin-bottom:8px;border:2px solid var(--orange);">
+                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">都度利用（ドロップイン）</div>
+                <div style="font-size:11px;color:var(--text-sub);">時間に応じた料金でチェックイン</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:14px;margin-bottom:8px;border:1px solid var(--border);">
+                <div style="font-size:14px;font-weight:700;color:var(--purple);margin-bottom:4px;">期間パスを購入</div>
+                <div style="font-size:11px;color:var(--text-sub);">買い切りパスで使い放題</div>
+              </div>
+              <div style="background:white;border-radius:10px;padding:14px;border:1px solid var(--border);">
+                <div style="font-size:14px;font-weight:700;color:var(--blue);margin-bottom:4px;">月額プランに申し込む</div>
+                <div style="font-size:11px;color:var(--text-sub);">毎月定額で使い放題</div>
               </div>
             </div>
           </div>
@@ -798,11 +845,10 @@ Wi-Fiパスワード: studygo2026
   <!-- ========== 管理画面 ========== -->
   <div class="section">
     <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
-      管理画面イメージ（店舗スタッフが設定・確認する画面） <span class="toggle">▼</span>
+      管理画面イメージ（運営がパスを設定する画面） <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body" style="background:#f0f0f0;">
-      <!-- パス設定画面 -->
-      <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">期間パスの料金設定（店舗ごと）</p>
+      <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">期間パスのプラン設定（運営のみ操作可能）</p>
       <div class="admin-mock" style="margin-bottom:20px;">
         <div class="admin-mock-header purple">
           期間パス プラン設定
@@ -810,365 +856,103 @@ Wi-Fiパスワード: studygo2026
         </div>
         <div class="admin-mock-body">
           <table class="mock-table">
-            <thead><tr><th>パス名</th><th>日数</th><th>料金（税込）</th><th>1日あたり</th><th>年齢割引</th><th>状態</th><th></th></tr></thead>
+            <thead><tr><th>パス名</th><th>日数</th><th>料金（税込）</th><th>1日あたり</th><th>販売枠</th><th>契約者</th><th>状態</th><th></th></tr></thead>
             <tbody>
               <tr>
-                <td style="font-weight:600;">7日パス</td><td>7日</td>
-                <td><input type="text" value="3,500" style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
+                <td style="font-weight:600;">3日お試しパス</td><td>3日</td>
+                <td><input type="text" value="1,500" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
                 <td style="color:var(--text-sub);">&#165;500</td>
-                <td><span style="color:var(--green);">適用</span></td>
+                <td>10枠</td><td>5人</td>
                 <td><span style="color:var(--green);font-weight:600;">販売中</span></td>
-                <td><button style="padding:3px 10px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
+                <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
               </tr>
               <tr>
-                <td style="font-weight:600;">14日パス</td><td>14日</td>
-                <td><input type="text" value="5,600" style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
-                <td style="color:var(--text-sub);">&#165;400</td>
-                <td><span style="color:var(--green);">適用</span></td>
+                <td style="font-weight:600;">7日パス</td><td>7日</td>
+                <td><input type="text" value="3,500" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
+                <td style="color:var(--text-sub);">&#165;500</td>
+                <td>制限なし</td><td>8人</td>
                 <td><span style="color:var(--green);font-weight:600;">販売中</span></td>
-                <td><button style="padding:3px 10px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
+                <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
               </tr>
               <tr>
                 <td style="font-weight:600;">30日パス</td><td>30日</td>
-                <td><input type="text" value="9,000" style="width:80px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
+                <td><input type="text" value="9,000" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
                 <td style="color:var(--text-sub);">&#165;300</td>
-                <td><span style="color:var(--green);">適用</span></td>
-                <td><span style="color:#999;">未公開</span></td>
-                <td><button style="padding:3px 10px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
+                <td>10枠</td><td>10人</td>
+                <td><span style="color:#E53935;font-weight:600;">売り切れ</span></td>
+                <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
               </tr>
             </tbody>
           </table>
+          <div style="margin-top:8px;font-size:11px;color:#888;">※ 料金変更は契約ユーザーがいない場合のみ直接変更可能。利用履歴がある場合は新プラン作成。</div>
         </div>
-      </div>
-
-      <!-- 契約一覧 -->
-      <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;">期間パス 契約一覧</p>
-      <div class="admin-mock">
-        <div class="admin-mock-header blue">
-          期間パス契約一覧
-          <span class="role-badge">運営 / 法人管理画面</span>
-        </div>
-        <div class="admin-mock-body">
-          <div class="summary-cards" style="margin-bottom:14px;">
-            <div class="s-card" style="border-top-color:var(--green);"><div class="s-label">利用中</div><div class="s-value" style="color:var(--green);">8</div></div>
-            <div class="s-card" style="border-top-color:var(--orange);"><div class="s-label">開始待ち</div><div class="s-value" style="color:var(--orange);">3</div></div>
-            <div class="s-card" style="border-top-color:#999;"><div class="s-label">期限切れ</div><div class="s-value" style="color:#999;">15</div></div>
-            <div class="s-card" style="border-top-color:var(--purple);"><div class="s-label">今月売上</div><div class="s-value" style="color:var(--purple);">&#165;52,500</div></div>
-          </div>
-          <div class="mock-table-wrap">
-            <table class="mock-table">
-              <thead><tr><th>会員名</th><th>パス</th><th>開始日</th><th>終了日</th><th>残り</th><th>金額</th><th>状態</th></tr></thead>
-              <tbody>
-                <tr><td>田中 太郎</td><td>7日</td><td>03/01</td><td>03/07</td><td>4日</td><td>&#165;3,500</td><td><span style="color:var(--green);font-weight:600;">利用中</span></td></tr>
-                <tr><td>佐藤 花子</td><td>14日</td><td>03/05</td><td>03/18</td><td>—</td><td>&#165;5,600</td><td><span style="color:var(--orange);font-weight:600;">開始待ち</span></td></tr>
-                <tr><td>鈴木 一郎</td><td>7日</td><td>02/20</td><td>02/26</td><td>—</td><td>&#165;3,150</td><td><span style="color:#999;">期限切れ</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== お支払い・決済について ========== -->
-  <div class="section">
-    <div class="section-header" style="background:linear-gradient(135deg,#1a73e8,#1557b0);" onclick="toggleSection(this)">
-      お支払い（決済）の流れ <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <div class="flow-steps">
-        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box">お客様がパスを選択し「お支払い・購入」ボタンを押す</div></div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>カード情報の確認</strong><br>登録済みカードを使用、または新しいカードを入力</div></div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>本人確認（3Dセキュア）</strong><br>カード会社の確認画面が表示される（月額プランと同じ仕組み）</div></div>
-        <div class="flow-arrow">▼</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>即時決済＆完了</strong><br>支払い完了 → パスが有効になる（月額と違い、1回きりの支払い）</div></div>
-      </div>
-
-      <div style="margin-top:20px;">
-        <table class="simple">
-          <tr><th>支払い方法</th><td><strong>クレジットカードのみ</strong>（月額プランと同じ）</td></tr>
-          <tr><th>支払いのタイミング</th><td><strong>購入時に即座に引き落とし</strong>（月額のように後から請求ではない）</td></tr>
-          <tr><th>自動更新</th><td><strong>なし</strong>。期間が終わっても勝手に課金されない。</td></tr>
-          <tr><th>延長したい場合</th><td>お客様が自分で新しいパスを購入する（＝再購入）</td></tr>
-          <tr><th>キャンセル・返金</th><td><strong>不可</strong>。購入後は理由を問わず返金しない。</td></tr>
-          <tr><th>法人への入金</th><td>売上から手数料を差し引いた金額を法人に支払い</td></tr>
-        </table>
       </div>
     </div>
   </div>
 
   <!-- ========== チェックイン時の動き ========== -->
   <div class="section">
-    <div class="section-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleSection(this)">
-      チェックイン時の動き（どのプランが使われる？） <span class="toggle">▼</span>
+    <div class="section-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleSection(this)">
+      チェックイン時の優先順位 <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body">
       <div class="flow-steps">
         <div class="flow-step"><div class="flow-num" style="background:var(--green);">1</div><div class="flow-box">お客様がQRコードをスキャンしてチェックイン</div></div>
-        <div class="flow-arrow">▼</div>
+        <div class="flow-arrow">&#9660;</div>
         <div class="flow-step"><div class="flow-num" style="background:var(--purple);">2</div><div class="flow-box"><strong style="color:var(--purple);">まず期間パスをチェック</strong><br>有効な期間パスがあれば → <strong>追加料金なし</strong>でチェックイン</div></div>
-        <div class="flow-arrow">▼ 期間パスがない場合</div>
+        <div class="flow-arrow">&#9660; 期間パスがない場合</div>
         <div class="flow-step"><div class="flow-num" style="background:var(--blue);">3</div><div class="flow-box"><strong style="color:var(--blue);">次に月額プランをチェック</strong><br>有効な月額契約があれば → 月額プランでチェックイン</div></div>
-        <div class="flow-arrow">▼ 月額もない場合</div>
+        <div class="flow-arrow">&#9660; 月額もない場合</div>
         <div class="flow-step"><div class="flow-num" style="background:var(--orange);">4</div><div class="flow-box"><strong style="color:#E65100;">都度利用（ドロップイン）</strong><br>時間に応じた料金でチェックイン</div></div>
       </div>
     </div>
   </div>
 
-  <!-- ========== 基本ルールまとめ ========== -->
-  <div class="section">
-    <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
-      基本ルールまとめ <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <table class="simple">
-        <tr><th>パスの種類</th><td><strong>7日</strong> / <strong>14日</strong> / <strong>30日</strong> の3種類</td></tr>
-        <tr><th>料金設定</th><td>店舗ごとに設定。管理画面で金額を入力。</td></tr>
-        <tr><th>利用範囲</th><td>購入した店舗のみ。期間内は回数・時間の制限なく使い放題。</td></tr>
-        <tr><th>月額との併用</th><td>可能。同じ店舗でも両方持てる。チェックイン時は期間パスが優先。</td></tr>
-        <tr><th>開始日の選択</th><td>購入時にカレンダーから選べる（今日〜7日以内）</td></tr>
-        <tr><th>年齢割引</th><td>月額プランと同じ割引ルールを適用</td></tr>
-        <tr><th>クーポン</th><td>利用可能（月額プランと同じ仕組み）</td></tr>
-        <tr><th>解約・返金</th><td>不可（買い切り商品のため）</td></tr>
-        <tr><th>臨時休業の場合</th><td>期間延長はしない（利用規約に明記）</td></tr>
-      </table>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（カレンダー関連） ========== -->
+  <!-- ========== 未決定事項（通知関連） ========== -->
   <div class="section">
     <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: カレンダー・開始日 <span class="toggle">▼</span>
+      未決定事項: 通知関連（全8項目 保留） <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body">
       <ul class="decision-list">
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">開始日を選ぶ画面に<strong>カレンダー表示を新しく作る</strong>か、<strong>日付リスト（今日/明日/明後日...）</strong>の選択式にするか？</span>
-          <span class="d-note"><input placeholder="カレンダー / リスト" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">開始日の<strong>選択可能範囲</strong>は？（今日〜何日後まで選べるか）</span>
-          <span class="d-note"><input placeholder="__日後まで" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">カレンダーに<strong>店舗の定休日</strong>を表示するか？（定休日は選択不可にする？）</span>
+          <span class="d-label">通知のタイミングは<strong>残り3日・1日・当日</strong>でよいか？ 残り7日も必要？</span>
           <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">デフォルトの開始日は<strong>「今日」</strong>でよいか？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（決済関連） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: お支払い・料金 <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">支払い方法は<strong>クレジットカードのみ</strong>でよいか？（現金・コンビニ払い等は対応する？）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+          <span class="d-label">通知の<strong>送信時刻</strong>は朝9:00でよいか？</span>
+          <span class="d-note"><input placeholder="__:00" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">法人への<strong>手数料（取り分）</strong>は何%にするか？（月額プランと同じ？別？）</span>
-          <span class="d-note"><input placeholder="__%" class="memo-input"></span>
+          <span class="d-label">お客様が通知を<strong>オフにできる設定</strong>は必要か？</span>
+          <span class="d-note"><input placeholder="オフ可能 / 常に通知" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>年齢割引</strong>は期間パスにも適用する？（月額と同じルール？）</span>
+          <span class="d-label">メールの形式は<strong>HTML</strong>か、<strong>テキストのみ</strong>か？</span>
+          <span class="d-note"><input placeholder="HTML / テキスト" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">通知の<strong>「再購入する」ボタン</strong>を押すと、どの画面に遷移するか？</span>
           <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>クーポン</strong>は期間パスにも使えるようにする？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（運用・ルール） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: 運用ルール・通知 <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">期限切れ通知のタイミングは？（現在の案: <strong>残り7日・3日・1日・当日</strong>）</span>
+          <span class="d-label">「<strong>あとで</strong>」ボタンを押した場合の動作は？</span>
           <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>臨時休業</strong>した場合、期間パスは延長する？しない？</span>
-          <span class="d-note"><input placeholder="延長する / しない" class="memo-input"></span>
+          <span class="d-label">既存の月額会員に<strong>「期間パス始めました」の告知</strong>を送るか？</span>
+          <span class="d-note"><input placeholder="送る / 送らない" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>利用規約の文言</strong>（キャンセル不可・返金不可・休業時の扱い）の作成担当は？</span>
-          <span class="d-note"><input placeholder="担当者..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">パスの<strong>延長（再購入）</strong>は、期限切れ前でも可能にする？切れてから？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（商品設計） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: 商品の基本設計 <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">パスの種類は<strong>7日・14日・30日の3種類</strong>でよいか？（他の日数も必要？）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">期間パスに<strong>入会金は必要か？</strong>（仕様案では不要としている）</span>
-          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">月額プランと<strong>同じ店舗で同時に持てる</strong>としてよいか？（チェックイン時はパスが優先）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">月額プランの<strong>2店舗までの制限</strong>に期間パスを含めるか？（案: 含めない＝パスは何店舗でもOK）</span>
-          <span class="d-note"><input placeholder="含める / 含めない" class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（お客様向けルール） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: お客様向けルール <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">期限切れ後にチェックインした場合の画面は？（案: <strong>「再購入 / ドロップイン / 月額へ切替」の3択を表示</strong>）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>連続購入（同じパスを繰り返し買う）</strong>に制限は設ける？（案: 制限なし）</span>
-          <span class="d-note"><input placeholder="制限なし / __回まで" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>カード決済が失敗</strong>した場合の画面は？（案: エラー表示 + 再試行 or カード変更ボタン）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">パスの<strong>詳細画面</strong>（「詳細を見る」をタップした時）に何を表示するか？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（管理画面・運営側） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: 管理画面・運営側の操作 <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">管理者（スタッフ）が<strong>手動でパスを期限切れにしたり、延長したり</strong>できるようにする？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>売上レポート画面</strong>（統計ダッシュボード）に表示する数値は？（販売数/売上額/延長率/利用率 等）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>プランの作成・料金変更</strong>は本部のみ？法人も可能？</span>
-          <span class="d-note"><input placeholder="本部のみ / 法人も" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>領収書</strong>は発行する？（案: 既存の仕組みに統合）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（告知・店舗検索） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: 告知・表示 <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">店舗検索画面に<strong>「期間パス対応」のフィルター</strong>を追加するか？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">期間パスを<strong>提供しない店舗</strong>では、タブを非表示にする？「現在提供なし」と表示する？</span>
-          <span class="d-note"><input placeholder="非表示 / メッセージ" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">既存の月額会員に<strong>期間パス開始の告知</strong>（お知らせ・プッシュ通知）を送る？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- ========== 決めること（導入・スケジュール） ========== -->
-  <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      決めること: 導入スケジュール <span class="toggle">▼</span>
-    </div>
-    <div class="section-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>全店舗に一斉導入</strong>するか、<strong>一部店舗でテスト</strong>してからか？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">開発の<strong>優先度</strong>は？（他の機能と並行 or 先にこちら）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label"><strong>料金設定</strong>は各法人が自由に決められる？運営が決める？</span>
+          <span class="d-label">告知の方法は？（プッシュ通知 / アプリ内バナー / メール / 全部）</span>
           <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
         </li>
       </ul>
@@ -1180,6 +964,7 @@ Wi-Fiパスワード: studygo2026
     <textarea placeholder="この議題に関するメモを入力..." class="topic-memo" oninput="onMemoInput(2)"></textarea>
   </div>
 </div>
+
 
 <!-- ======================================== -->
 <!-- 4. 承認制度 + オプション契約 -->
