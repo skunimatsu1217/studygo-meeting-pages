@@ -235,7 +235,7 @@
   <div class="main-tabs-inner" id="mainTabs">
     <button class="main-tab active" onclick="showTopic(0)"><span class="tab-num">1</span>メッセージ分離<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(1)"><span class="tab-num">2</span>履歴の分離<span class="memo-dot"></span></button>
-    <button class="main-tab" onclick="showTopic(2)"><span class="tab-num">3</span>期間パス（短期パス）<span class="memo-dot"></span></button>
+    <button class="main-tab" onclick="showTopic(2)"><span class="tab-num">3</span>期間パス<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(3)"><span class="tab-num">4</span>承認+オプション<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(4)"><span class="tab-num">5</span>一斉送信<span class="memo-dot"></span></button>
     <button class="main-tab" onclick="showTopic(5)"><span class="tab-num">6</span>会員データ出力<span class="memo-dot"></span></button>
@@ -392,6 +392,32 @@ Wi-Fiパスワード: studygo2026
     </div>
   </div>
 
+  <!-- 複合条件メッセージ -->
+  <div class="section">
+    <div class="section-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleSection(this)">
+      複合条件でのメッセージ切り替え <span class="new-badge" style="margin-left:8px;">3/3 追加</span> <span class="toggle">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="overview-card" style="background:#F3E8FF;border-color:#CE93D8;">
+        <h3 style="font-size:15px;">AかつBの場合に異なるメッセージを表示</h3>
+        <p style="font-size:13px;">
+          お客様が<strong>複数の条件に該当する場合</strong>（例: 月額会員 かつ 期間パスも保有）、<br>
+          単純な3パターン分岐ではなく、<span class="highlight">組み合わせごとに異なるメッセージ</span>を表示できるようにします。
+        </p>
+      </div>
+      <table class="simple">
+        <tr><th>条件</th><td><strong>表示メッセージ</strong></td></tr>
+        <tr><th>月額のみ</th><td>月額会員向けメッセージを表示</td></tr>
+        <tr><th>期間パスのみ</th><td>期間パス向けメッセージを表示</td></tr>
+        <tr><th>ドロップインのみ</th><td>その他（ドロップイン）向けメッセージを表示</td></tr>
+        <tr><th style="color:var(--purple);font-weight:700;">月額 + 期間パス</th><td style="color:var(--purple);">期間パスが優先（期間パス向けメッセージを表示）</td></tr>
+      </table>
+      <div style="background:#E3F2FD;border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;margin-top:12px;font-size:13px;color:#333;">
+        <strong style="color:var(--blue);">ポイント:</strong> チェックイン時の優先順位（期間パス → 月額 → ドロップイン）に合わせて、該当するプランのメッセージを表示する。将来的にさらに細かい条件分岐が必要な場合は、管理画面で条件ルールを追加できるよう拡張可能にする。
+      </div>
+    </div>
+  </div>
+
   <!-- 決定事項 -->
   <div class="section">
     <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
@@ -414,6 +440,11 @@ Wi-Fiパスワード: studygo2026
           <span class="d-label">新しい欄が<strong>空欄の場合は既存メッセージを表示</strong>する（既存の運用に影響なし）でよいか？</span>
           <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
         </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="decided" selected>決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>AかつB</strong>（複合条件）の場合、<strong>チェックイン優先順位に従ったメッセージ</strong>を表示する方針でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input" value="3/3会議で決定"></span>
+        </li>
       </ul>
     </div>
   </div>
@@ -434,7 +465,8 @@ Wi-Fiパスワード: studygo2026
     <p>
       現在、管理画面のチェックイン実績は<strong>全プランの利用履歴が混在</strong>して表示されています。<br>
       <span class="highlight">「月額」「期間パス」「ドロップイン」ごとに絞り込み・集計</span>できるようにします。<br>
-      運営管理画面・法人管理画面の両方が対象です。
+      運営管理画面・法人管理画面の両方が対象です。<br>
+      <strong style="color:var(--orange);">※ 運営管理画面では「店舗のみ」での検索も追加</strong>（法人を選ばずに店舗名で直接検索）
     </p>
   </div>
 
@@ -455,11 +487,11 @@ Wi-Fiパスワード: studygo2026
             <div class="mock-search-row">
               <div class="mock-search-field">
                 <label>対象法人</label>
-                <select><option>株式会社サンプル</option></select>
+                <select><option>すべて</option><option>株式会社サンプル</option></select>
               </div>
               <div class="mock-search-field">
-                <label>対象店舗</label>
-                <select><option>スタディGO 渋谷店</option></select>
+                <label>対象店舗 <span class="new-badge">検索追加</span></label>
+                <select><option>すべて</option><option>スタディGO 渋谷店</option><option>スタディGO 新宿店</option></select>
               </div>
               <div class="mock-search-field">
                 <label>期間</label>
@@ -473,6 +505,9 @@ Wi-Fiパスワード: studygo2026
                 <label>&nbsp;</label>
                 <button class="mock-search-btn">検索</button>
               </div>
+            </div>
+            <div style="margin-top:8px;padding:8px 12px;background:#FFF3E0;border-radius:6px;font-size:12px;color:#E65100;border:1px solid #FFCC80;">
+              <strong>3/3追加:</strong> 運営管理画面では法人を「すべて」にして<strong>店舗名のみで検索</strong>が可能。法人を跨いだ店舗横断検索にも対応。
             </div>
           </div>
 
@@ -543,15 +578,15 @@ Wi-Fiパスワード: studygo2026
 </div>
 
 <!-- ======================================== -->
-<!-- 3. 短期パス（期間パス） -->
+<!-- 3. 期間パス -->
 <!-- ======================================== -->
-<div class="topic-panel" id="topic-2" data-title="期間パス（短期パス）">
+<div class="topic-panel" id="topic-2" data-title="期間パス">
 
   <div class="overview-card">
-    <h3>3. 期間パス（短期パス）の新機能</h3>
+    <h3>3. 期間パスの新機能</h3>
     <p>
       店舗が<strong>自由に日数を設定</strong>して販売できる<span class="highlight">買い切りパス</span>を新たに導入します。<br>
-      最短<strong>0日（当日）</strong>～最長<strong>365日</strong>、種類数は<strong>制限なし</strong>。<br>
+      最短<strong>1日（当日パス）</strong>～最長<strong>365日</strong>、種類数は<strong>制限なし</strong>。<br>
       月額契約とは別の商品で、<strong>購入した期間内は追加料金なしで使い放題</strong>。自動更新はなく、期間が終われば自動的に終了します。
     </p>
   </div>
@@ -567,7 +602,7 @@ Wi-Fiパスワード: studygo2026
       <div style="font-weight:700;font-size:14px;color:var(--purple);margin-bottom:8px;border-bottom:2px solid var(--purple);padding-bottom:4px;">1. 概要・日数設定</div>
       <table class="simple" style="margin-bottom:16px;">
         <tr><th>日数設定</th><td><strong>店舗が自由に設定</strong>（加盟法人ではなく店舗単位で作成）</td></tr>
-        <tr><th>最短日数</th><td><strong>0日</strong>（当日パス）</td></tr>
+        <tr><th>最短日数</th><td><strong>1日</strong>（当日パス） <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更</span></td></tr>
         <tr><th>最長日数</th><td><strong>365日</strong></td></tr>
         <tr><th>種類数</th><td><strong>制限なし</strong>。ただし1人が同じ店舗で同時に購入できるパスは<strong>1つまで</strong></td></tr>
         <tr><th>入会金</th><td><strong>不要</strong></td></tr>
@@ -575,8 +610,18 @@ Wi-Fiパスワード: studygo2026
         <tr><th>月額プランとの併用</th><td><strong>可能</strong>。チェックイン時は期間パスが優先</td></tr>
         <tr><th>2店舗制限</th><td>月額プランの2店舗制限には<strong>含めない</strong></td></tr>
       </table>
-      <div style="background:#FFF3E0;border-left:4px solid var(--orange);padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:13px;color:#333;">
-        <strong style="color:var(--orange);">追加要望:</strong> 各パスに<strong>販売可能枚数</strong>を設定できるようにしたい。上限到達時はグレーアウト表示。
+      <div style="background:#FFF3E0;border-left:4px solid var(--orange);padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:13px;color:#333;">
+        <strong style="color:var(--orange);">販売枠:</strong> 各パスに<strong>販売可能枚数</strong>を設定できる。
+      </div>
+      <div style="background:#F3E8FF;border-left:4px solid var(--purple);padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:13px;color:#333;">
+        <strong style="color:var(--purple);">3/3 検討事項: 上限到達時の表示</strong><br>
+        ・<strong>グレーアウト</strong>: 売り切れ状態で表示し、パスの存在を知らせる<br>
+        ・<strong>非表示</strong>: 購入できないパスは一覧から消す<br>
+        → <strong>どちらにするか要検討</strong>
+      </div>
+      <div style="background:#E3F2FD;border-left:4px solid var(--blue);padding:10px 14px;border-radius:6px;margin-bottom:20px;font-size:13px;color:#333;">
+        <strong style="color:var(--blue);">3/3 追加: 店舗に公開・非公開の権限</strong><br>
+        店舗側でパスの<strong>公開/非公開を切替</strong>できるようにする。運営が作成したパスを店舗が任意に非公開にできる。
       </div>
 
       <!-- 料金・お支払い -->
@@ -584,10 +629,10 @@ Wi-Fiパスワード: studygo2026
       <table class="simple" style="margin-bottom:16px;">
         <tr><th>料金設定</th><td><strong>運営</strong>が設定</td></tr>
         <tr><th>料金表示</th><td>店舗が<strong>税込で入力</strong> → そのまま表示</td></tr>
-        <tr><th>日割り表示</th><td>「1日あたり○○円」を<strong>表示する</strong></td></tr>
+        <tr><th>日割り表示</th><td><s>削除</s> → <strong>サブタイトルで自由に編集</strong>（店舗が任意のテキストを設定可能） <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更</span></td></tr>
         <tr><th>最低料金</th><td><strong>50円以上</strong></td></tr>
         <tr><th>支払い方法</th><td>クレジットカード（<strong>PAYPAYのみ検討中</strong>）</td></tr>
-        <tr><th>年齢割引</th><td style="color:var(--orange);font-weight:600;">保留</td></tr>
+        <tr><th>年齢割引</th><td><strong style="color:var(--red);">不要</strong> <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3決定</span></td></tr>
         <tr><th>クーポン</th><td><strong>使える</strong>（入力タイミング: <strong>パス選択時</strong>）</td></tr>
         <tr><th>手数料率</th><td>デフォルトは月額と<strong>同じ</strong>、<strong>別の手数料も設定可能</strong></td></tr>
         <tr><th>法人への入金</th><td><strong>月末締めの翌月末払い</strong></td></tr>
@@ -598,17 +643,19 @@ Wi-Fiパスワード: studygo2026
       <div style="font-weight:700;font-size:14px;color:var(--green);margin-bottom:8px;border-bottom:2px solid var(--green);padding-bottom:4px;">3. 契約ルール</div>
       <table class="simple" style="margin-bottom:16px;">
         <tr><th>開始日選択</th><td><strong>カレンダー</strong>表示。デフォルトは「今日」</td></tr>
-        <tr><th>選択可能範囲</th><td>今日～<strong>30日後</strong>まで</td></tr>
+        <tr><th>選択可能範囲</th><td>今日～<strong>60日後</strong>まで <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更: 30→60日</span></td></tr>
         <tr><th>定休日</th><td>現状の<strong>月額プランの仕様と合わせる</strong></td></tr>
         <tr><th>最終日の利用</th><td>営業時間の<strong>閉店まで</strong>利用可能</td></tr>
         <tr><th>途中解約</th><td><strong>不可</strong>（返金なし）</td></tr>
         <tr><th>臨時休業</th><td>期間延長<strong>しない</strong></td></tr>
-        <tr><th>再購入</th><td>期限が<strong>切れてから</strong>のみ。延長＝別途購入なので日数変更も<strong>可能</strong></td></tr>
+        <tr><th>再購入</th><td><strong>被り期間での契約は不可</strong>。延長ではなく<strong>新規購入</strong>。期限切れ後に再購入する形 <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3明確化</span></td></tr>
         <tr><th>連続購入</th><td>回数制限<strong>なし</strong></td></tr>
         <tr><th>延長時クーポン</th><td><strong>使える</strong></td></tr>
         <tr><th>チェックイン優先順位</th><td>期間パス → 月額 → ドロップイン</td></tr>
         <tr><th>期限切れ後チェックイン</th><td><strong>プラン選択画面</strong>を表示（ドロップイン → 期間パス → 月額の順）</td></tr>
         <tr><th>決済失敗</th><td>現状の決済エラーフローに合わせる</td></tr>
+        <tr><th style="color:var(--purple);font-weight:700;">販売期間の設定</th><td><strong>クーポンで対応</strong>（期間限定パスの販売期間制限はクーポン機能を利用） <span style="background:var(--purple);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3追加</span></td></tr>
+        <tr><th style="color:var(--purple);font-weight:700;">利用期間の設定</th><td><strong>設定可能</strong>（例: 年末年始パスなど、特定期間のみ利用できるパス） <span style="background:var(--purple);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3追加</span></td></tr>
       </table>
 
       <!-- アプリ画面 -->
@@ -628,7 +675,13 @@ Wi-Fiパスワード: studygo2026
       <div style="font-weight:700;font-size:14px;color:#E53935;margin-bottom:8px;border-bottom:2px solid #E53935;padding-bottom:4px;">5. 管理画面</div>
       <table class="simple" style="margin-bottom:16px;">
         <tr><th>パス作成・料金変更</th><td><strong>運営（本部）のみ</strong></td></tr>
-        <tr><th>法人の有効/無効切替</th><td style="color:var(--red);">却下（今は不可）</td></tr>
+        <tr><th>法人の有効/無効切替</th><td style="color:var(--orange);font-weight:600;">再検討中 <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更</span><br>
+          <div style="margin-top:6px;font-size:12px;font-weight:400;color:var(--text);">
+            <div style="margin-bottom:4px;"><strong style="color:var(--green);">メリット:</strong> 法人が自社の判断でパスの販売開始/停止を制御できる。運営の手間が減る。</div>
+            <div><strong style="color:var(--red);">デメリット:</strong> 法人が勝手に停止すると利用者に影響。運営の管理が難しくなる。料金設定との整合性。</div>
+          </div>
+          → <strong>まとめて再度確認</strong>
+        </td></tr>
         <tr><th>料金変更方法</th><td>契約ユーザーなし → <strong>直接変更可能</strong>、利用履歴あり → <strong>新プラン作成</strong></td></tr>
         <tr><th>手動期限切れ</th><td><strong>不要</strong>。運営で強制契約・解約機能を設ける</td></tr>
         <tr><th>手動延長</th><td><strong>不要</strong></td></tr>
@@ -646,9 +699,10 @@ Wi-Fiパスワード: studygo2026
       <table class="simple" style="margin-bottom:8px;">
         <tr><th>導入方式</th><td>管理画面からパスを作成する仕様 → <strong>一部店舗でテスト</strong>してから拡大</td></tr>
         <tr><th>テスト対象店舗</th><td><strong>勉強カフェ新宿スタジオ</strong>、<strong>勉強カフェ新宿BPスタジオ</strong></td></tr>
-        <tr><th>開発優先度</th><td><strong>他の機能と並行もしくは先にこちら</strong></td></tr>
+        <tr><th>開発優先度</th><td><strong>プッシュ通知の実装後</strong>に着手 <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更</span></td></tr>
         <tr><th>利用規約の作成</th><td>担当: <strong>根本</strong></td></tr>
-        <tr><th>アカウント削除時</th><td>警告表示 → 削除可能 → <strong>返金なし</strong></td></tr>
+        <tr><th>アカウント削除時</th><td><strong style="color:var(--red);">削除できない</strong>（期間パス契約中はアカウント削除不可） <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3変更</span></td></tr>
+        <tr><th style="color:var(--orange);">メール文章・条件</th><td style="color:var(--orange);font-weight:600;">未決定 <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:10px;">3/3確認</span></td></tr>
       </table>
     </div>
   </div>
@@ -688,12 +742,12 @@ Wi-Fiパスワード: studygo2026
                   <span style="background:var(--green);color:white;padding:2px 6px;border-radius:6px;font-size:9px;">残り5枠</span>
                 </div>
                 <div style="font-size:18px;font-weight:700;color:var(--purple);">&#165;1,500 <span style="font-size:10px;color:#999;font-weight:400;">（税込）</span></div>
-                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">1日あたり &#165;500</div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;font-style:italic;">サブタイトル（自由編集）</div>
               </div>
               <div style="background:white;border-radius:10px;padding:10px;margin-bottom:6px;border:1px solid var(--border);">
                 <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">7日パス</div>
                 <div style="font-size:18px;font-weight:700;color:var(--purple);">&#165;3,500 <span style="font-size:10px;color:#999;font-weight:400;">（税込）</span></div>
-                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">1日あたり &#165;500</div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:2px;font-style:italic;">サブタイトル（自由編集）</div>
               </div>
               <div style="background:#f0f0f0;border-radius:10px;padding:10px;border:1px solid #ddd;opacity:0.5;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -707,7 +761,7 @@ Wi-Fiパスワード: studygo2026
         </div>
         <!-- STEP2: カレンダー＋購入確認 -->
         <div class="phone-wrapper">
-          <div class="phone-label">STEP2: 開始日を選ぶ（30日以内）</div>
+          <div class="phone-label">STEP2: 開始日を選ぶ（60日以内）</div>
           <div class="phone">
             <div class="phone-notch"></div>
             <div class="phone-status"><span>9:41</span><span>5G 100%</span></div>
@@ -727,7 +781,7 @@ Wi-Fiパスワード: studygo2026
                   <div style="padding:3px;">4</div><div style="padding:3px;">5</div><div style="padding:3px;">6</div><div style="padding:3px;">7</div>
                   <div style="padding:3px;">8</div><div style="padding:3px;">9</div><div style="padding:3px;">10</div><div style="padding:3px;">11</div><div style="padding:3px;">12</div><div style="padding:3px;">13</div><div style="padding:3px;">14</div>
                 </div>
-                <div style="font-size:10px;color:var(--text-sub);margin-top:4px;text-align:center;">今日～30日以内の日付を選べます</div>
+                <div style="font-size:10px;color:var(--text-sub);margin-top:4px;text-align:center;">今日～60日以内の日付を選べます</div>
               </div>
               <div style="background:var(--purple-light);border-radius:8px;padding:8px;margin-bottom:8px;text-align:center;">
                 <div style="font-size:10px;color:var(--purple);">利用期間</div>
@@ -755,7 +809,7 @@ Wi-Fiパスワード: studygo2026
                 <div style="font-size:15px;font-weight:700;color:var(--text);">購入が完了しました！</div>
               </div>
               <div style="background:linear-gradient(135deg,#7C3AED,#9333EA);border-radius:12px;padding:12px;color:white;margin-bottom:10px;">
-                <div style="font-size:10px;opacity:0.8;margin-bottom:2px;">期間パス（短期パス）</div>
+                <div style="font-size:10px;opacity:0.8;margin-bottom:2px;">期間パス</div>
                 <div style="font-size:14px;font-weight:700;margin-bottom:4px;">スタディGO 渋谷店</div>
                 <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
                   <span>03/03 ～ 03/09</span><span style="font-weight:700;">残り7日</span>
@@ -856,12 +910,12 @@ Wi-Fiパスワード: studygo2026
         </div>
         <div class="admin-mock-body">
           <table class="mock-table">
-            <thead><tr><th>パス名</th><th>日数</th><th>料金（税込）</th><th>1日あたり</th><th>販売枠</th><th>契約者</th><th>状態</th><th></th></tr></thead>
+            <thead><tr><th>パス名</th><th>日数</th><th>料金（税込）</th><th>サブタイトル</th><th>販売枠</th><th>契約者</th><th>状態</th><th></th></tr></thead>
             <tbody>
               <tr>
                 <td style="font-weight:600;">3日お試しパス</td><td>3日</td>
                 <td><input type="text" value="1,500" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
-                <td style="color:var(--text-sub);">&#165;500</td>
+                <td style="color:var(--text-sub);font-size:11px;font-style:italic;">お試し3日間！</td>
                 <td>10枠</td><td>5人</td>
                 <td><span style="color:var(--green);font-weight:600;">販売中</span></td>
                 <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
@@ -869,7 +923,7 @@ Wi-Fiパスワード: studygo2026
               <tr>
                 <td style="font-weight:600;">7日パス</td><td>7日</td>
                 <td><input type="text" value="3,500" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
-                <td style="color:var(--text-sub);">&#165;500</td>
+                <td style="color:var(--text-sub);font-size:11px;font-style:italic;">1週間集中パス</td>
                 <td>制限なし</td><td>8人</td>
                 <td><span style="color:var(--green);font-weight:600;">販売中</span></td>
                 <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
@@ -877,14 +931,14 @@ Wi-Fiパスワード: studygo2026
               <tr>
                 <td style="font-weight:600;">30日パス</td><td>30日</td>
                 <td><input type="text" value="9,000" style="width:70px;padding:4px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right;">円</td>
-                <td style="color:var(--text-sub);">&#165;300</td>
+                <td style="color:var(--text-sub);font-size:11px;font-style:italic;">月額よりお得！</td>
                 <td>10枠</td><td>10人</td>
                 <td><span style="color:#E53935;font-weight:600;">売り切れ</span></td>
                 <td><button style="padding:3px 8px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:white;cursor:pointer;">編集</button></td>
               </tr>
             </tbody>
           </table>
-          <div style="margin-top:8px;font-size:11px;color:#888;">※ 料金変更は契約ユーザーがいない場合のみ直接変更可能。利用履歴がある場合は新プラン作成。</div>
+          <div style="margin-top:8px;font-size:11px;color:#888;">※ 料金変更は契約ユーザーがいない場合のみ直接変更可能。利用履歴がある場合は新プラン作成。<br>※ サブタイトルは店舗が自由に編集可能（日割り表示の代わり）。</div>
         </div>
       </div>
     </div>
@@ -908,12 +962,42 @@ Wi-Fiパスワード: studygo2026
     </div>
   </div>
 
-  <!-- ========== 未決定事項（通知関連） ========== -->
+  <!-- ========== 3/3 追加検討事項 ========== -->
   <div class="section">
-    <div class="section-header" style="background:var(--orange);" onclick="toggleSection(this)">
-      未決定事項: 通知関連（全8項目 保留） <span class="toggle">&#9660;</span>
+    <div class="section-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleSection(this)">
+      3/3 追加検討事項・未決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body">
+      <div style="font-weight:700;font-size:14px;color:var(--purple);margin-bottom:8px;border-bottom:2px solid var(--purple);padding-bottom:4px;">3/3 会議で追加された検討事項</div>
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">上限到達時の表示は<strong>グレーアウト</strong>か<strong>非表示</strong>か？</span>
+          <span class="d-note"><input placeholder="グレーアウト / 非表示" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">店舗に<strong>パスの公開・非公開の権限</strong>を与えるか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">法人に<strong>有効/無効切替の権限</strong>を与えるか？（メリット・デメリットを踏まえて再度確認）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>メール文章</strong>の内容・テンプレートは？（購入完了メール、期限切れ通知メール等）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>メール送信の条件</strong>は？（どのタイミングでどのメールを送るか）</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+        </li>
+      </ul>
+
+      <div style="font-weight:700;font-size:14px;color:var(--orange);margin-bottom:8px;border-bottom:2px solid var(--orange);padding-bottom:4px;margin-top:20px;">通知関連（全8項目 保留）</div>
       <ul class="decision-list">
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
@@ -1370,8 +1454,14 @@ Wi-Fiパスワード: studygo2026
     <h3>6. 加盟法人（店舗）が会員データをCSVで出力できる機能</h3>
     <p>
       加盟法人の管理画面から、自社の店舗を利用している<strong>会員の一覧データをCSV形式でダウンロード</strong>できる機能を追加します。<br>
-      <span class="highlight">出力する項目（列）を自由に選べる</span>ので、必要なデータだけを取り出せます。
+      <span class="highlight">すべての項目を一括出力</span>する仕様です（列の選択機能は不要）。
     </p>
+    <div style="background:#E8F5E9;border:2px solid var(--green);border-radius:8px;padding:12px;margin-top:12px;">
+      <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:4px;">✅ 一旦完成</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.7;">
+        完成した内容を補足し、<strong>高橋さんにデータをお渡しして実装を依頼</strong>する。
+      </div>
+    </div>
   </div>
 
   <!-- 管理画面イメージ -->
@@ -1412,31 +1502,35 @@ Wi-Fiパスワード: studygo2026
             </div>
           </div>
 
-          <!-- エクスポート列選択 -->
+          <!-- エクスポート（全列出力） -->
           <div style="background:white;border:2px solid var(--green);border-radius:8px;overflow:hidden;margin-bottom:16px;">
             <div style="background:var(--green);color:white;padding:10px 14px;font-size:13px;font-weight:600;">
-              CSVに出力する項目を選択 <span class="new-badge">NEW</span>
+              CSVエクスポート（全項目出力） <span style="background:white;color:var(--green);padding:2px 8px;border-radius:8px;font-size:10px;margin-left:6px;">選択式不要</span>
             </div>
             <div style="padding:14px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;">出力される全18項目:</div>
               <div class="export-cols">
-                <label class="col-check on"><input type="checkbox" checked> 会員ID</label>
-                <label class="col-check on"><input type="checkbox" checked> 氏名</label>
-                <label class="col-check on"><input type="checkbox" checked> 氏名（カナ）</label>
-                <label class="col-check on"><input type="checkbox" checked> メールアドレス</label>
-                <label class="col-check on"><input type="checkbox" checked> 電話番号</label>
-                <label class="col-check on"><input type="checkbox" checked> 生年月日</label>
-                <label class="col-check on"><input type="checkbox" checked> プラン名</label>
-                <label class="col-check on"><input type="checkbox" checked> 契約日</label>
-                <label class="col-check"><input type="checkbox"> 性別</label>
-                <label class="col-check"><input type="checkbox"> 郵便番号</label>
-                <label class="col-check"><input type="checkbox"> 住所</label>
-                <label class="col-check"><input type="checkbox"> 職業</label>
-                <label class="col-check on"><input type="checkbox" checked> 勉強内容</label>
-                <label class="col-check on"><input type="checkbox" checked> 最終利用日</label>
-                <label class="col-check on"><input type="checkbox" checked> 今月チェックイン回数</label>
-                <label class="col-check"><input type="checkbox"> 最終連絡日</label>
-                <label class="col-check on"><input type="checkbox" checked> メモ</label>
-                <label class="col-check"><input type="checkbox"> 継続月数</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 会員ID</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 氏名</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 氏名（カナ）</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> メールアドレス</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 電話番号</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 生年月日</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> プラン名</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 契約日</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 性別</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 郵便番号</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 住所</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 職業</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 勉強内容</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 最終利用日</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 今月チェックイン回数</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 最終連絡日</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> メモ</label>
+                <label class="col-check on"><input type="checkbox" checked disabled> 継続月数</label>
+              </div>
+              <div style="background:#FFF3E0;border-left:4px solid var(--orange);padding:8px 12px;border-radius:6px;margin-top:10px;font-size:12px;color:#E65100;">
+                <strong>3/3決定:</strong> 列の選択機能は不要。すべての項目を一括出力する。
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #eee;margin-top:8px;">
                 <div style="font-size:12px;color:var(--text-sub);">
@@ -1446,7 +1540,7 @@ Wi-Fiパスワード: studygo2026
                   </select>
                 </div>
                 <button style="padding:10px 24px;background:var(--green);color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
-                  127名をCSVダウンロード
+                  127名をCSVダウンロード（全列）
                 </button>
               </div>
             </div>
@@ -1492,16 +1586,19 @@ Wi-Fiパスワード: studygo2026
       決めること <span class="toggle">&#9660;</span>
     </div>
     <div class="section-body">
+      <div style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#2E7D32;">
+        <strong>3/3 会議結果:</strong> 本機能は一旦完成。完成した内容を補足し、高橋さんにデータをお渡しして実装を依頼。
+      </div>
       <ul class="decision-list">
         <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateDecisionStyle(this)"><option value="decided" selected>決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">この機能を<strong>法人管理画面に追加する</strong>方針でよいか？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input" value="決定"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">出力できる<strong>項目（列）の範囲</strong>は上記の18項目でよいか？ 追加・削除したい項目は？</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+          <select onchange="updateDecisionStyle(this)"><option value="decided" selected>決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">出力できる<strong>項目（列）の範囲</strong>は上記の18項目でよいか？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input" value="すべて出力。選択式不要"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
@@ -1524,9 +1621,9 @@ Wi-Fiパスワード: studygo2026
           <span class="d-note"><input placeholder="記録する / しない" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateDecisionStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">開発の<strong>優先度</strong>は？（すぐ対応 / 次のタイミング / 保留）</span>
-          <span class="d-note"><input placeholder="備考..." class="memo-input"></span>
+          <select onchange="updateDecisionStyle(this)"><option value="decided" selected>決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">開発の<strong>優先度</strong>は？</span>
+          <span class="d-note"><input placeholder="備考..." class="memo-input" value="高橋さんに依頼して実装"></span>
         </li>
       </ul>
     </div>
