@@ -170,17 +170,17 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">料金変動の<strong>基準</strong>は何にするか？（シーズン/曜日/需要/複合）</span>
-          <span class="d-note"><input placeholder="シーズン / 曜日 / 需要" class="memo-input"></span>
+          <span class="d-note"><input placeholder="シーズン / 曜日 / 需要" value="複合" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">料金の<strong>上限倍率</strong>は通常価格の何倍までか？</span>
-          <span class="d-note"><input placeholder="1.5倍 / 2.0倍" class="memo-input"></span>
+          <span class="d-note"><input placeholder="1.5倍 / 2.0倍" value="上限は通常掲載価格" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">料金の<strong>下限倍率</strong>は通常価格の何倍までか？</span>
-          <span class="d-note"><input placeholder="0.5倍 / 0.8倍" class="memo-input"></span>
+          <span class="d-note"><input placeholder="0.5倍 / 0.8倍" value="手数料範囲内" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -244,22 +244,22 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">シーズン料金は<strong>全パス一律</strong>か、<strong>パスごとに個別設定</strong>か？</span>
-          <span class="d-note"><input placeholder="一律 / パスごと" class="memo-input"></span>
+          <span class="d-note"><input placeholder="一律 / パスごと" value="パスごと" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">料金計算の<strong>端数処理</strong>はどうするか？（切り捨て/切り上げ/四捨五入）</span>
-          <span class="d-note"><input placeholder="切り捨て / 四捨五入" class="memo-input"></span>
+          <span class="d-note"><input placeholder="切り捨て / 四捨五入" value="四捨五入" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
           <span class="d-label">クーポンとの<strong>併用</strong>は可能か？ 適用順序は？</span>
-          <span class="d-note"><input placeholder="可能 / 不可" class="memo-input"></span>
+          <span class="d-note"><input placeholder="可能 / 不可" value="不可" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">ダイナミックプライシングの<strong>有効/無効</strong>は誰が切り替えられるか？</span>
-          <span class="d-note"><input placeholder="運営のみ / 店舗も" class="memo-input"></span>
+          <span class="d-note"><input placeholder="運営のみ / 店舗も" value="運営" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -307,7 +307,7 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">割引バッジの<strong>表示文言</strong>は？（シーズン割引/期間限定/特別価格）</span>
-          <span class="d-note"><input placeholder="シーズン割引 / 期間限定" class="memo-input"></span>
+          <span class="d-note"><input placeholder="シーズン割引 / 期間限定" value="期間限定？" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -315,7 +315,7 @@
 
   <div class="memo-area">
     <div class="memo-area-header">メモ（ダイナミックプライシング）</div>
-    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()">メインは月額で使いたい、回収できるように</textarea>
   </div>
 </div>
 
@@ -345,14 +345,14 @@
       </table>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">1日あたりの<strong>通知上限</strong>は何件にするか？</span>
-          <span class="d-note"><input placeholder="5件 / 10件 / 制限なし" class="memo-input"></span>
+          <span class="d-note"><input placeholder="5件 / 10件 / 制限なし" value="制限なし" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">通知の<strong>配信時間帯</strong>に制限を設けるか？（例: 8:00-21:00のみ）</span>
-          <span class="d-note"><input placeholder="制限あり / なし" class="memo-input"></span>
+          <span class="d-note"><input placeholder="制限あり / なし" value="なし" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -371,19 +371,19 @@
       </table>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">マーケティング通知の<strong>オプトイン方式</strong>は？（デフォルトON/OFF）</span>
-          <span class="d-note"><input placeholder="デフォルトON / OFF" class="memo-input"></span>
+          <span class="d-note"><input placeholder="デフォルトON / OFF" value="できるならON" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">トランザクション通知は<strong>オフ不可</strong>にするか？</span>
-          <span class="d-note"><input placeholder="オフ不可 / オフ可能" class="memo-input"></span>
+          <span class="d-note"><input placeholder="オフ不可 / オフ可能" value="できるの？できるなら" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">通知カテゴリの<strong>追加・変更</strong>は運営のみか？</span>
-          <span class="d-note"><input placeholder="運営のみ / 店舗も" class="memo-input"></span>
+          <span class="d-note"><input placeholder="運営のみ / 店舗も" value="運営のみ" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -424,9 +424,9 @@
       </div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">通知送信の<strong>承認フロー</strong>は必要か？（送信前に上長承認）</span>
-          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+          <span class="d-note"><input placeholder="必要 / 不要" value="不要" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -468,14 +468,14 @@
       </div></div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">通知設定画面の<strong>デフォルト状態</strong>は全ONか？</span>
-          <span class="d-note"><input placeholder="全ON / マーケのみOFF" class="memo-input"></span>
+          <span class="d-note"><input placeholder="全ON / マーケのみOFF" value="全部一緒でよくない？" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">通知の<strong>サウンド設定</strong>は必要か？（カテゴリ別に音を変える等）</span>
-          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
+          <span class="d-note"><input placeholder="必要 / 不要" value="不要" class="memo-input"></span>
         </li>
       </ul>
     </div>

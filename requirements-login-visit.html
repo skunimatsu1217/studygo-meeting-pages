@@ -224,32 +224,32 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">簡易登録の必須項目は<strong>氏名+メール</strong>の2項目でよいか？</span>
-          <span class="d-note"><input placeholder="OK / 電話番号も追加" class="memo-input"></span>
+          <span class="d-note"><input placeholder="OK / 電話番号も追加" class="memo-input" value="電話・生年月日も追加（ソロタイムさん要望）"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">電話番号なしで<strong>予約確認の連絡</strong>はメールのみで対応可能か？</span>
-          <span class="d-note"><input placeholder="メールのみ / SMS必要" class="memo-input"></span>
+          <span class="d-note"><input placeholder="メールのみ / SMS必要" class="memo-input" value="電話番号もあった方がいい"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">追加情報の入力は<strong>来店時</strong>か<strong>契約時</strong>か？</span>
-          <span class="d-note"><input placeholder="来店時 / 契約時" class="memo-input"></span>
+          <span class="d-note"><input placeholder="来店時 / 契約時" class="memo-input" value="契約時"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">既存ユーザーの情報が未入力の場合、<strong>後から入力を促す</strong>か？</span>
-          <span class="d-note"><input placeholder="促す / 任意" class="memo-input"></span>
+          <span class="d-note"><input placeholder="促す / 任意" class="memo-input" value="アクション時に促す。予約ボタン押下時に必須入力"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">簡易登録ユーザーの<strong>機能制限</strong>はあるか？（見学予約のみ？ドロップインも？）</span>
-          <span class="d-note"><input placeholder="見学のみ / ドロップインも" class="memo-input"></span>
+          <span class="d-note"><input placeholder="見学のみ / ドロップインも" class="memo-input" value="見学のみ※クレカがドロップインには必要"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">パスワード設定は<strong>いつ</strong>行うか？（登録時/初回ログイン時/契約時）</span>
-          <span class="d-note"><input placeholder="登録時 / 初回ログイン" class="memo-input"></span>
+          <span class="d-note"><input placeholder="登録時 / 初回ログイン" class="memo-input" value="登録時"></span>
         </li>
       </ul>
     </div>
@@ -257,7 +257,8 @@
 
   <div class="memo-area">
     <div class="memo-area-header">メモ（ログイン簡略化）</div>
-    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()">未確認
+→大阪店の要望では、QRコードを読み込むと、その店舗の見学が予約できるページにいくのが理想とのこと</textarea>
   </div>
 </div>
 
@@ -349,34 +350,34 @@
     <div class="card-body">
       <ul class="decision-list">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">WEB予約の<strong>ドメイン</strong>は？（studygo.jp/visit 等）</span>
-          <span class="d-note"><input placeholder="ドメイン/パス" class="memo-input"></span>
+          <span class="d-note"><input placeholder="ドメイン/パス" class="memo-input" value="studygo.jp"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">WEB予約ページは<strong>店舗ごと</strong>に個別URLを持つか？</span>
-          <span class="d-note"><input placeholder="個別URL / 共通1ページ" class="memo-input"></span>
+          <span class="d-note"><input placeholder="個別URL / 共通1ページ" class="memo-input" value="予約システム→個別のページ"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">WEB予約完了時に<strong>アカウント自動作成</strong>するか？</span>
-          <span class="d-note"><input placeholder="自動作成 / 手動" class="memo-input"></span>
+          <span class="d-note"><input placeholder="自動作成 / 手動" class="memo-input" value="スタディGOアプリのアカウントを作成する"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">予約の<strong>空き状況</strong>をWEBページで表示するか？</span>
-          <span class="d-note"><input placeholder="表示する / しない" class="memo-input"></span>
+          <span class="d-note"><input placeholder="表示する / しない" class="memo-input" value="する"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">WEB予約の<strong>キャンセル</strong>はメールリンクからできるか？</span>
-          <span class="d-note"><input placeholder="できる / 店舗連絡" class="memo-input"></span>
+          <span class="d-note"><input placeholder="できる / 店舗連絡" class="memo-input" value="マイページからキャンセル→WEBかアプリで確認"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
           <span class="d-label">WEB経由の予約に<strong>特典</strong>をつけるか？（初回クーポン等）</span>
-          <span class="d-note"><input placeholder="つける / つけない" class="memo-input"></span>
+          <span class="d-note"><input placeholder="つける / つけない" class="memo-input" value="つけない→実施後はあり"></span>
         </li>
       </ul>
     </div>
@@ -481,37 +482,37 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">初期リリースで対応する<strong>SNSの種類</strong>は？（Google/LINE/Apple全部？段階的？）</span>
-          <span class="d-note"><input placeholder="全部 / 段階的" class="memo-input"></span>
+          <span class="d-note"><input placeholder="全部 / 段階的" class="memo-input" value="Googleから段階的に"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
           <span class="d-label">LINEのメール未設定ユーザーへの<strong>対応方針</strong>は？</span>
           <span class="d-note"><input placeholder="メール入力必須 / LINE IDで代替" class="memo-input"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
           <span class="d-label">Appleの<strong>リレーメール</strong>（プライベートメール）への対応は？</span>
           <span class="d-note"><input placeholder="そのまま利用 / 実メール要求" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">既存アカウントとの<strong>自動連携</strong>はするか？（メール一致時に自動紐付け）</span>
-          <span class="d-note"><input placeholder="自動連携 / 確認ダイアログ" class="memo-input"></span>
+          <span class="d-note"><input placeholder="自動連携 / 確認ダイアログ" class="memo-input" value="させない方がいい？※仕様確認必要"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">1つのアカウントに<strong>複数SNS</strong>を紐付け可能にするか？</span>
-          <span class="d-note"><input placeholder="可能 / 1つのみ" class="memo-input"></span>
+          <span class="d-note"><input placeholder="可能 / 1つのみ" class="memo-input" value="不要"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">SNSログインユーザーの<strong>パスワード</strong>は設定させるか？</span>
-          <span class="d-note"><input placeholder="任意 / 必須 / 不要" class="memo-input"></span>
+          <span class="d-note"><input placeholder="任意 / 必須 / 不要" class="memo-input" value="不要"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">SNS連携の<strong>解除</strong>は可能にするか？（パスワード設定済みの場合のみ）</span>
-          <span class="d-note"><input placeholder="可能 / 不可" class="memo-input"></span>
+          <span class="d-note"><input placeholder="可能 / 不可" class="memo-input" value="不可"></span>
         </li>
       </ul>
     </div>
@@ -519,7 +520,7 @@
 
   <div class="memo-area">
     <div class="memo-area-header">メモ（SNSログイン）</div>
-    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()">見学予約はいったんSNSログインは考えないことにする</textarea>
   </div>
 </div>
 
