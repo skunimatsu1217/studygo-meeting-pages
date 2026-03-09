@@ -107,7 +107,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>StudyGO 基盤系機能 要件定義シート</h1>
-      <div class="sub">2機能の要件定義 &mdash; ダイナミックプライシング / Push通知基盤</div>
+      <div class="sub">2機能の要件定義 &mdash; ダイナミックプライシング / Push通知基盤（3/4会議決定事項反映済み）</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -127,6 +127,9 @@
 
 <div class="main">
 
+<!-- ============================================ -->
+<!-- パネル0: ダイナミックプライシング -->
+<!-- ============================================ -->
 <div class="panel active" id="panel-0">
 
   <div class="intro">
@@ -138,7 +141,6 @@
     </p>
   </div>
 
-
   <div class="progress" id="progressArea">
     <div class="progress-label">
       <span>決定項目の進捗</span>
@@ -147,11 +149,27 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
-  <div class="important-box">
-    <h4>重要: ドロップインではなく「期間パス」の料金変動</h4>
-    <p>ダイナミックプライシングの対象は<strong>期間パスの料金</strong>です。期間パスの購入タイミングや利用開始月によって料金が変動します。期間パス要件定義シートとの整合性を常に確認してください。</p>
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項（8項目）</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>変動基準:</strong> 複合基準（曜日×時間帯×需要）<br>
+      <strong>上限価格:</strong> 通常の掲載価格（掲載価格を超えない）<br>
+      <strong>下限価格:</strong> 手数料の範囲内で設定可能<br>
+      <strong>適用範囲:</strong> パスごとに個別設定<br>
+      <strong>端数処理:</strong> 四捨五入<br>
+      <strong>クーポン併用:</strong> 不可<br>
+      <strong>設定権限:</strong> 運営のみ（店舗は閲覧のみ）<br>
+      <strong>アプリ表示:</strong> 現在価格のみ表示
+    </p>
   </div>
 
+  <div class="important-box">
+    <h4>方針: 月額メインで回収する設計</h4>
+    <p>ダイナミックプライシングの対象は<strong>期間パスの料金</strong>です。月額プランがメインの収益源であり、期間パスの料金変動はあくまで補完的な位置づけ。期間パス要件定義シートとの整合性を常に確認してください。</p>
+  </div>
+
+  <!-- Card 1: 料金変動基本仕様 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
       料金変動の基本仕様 <span class="toggle">&#9660;</span>
@@ -159,42 +177,93 @@
     <div class="card-body">
       <table class="spec">
         <tr><th>対象商品</th><td><strong>期間パス</strong>（ドロップインは対象外）</td></tr>
-        <tr><th>変動基準</th><td>シーズン（月単位）/ 曜日 / 需要（販売数ベース）</td></tr>
-        <tr><th>料金の上限</th><td>通常料金の <strong>1.5倍</strong> まで（上限倍率は管理画面で設定可能）</td></tr>
-        <tr><th>料金の下限</th><td>通常料金の <strong>0.5倍</strong> まで（下限倍率は管理画面で設定可能）</td></tr>
-        <tr><th>表示方法</th><td>通常価格と変動後価格を併記。割引時は取消線+特別価格表示</td></tr>
+        <tr><th>変動基準</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 複合基準（曜日×時間帯×需要）</td></tr>
+        <tr><th>上限価格</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 通常の掲載価格（掲載価格を超えない）</td></tr>
+        <tr><th>下限価格</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 手数料の範囲内で設定可</td></tr>
+        <tr><th>端数処理</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 四捨五入</td></tr>
         <tr><th>適用タイミング</th><td>パス購入時の日付に基づいて料金決定（開始日ベース）</td></tr>
         <tr><th>既存パスへの影響</th><td>購入済みパスの料金は変動しない（購入時点の価格で確定）</td></tr>
       </table>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">料金変動の<strong>基準</strong>は何にするか？（シーズン/曜日/需要/複合）</span>
-          <span class="d-note"><input placeholder="シーズン / 曜日 / 需要" value="複合" class="memo-input"></span>
+          <span class="d-note"><input placeholder="シーズン / 曜日 / 需要" value="複合基準" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">料金の<strong>上限倍率</strong>は通常価格の何倍までか？</span>
-          <span class="d-note"><input placeholder="1.5倍 / 2.0倍" value="上限は通常掲載価格" class="memo-input"></span>
+          <span class="d-label">料金の<strong>上限</strong>はいくらまでか？</span>
+          <span class="d-note"><input placeholder="1.5倍 / 2.0倍" value="通常掲載価格" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">料金の<strong>下限倍率</strong>は通常価格の何倍までか？</span>
+          <span class="d-label">料金の<strong>下限</strong>はいくらまでか？</span>
           <span class="d-note"><input placeholder="0.5倍 / 0.8倍" value="手数料範囲内" class="memo-input"></span>
         </li>
       </ul>
     </div>
   </div>
 
+  <!-- Card 2: 料金計算フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      料金計算フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">購入時の料金計算は以下のステップで行われます。</p>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>基本料金取得</strong><br>店舗が設定した期間パスの通常価格を取得</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>シーズン倍率適用</strong><br>月ごとに設定されたシーズン倍率を掛ける（例: 繁忙期 1.2x）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>曜日倍率適用</strong><br>購入日の曜日に応じた倍率を掛ける（例: 週末 1.1x）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">4</div>
+          <div class="flow-box"><strong>需要倍率適用</strong><br>販売数/利用率に応じた需要倍率を掛ける</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">5</div>
+          <div class="flow-box"><strong>四捨五入</strong><br>計算結果を四捨五入して端数を処理</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">6</div>
+          <div class="flow-box"><strong>上限・下限チェック</strong><br>上限 = 通常掲載価格、下限 = 手数料範囲内。範囲外なら補正</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">7</div>
+          <div class="flow-box"><strong>最終価格決定</strong><br>確定した金額をアプリに表示。クーポンは併用不可。</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:8px;font-size:13px;color:var(--text);">
+        <strong>計算式:</strong> 最終価格 = round(基本料金 × シーズン倍率 × 曜日倍率 × 需要倍率)<br>
+        <strong>制約:</strong> 手数料下限 ≤ 最終価格 ≤ 通常掲載価格
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: シーズン料金テーブル -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
       シーズン料金テーブル <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="admin-mock">
         <div class="admin-mock-header purple">シーズン料金倍率マトリクス<span class="role-badge">管理画面</span></div>
         <div class="admin-mock-body">
-          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">月ごとの料金倍率を設定します。1.0が通常価格です。</p>
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">月ごとの料金倍率を設定します。1.0が通常価格です。上限は通常掲載価格を超えません。</p>
           <table style="width:100%;border-collapse:collapse;font-size:13px;">
             <thead><tr style="background:#f8f9fa;">
               <th style="padding:8px;border-bottom:2px solid var(--border);">月</th>
@@ -207,12 +276,12 @@
             </tr></thead>
             <tbody><tr>
               <td style="padding:8px;font-weight:600;">倍率</td>
-              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td>
-              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;">1.0x</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.0x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.0x</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.0x</td><td style="padding:8px;">1.0x</td>
               <td style="padding:8px;">1.0x</td><td style="padding:8px;color:var(--green);font-weight:600;">0.8x</td>
-              <td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.2x</td>
+              <td style="padding:8px;color:var(--red);font-weight:600;">1.0x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.0x</td>
               <td style="padding:8px;">1.0x</td><td style="padding:8px;">1.0x</td>
-              <td style="padding:8px;color:var(--green);font-weight:600;">0.8x</td><td style="padding:8px;color:var(--red);font-weight:600;">1.1x</td>
+              <td style="padding:8px;color:var(--green);font-weight:600;">0.8x</td><td style="padding:8px;">1.0x</td>
             </tr>
             <tr style="color:var(--text-sub);font-size:11px;">
               <td style="padding:4px 8px;">区分</td>
@@ -221,93 +290,228 @@
               <td style="padding:4px 8px;">通常</td><td style="padding:4px 8px;">閑散</td>
               <td style="padding:4px 8px;">繁忙</td><td style="padding:4px 8px;">繁忙</td>
               <td style="padding:4px 8px;">通常</td><td style="padding:4px 8px;">通常</td>
-              <td style="padding:4px 8px;">閑散</td><td style="padding:4px 8px;">やや繁忙</td>
+              <td style="padding:4px 8px;">閑散</td><td style="padding:4px 8px;">通常</td>
             </tr></tbody>
-          </table></div>
+          </table>
+          <p style="font-size:11px;color:var(--orange);margin-top:8px;">※ 上限=通常掲載価格のため、繁忙期の倍率は1.0x（値上げなし）。閑散期のみ割引として機能。</p>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Card 4: 管理画面モック -->
   <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
-      期間パスとの連動 <span class="toggle">&#9660;</span>
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      管理画面: パスごとの設定 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <table class="spec">
-        <tr><th>統合方法</th><td>既存の期間パス設定画面に「シーズン料金」タブを追加</td></tr>
-        <tr><th>料金計算式</th><td>最終料金 = 基本料金 × シーズン倍率（端数は切り捨て）</td></tr>
-        <tr><th>アプリ表示</th><td>パス選択画面で通常価格と変動後価格を併記</td></tr>
-        <tr><th>クーポン適用順</th><td>シーズン料金算出後にクーポン割引を適用</td></tr>
-        <tr><th>管理画面</th><td>パスごとにダイナミックプライシングの有効/無効を切替可能</td></tr>
-      </table>
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">ダイナミックプライシング設定<span class="role-badge">運営のみ</span></div>
+        <div class="admin-mock-body">
+          <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">パスごとにダイナミックプライシングの有効/無効を切り替えます。</p>
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:#f8f9fa;">
+              <th style="padding:10px;border-bottom:2px solid var(--border);text-align:left;">パス名</th>
+              <th style="padding:10px;border-bottom:2px solid var(--border);">通常価格</th>
+              <th style="padding:10px;border-bottom:2px solid var(--border);">DP有効</th>
+              <th style="padding:10px;border-bottom:2px solid var(--border);">現在価格</th>
+              <th style="padding:10px;border-bottom:2px solid var(--border);">状態</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #eee;">7日パス</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">&#165;3,500</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;"><span style="display:inline-block;width:36px;height:20px;background:var(--green);border-radius:10px;position:relative;"><span style="display:block;width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></span></span></td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;color:var(--green);font-weight:600;">&#165;2,800</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;"><span style="background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:8px;font-size:11px;">閑散期割引</span></td>
+              </tr>
+              <tr>
+                <td style="padding:10px;border-bottom:1px solid #eee;">14日パス</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;">&#165;5,600</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;"><span style="display:inline-block;width:36px;height:20px;background:var(--green);border-radius:10px;position:relative;"><span style="display:block;width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></span></span></td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;color:var(--green);font-weight:600;">&#165;4,480</td>
+                <td style="padding:10px;border-bottom:1px solid #eee;text-align:center;"><span style="background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:8px;font-size:11px;">閑散期割引</span></td>
+              </tr>
+              <tr>
+                <td style="padding:10px;">30日パス</td>
+                <td style="padding:10px;text-align:center;">&#165;9,000</td>
+                <td style="padding:10px;text-align:center;"><span style="display:inline-block;width:36px;height:20px;background:#ccc;border-radius:10px;position:relative;"><span style="display:block;width:16px;height:16px;background:white;border-radius:50%;position:absolute;left:2px;top:2px;"></span></span></td>
+                <td style="padding:10px;text-align:center;">&#165;9,000</td>
+                <td style="padding:10px;text-align:center;"><span style="background:#f5f5f5;color:var(--text-sub);padding:2px 8px;border-radius:8px;font-size:11px;">無効</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">シーズン料金は<strong>全パス一律</strong>か、<strong>パスごとに個別設定</strong>か？</span>
           <span class="d-note"><input placeholder="一律 / パスごと" value="パスごと" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">料金計算の<strong>端数処理</strong>はどうするか？（切り捨て/切り上げ/四捨五入）</span>
+          <span class="d-label">料金計算の<strong>端数処理</strong>はどうするか？</span>
           <span class="d-note"><input placeholder="切り捨て / 四捨五入" value="四捨五入" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
-          <span class="d-label">クーポンとの<strong>併用</strong>は可能か？ 適用順序は？</span>
+          <span class="d-label">クーポンとの<strong>併用</strong>は可能か？</span>
           <span class="d-note"><input placeholder="可能 / 不可" value="不可" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">ダイナミックプライシングの<strong>有効/無効</strong>は誰が切り替えられるか？</span>
-          <span class="d-note"><input placeholder="運営のみ / 店舗も" value="運営" class="memo-input"></span>
+          <span class="d-label">ダイナミックプライシングの<strong>設定権限</strong>は誰が持つか？</span>
+          <span class="d-note"><input placeholder="運営のみ / 店舗も" value="運営のみ" class="memo-input"></span>
         </li>
       </ul>
     </div>
   </div>
 
+  <!-- Card 5: アプリ表示モック -->
   <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
-      アプリ表示 <span class="toggle">&#9660;</span>
+    <div class="card-header" style="background:linear-gradient(135deg,#E91E63,#AD1457);" onclick="toggleCard(this)">
+      アプリ表示モック <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <div class="phones-row"><div class="phone-wrapper">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">期間パス選択</div>
-          <div class="phone-body">
-            <div style="padding:8px;">
-              <div style="font-size:12px;color:#999;margin-bottom:8px;">渋谷スタジオ</div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);position:relative;">
-                <div style="position:absolute;top:-8px;right:10px;background:var(--red);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">シーズン割引中</div>
-                <div style="font-weight:700;font-size:14px;">7日パス</div>
-                <div style="margin-top:4px;">
-                  <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;3,500</span>
-                  <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;2,800</span>
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">通常価格表示</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">期間パス選択</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="font-size:12px;color:#999;margin-bottom:8px;">渋谷スタジオ</div>
+                <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+                  <div style="font-weight:700;font-size:14px;">7日パス</div>
+                  <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;3,500</div>
+                  <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">通常価格</div>
                 </div>
-                <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF（閑散期割引）</div>
-              </div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
-                <div style="font-weight:700;font-size:14px;">14日パス</div>
-                <div style="margin-top:4px;">
-                  <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;5,600</span>
-                  <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;4,480</span>
+                <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
+                  <div style="font-weight:700;font-size:14px;">14日パス</div>
+                  <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;5,600</div>
+                  <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">通常価格</div>
                 </div>
-                <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF（閑散期割引）</div>
+                <div style="background:white;border-radius:10px;padding:12px;">
+                  <div style="font-weight:700;font-size:14px;">30日パス</div>
+                  <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;9,000</div>
+                  <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">通常価格</div>
+                </div>
               </div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
-                <div style="font-weight:700;font-size:14px;">30日パス</div>
-                <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;9,000</div>
-                <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">通常価格</div>
-              </div>
-            </div></div>
+            </div>
+          </div>
         </div>
-      </div></div>
+        <div class="phone-wrapper">
+          <div class="phone-label">閑散期割引表示</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">期間パス選択</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="font-size:12px;color:#999;margin-bottom:8px;">渋谷スタジオ</div>
+                <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);position:relative;">
+                  <div style="position:absolute;top:-8px;right:10px;background:var(--red);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">期間限定割引</div>
+                  <div style="font-weight:700;font-size:14px;">7日パス</div>
+                  <div style="margin-top:4px;">
+                    <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;3,500</span>
+                    <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;2,800</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:2px solid var(--purple);position:relative;">
+                  <div style="position:absolute;top:-8px;right:10px;background:var(--red);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">期間限定割引</div>
+                  <div style="font-weight:700;font-size:14px;">14日パス</div>
+                  <div style="margin-top:4px;">
+                    <span style="text-decoration:line-through;color:#999;font-size:13px;">&#165;5,600</span>
+                    <span style="color:var(--red);font-weight:700;font-size:16px;margin-left:4px;">&#165;4,480</span>
+                  </div>
+                  <div style="font-size:11px;color:var(--green);margin-top:2px;">20%OFF</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:12px;">
+                  <div style="font-weight:700;font-size:14px;">30日パス</div>
+                  <div style="margin-top:4px;font-size:15px;font-weight:700;">&#165;9,000</div>
+                  <div style="font-size:11px;color:var(--text-sub);margin-top:2px;">DP無効（通常価格）</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rethink-box">
+        <h4>要検討: 表示文言</h4>
+        <p>割引バッジの表示文言は「期間限定？」で保留中。「シーズン割引」「特別価格」「期間限定」のいずれにするか要決定。<br>また、「現在価格のみ表示」が決定済みだが、通常価格との比較（取消線）表示をどうするかも要確認。</p>
+      </div>
+
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label">割引バッジの<strong>表示文言</strong>は？（シーズン割引/期間限定/特別価格）</span>
           <span class="d-note"><input placeholder="シーズン割引 / 期間限定" value="期間限定？" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">アプリでの<strong>価格表示方法</strong>は？（現在価格のみ/通常価格との比較）</span>
+          <span class="d-note"><input placeholder="現在価格のみ / 比較表示" value="現在価格のみ" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Card 6: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>計算式</th><td><code>finalPrice = round(basePrice * seasonRate * dayOfWeekRate * demandRate)</code><br>制約: <code>minPrice <= finalPrice <= basePrice</code></td></tr>
+        <tr><th>DB設計</th><td>
+          <strong>dynamic_pricing_config</strong>: pass_id, enabled, min_rate, created_by<br>
+          <strong>season_rates</strong>: config_id, month, rate<br>
+          <strong>day_of_week_rates</strong>: config_id, day_of_week, rate<br>
+          <strong>demand_rates</strong>: config_id, threshold, rate<br>
+          <strong>price_history</strong>: pass_id, calculated_price, factors_json, created_at
+        </td></tr>
+        <tr><th>API</th><td>
+          <code>GET /api/passes/{passId}/current-price</code> — 現在価格取得<br>
+          <code>PUT /api/admin/dynamic-pricing/{passId}</code> — 設定変更（運営のみ）<br>
+          <code>GET /api/admin/dynamic-pricing/history</code> — 変動履歴
+        </td></tr>
+        <tr><th>キャッシュ</th><td>価格計算結果を5分間キャッシュ。倍率変更時はキャッシュクリア</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 7: 追加決定項目 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--red),#C62828);" onclick="toggleCard(this)">
+      追加決定項目（実装レベル） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>需要の算出方法</strong>は？（販売数ベース/利用率ベース/予約数ベース）</span>
+          <span class="d-note"><input placeholder="販売数 / 利用率" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">倍率変更の<strong>反映タイミング</strong>は？（即時/翌日/指定日時）</span>
+          <span class="d-note"><input placeholder="即時 / 翌日" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>変動履歴ログ</strong>の保持期間は？（3ヶ月/6ヶ月/1年/無期限）</span>
+          <span class="d-note"><input placeholder="6ヶ月 / 1年" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">DP無効時のパスの<strong>表示方法</strong>は？（通常表示/「DP対象外」表示）</span>
+          <span class="d-note"><input placeholder="通常表示 / 明示" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -319,6 +523,9 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- パネル1: Push通知 -->
+<!-- ============================================ -->
 <div class="panel" id="panel-1">
 
   <div class="intro">
@@ -329,6 +536,27 @@
     </p>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項（8項目）</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>送信上限:</strong> 制限なし<br>
+      <strong>時間制限:</strong> 制限なし<br>
+      <strong>マーケティング通知:</strong> デフォルトON<br>
+      <strong>配信権限:</strong> 運営のみ<br>
+      <strong>承認フロー:</strong> 不要<br>
+      <strong>通知設定:</strong> 全通知同一設定（カテゴリ別設定なし）<br>
+      <strong>カスタムサウンド:</strong> 不要（OS標準）<br>
+      <strong>テンプレート:</strong> 運営が管理
+    </p>
+  </div>
+
+  <div class="rethink-box">
+    <h4>要技術確認: トランザクション通知のオフ可否</h4>
+    <p>「トランザクション通知をユーザーがオフにできるか？」は技術的に確認が必要。「できるの？できるなら」とのコメントあり。<br>OS側のPush権限を全オフにした場合との関係を含めて調査必要。</p>
+  </div>
+
+  <!-- Card 1: 技術基盤 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
       技術基盤 <span class="toggle">&#9660;</span>
@@ -339,7 +567,8 @@
         <tr><th>デバイストークン</th><td>ログイン時にトークン取得・サーバーに保存。ログアウト時に無効化</td></tr>
         <tr><th>配信制御</th><td>ユーザーセグメント（全員/特定店舗/特定プラン利用者）で配信対象を絞り込み</td></tr>
         <tr><th>ディープリンク</th><td>通知タップ時にアプリ内の該当画面へ直接遷移</td></tr>
-        <tr><th>頻度制限</th><td>同一ユーザーへの通知は<strong>1日最大5件</strong>まで（設定変更可能）</td></tr>
+        <tr><th>頻度制限</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 制限なし</td></tr>
+        <tr><th>時間制限</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 制限なし</td></tr>
         <tr><th>リトライ</th><td>配信失敗時は最大3回リトライ（指数バックオフ）</td></tr>
         <tr><th>配信ログ</th><td>全通知の送信/開封/タップを記録し、管理画面で分析可能</td></tr>
       </table>
@@ -347,55 +576,153 @@
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">1日あたりの<strong>通知上限</strong>は何件にするか？</span>
-          <span class="d-note"><input placeholder="5件 / 10件 / 制限なし" value="制限なし" class="memo-input"></span>
+          <span class="d-note"><input placeholder="5件 / 制限なし" value="制限なし" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">通知の<strong>配信時間帯</strong>に制限を設けるか？（例: 8:00-21:00のみ）</span>
-          <span class="d-note"><input placeholder="制限あり / なし" value="なし" class="memo-input"></span>
+          <span class="d-label">通知の<strong>配信時間帯</strong>に制限を設けるか？</span>
+          <span class="d-note"><input placeholder="制限あり / なし" value="制限なし" class="memo-input"></span>
         </li>
       </ul>
     </div>
   </div>
 
+  <!-- Card 2: 配信フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      通知カテゴリ <span class="toggle">&#9660;</span>
+      配信フロー <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <table class="spec">
-        <tr><th>トランザクション</th><td>購入完了通知 / 決済失敗通知 / チェックイン確認 / 期間パス開始通知</td></tr>
-        <tr><th>リマインダー</th><td>期間パス期限通知（残3日/1日/当日）/ 見学予約リマインダー / チェックアウト忘れ</td></tr>
-        <tr><th>マーケティング</th><td>新店舗オープン / キャンペーン告知 / シーズン割引告知 / クーポン配布</td></tr>
-        <tr><th>管理通知</th><td>メンテナンス予告 / 利用規約変更 / アプリアップデート案内</td></tr>
-      </table>
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">Push通知の配信は以下のフローで処理されます。</p>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>イベント発火</strong><br>購入完了・期限接近・管理者送信などのトリガーイベント発生</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>カテゴリ判定</strong><br>トランザクション/リマインダー/マーケティング/管理通知に分類</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>ユーザー設定確認</strong><br>ユーザーの通知設定（全通知同一）を確認。OFFなら配信スキップ</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">4</div>
+          <div class="flow-box"><strong>FCM送信</strong><br>Firebase Cloud Messagingを通じてデバイスに通知を送信</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">5</div>
+          <div class="flow-box"><strong>配信ログ記録</strong><br>送信結果（成功/失敗/開封/タップ）をログに記録</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--red);">6</div>
+          <div class="flow-box"><strong>リトライ処理</strong><br>失敗時は最大3回リトライ（指数バックオフ: 1分→5分→30分）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: 通知カテゴリ一覧 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      通知カテゴリ一覧 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">通知カテゴリ管理<span class="role-badge">運営のみ</span></div>
+        <div class="admin-mock-body">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead><tr style="background:#f8f9fa;">
+              <th style="padding:8px;border-bottom:2px solid var(--border);text-align:left;">カテゴリ</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);text-align:left;">通知種別</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">トリガー</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">オフ可否</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;" rowspan="4">トランザクション</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">購入完了通知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--orange);">要確認</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">決済失敗通知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--orange);">要確認</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">チェックイン確認</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--orange);">要確認</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">期間パス開始通知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--orange);">要確認</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;" rowspan="3">リマインダー</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">期間パス期限（残3日/1日/当日）</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">見学予約リマインダー</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">チェックアウト忘れ</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">自動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:600;" rowspan="4">マーケティング</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">新店舗オープン</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">キャンペーン告知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">シーズン割引告知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">クーポン配布</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;font-weight:600;" rowspan="3">管理通知</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">メンテナンス予告</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;">利用規約変更</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">手動</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">同一設定</td></tr>
+              <tr><td style="padding:8px;">アプリアップデート案内</td>
+                <td style="padding:8px;text-align:center;">手動</td>
+                <td style="padding:8px;text-align:center;">同一設定</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">マーケティング通知の<strong>オプトイン方式</strong>は？（デフォルトON/OFF）</span>
-          <span class="d-note"><input placeholder="デフォルトON / OFF" value="できるならON" class="memo-input"></span>
+          <span class="d-label">マーケティング通知の<strong>デフォルト状態</strong>は？</span>
+          <span class="d-note"><input placeholder="ON / OFF" value="ON" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">トランザクション通知は<strong>オフ不可</strong>にするか？</span>
-          <span class="d-note"><input placeholder="オフ不可 / オフ可能" value="できるの？できるなら" class="memo-input"></span>
+          <span class="d-note"><input placeholder="オフ不可 / オフ可能" value="技術確認必要" class="memo-input"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">通知カテゴリの<strong>追加・変更</strong>は運営のみか？</span>
+          <span class="d-label">通知カテゴリの<strong>追加・変更権限</strong>は？</span>
           <span class="d-note"><input placeholder="運営のみ / 店舗も" value="運営のみ" class="memo-input"></span>
         </li>
       </ul>
     </div>
   </div>
 
+  <!-- Card 4: 管理画面 送信フォーム -->
   <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
-      管理画面 <span class="toggle">&#9660;</span>
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      管理画面: 通知送信フォーム <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="admin-mock">
-        <div class="admin-mock-header purple">Push通知 送信フォーム<span class="role-badge">管理画面</span></div>
+        <div class="admin-mock-header purple">Push通知 送信フォーム<span class="role-badge">運営のみ</span></div>
         <div class="admin-mock-body">
           <div style="margin-bottom:12px;">
             <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">対象セグメント</label>
@@ -417,27 +744,106 @@
             <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">本文</label>
             <textarea style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-height:60px;">6月限定！期間パスが20%OFF。この機会にぜひお試しください。</textarea>
           </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">ディープリンク</label>
+            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" value="studygo://passes" placeholder="アプリ内遷移先URL">
+          </div>
           <div style="display:flex;gap:8px;">
             <button style="padding:8px 20px;background:var(--purple);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;">プレビュー</button>
             <button style="padding:8px 20px;background:var(--green);color:white;border:none;border-radius:6px;font-size:13px;font-weight:600;">送信</button>
-          </div></div>
+          </div>
+          <p style="font-size:11px;color:var(--text-sub);margin-top:8px;">※ 承認フロー不要（決定済み）。送信ボタンで即時配信されます。</p>
+        </div>
       </div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">通知送信の<strong>承認フロー</strong>は必要か？（送信前に上長承認）</span>
+          <span class="d-label">通知送信の<strong>承認フロー</strong>は必要か？</span>
           <span class="d-note"><input placeholder="必要 / 不要" value="不要" class="memo-input"></span>
         </li>
       </ul>
     </div>
   </div>
 
+  <!-- Card 5: 配信履歴・分析 -->
   <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
-      アプリ設定画面 <span class="toggle">&#9660;</span>
+    <div class="card-header" style="background:linear-gradient(135deg,#009688,#00695C);" onclick="toggleCard(this)">
+      管理画面: 配信履歴・分析 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">配信履歴・分析ダッシュボード<span class="role-badge">管理画面</span></div>
+        <div class="admin-mock-body">
+          <!-- KPI -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;">
+            <div style="background:white;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text-sub);">総送信数</div>
+              <div style="font-size:20px;font-weight:700;color:var(--purple);">12,480</div>
+            </div>
+            <div style="background:white;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text-sub);">開封率</div>
+              <div style="font-size:20px;font-weight:700;color:var(--green);">68.2%</div>
+            </div>
+            <div style="background:white;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text-sub);">タップ率</div>
+              <div style="font-size:20px;font-weight:700;color:var(--blue);">23.5%</div>
+            </div>
+            <div style="background:white;border-radius:8px;padding:12px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text-sub);">失敗率</div>
+              <div style="font-size:20px;font-weight:700;color:var(--red);">1.2%</div>
+            </div>
+          </div>
+          <!-- 履歴テーブル -->
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#f8f9fa;">
+              <th style="padding:8px;border-bottom:2px solid var(--border);text-align:left;">日時</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);text-align:left;">タイトル</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">対象</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">送信</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">開封</th>
+              <th style="padding:8px;border-bottom:2px solid var(--border);">タップ</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="padding:8px;border-bottom:1px solid #eee;">3/8 14:00</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">閑散期割引スタート</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">全員</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">3,200</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--green);">72%</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--blue);">28%</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;border-bottom:1px solid #eee;">3/7 10:00</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;">新宿スタジオ改装完了</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">新宿利用者</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">890</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--green);">81%</td>
+                <td style="padding:8px;border-bottom:1px solid #eee;text-align:center;color:var(--blue);">35%</td>
+              </tr>
+              <tr>
+                <td style="padding:8px;">3/5 自動</td>
+                <td style="padding:8px;">期間パス残り1日</td>
+                <td style="padding:8px;text-align:center;">対象者</td>
+                <td style="padding:8px;text-align:center;">45</td>
+                <td style="padding:8px;text-align:center;color:var(--green);">89%</td>
+                <td style="padding:8px;text-align:center;color:var(--blue);">56%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 6: アプリ設定画面 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#E91E63,#AD1457);" onclick="toggleCard(this)">
+      アプリ設定画面モック <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:12px;">「全通知同一設定」に決定。カテゴリ別の個別トグルではなく、シンプルな一括ON/OFFに変更。</p>
       <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone-label">通知設定（シンプル版）</div>
         <div class="phone">
           <div class="phone-notch"></div>
           <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
@@ -445,37 +851,98 @@
           <div class="phone-body">
             <div style="padding:8px;">
               <div style="font-size:14px;font-weight:700;margin-bottom:12px;">通知設定</div>
-              <div style="background:white;border-radius:10px;padding:12px;margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
-                  <div><div style="font-size:13px;font-weight:600;">購入・決済</div><div style="font-size:11px;color:#999;">購入完了、決済失敗の通知</div></div>
-                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
-                  <div><div style="font-size:13px;font-weight:600;">リマインダー</div><div style="font-size:11px;color:#999;">期限通知、予約リマインダー</div></div>
-                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;">
-                  <div><div style="font-size:13px;font-weight:600;">キャンペーン</div><div style="font-size:11px;color:#999;">割引、新店舗、クーポン情報</div></div>
-                  <div style="width:40px;height:22px;background:#ccc;border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;left:2px;top:2px;"></div></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
-                  <div><div style="font-size:13px;font-weight:600;">お知らせ</div><div style="font-size:11px;color:#999;">メンテナンス、規約変更</div></div>
-                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+              <div style="background:white;border-radius:10px;padding:16px;margin-bottom:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">プッシュ通知</div>
+                    <div style="font-size:11px;color:#999;margin-top:2px;">すべての通知を受け取る</div>
+                  </div>
+                  <div style="width:44px;height:24px;background:var(--green);border-radius:12px;position:relative;">
+                    <div style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div>
+                  </div>
                 </div>
               </div>
-            </div></div>
+              <div style="background:white;border-radius:10px;padding:16px;">
+                <div style="font-size:12px;color:var(--text-sub);line-height:1.6;">
+                  通知をOFFにすると、キャンペーン情報、リマインダー、お知らせなど<strong>すべての通知</strong>が届かなくなります。<br><br>
+                  <span style="color:var(--orange);">※ 購入確認や決済関連の重要な通知も届かなくなる場合があります。</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div></div>
       <ul class="decision-list" style="margin-top:16px;">
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">通知設定画面の<strong>デフォルト状態</strong>は全ONか？</span>
-          <span class="d-note"><input placeholder="全ON / マーケのみOFF" value="全部一緒でよくない？" class="memo-input"></span>
+          <span class="d-label">通知設定は<strong>全通知同一</strong>か<strong>カテゴリ別</strong>か？</span>
+          <span class="d-note"><input placeholder="同一 / カテゴリ別" value="全通知同一" class="memo-input"></span>
         </li>
         <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
+          <span class="d-label">通知の<strong>カスタムサウンド</strong>は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" value="不要（OS標準）" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Card 7: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>FCM統合</th><td>Firebase Admin SDK (Node.js) でサーバーサイドから送信。<br>iOS: APNs経由、Android: FCM直接</td></tr>
+        <tr><th>トークン管理</th><td>
+          <strong>device_tokens</strong>: user_id, token, platform (ios/android), created_at, last_used_at<br>
+          ログアウト時にトークン削除。30日未使用トークンは自動無効化
+        </td></tr>
+        <tr><th>テンプレート</th><td>
+          <strong>notification_templates</strong>: id, category, title_template, body_template, deeplink_pattern, created_by<br>
+          変数埋め込み対応: <code>{{user_name}}</code>, <code>{{shop_name}}</code>, <code>{{pass_name}}</code>
+        </td></tr>
+        <tr><th>配信ログ</th><td>
+          <strong>notification_logs</strong>: id, user_id, template_id, status (sent/opened/tapped/failed), sent_at, opened_at<br>
+          分析用に集計テーブルも用意
+        </td></tr>
+        <tr><th>API</th><td>
+          <code>POST /api/admin/notifications/send</code> — 通知送信（運営のみ）<br>
+          <code>GET /api/admin/notifications/history</code> — 配信履歴<br>
+          <code>PUT /api/user/notification-settings</code> — ユーザー設定変更<br>
+          <code>POST /api/internal/notifications/trigger</code> — 自動通知トリガー
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 8: 追加決定項目 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--red),#C62828);" onclick="toggleCard(this)">
+      追加決定項目（実装レベル） <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">通知の<strong>サウンド設定</strong>は必要か？（カテゴリ別に音を変える等）</span>
-          <span class="d-note"><input placeholder="必要 / 不要" value="不要" class="memo-input"></span>
+          <span class="d-label"><strong>テンプレート管理</strong>は誰が行うか？</span>
+          <span class="d-note"><input placeholder="運営 / 店舗も" value="運営が管理" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">配信<strong>ログの保持期間</strong>は？（3ヶ月/6ヶ月/1年）</span>
+          <span class="d-note"><input placeholder="6ヶ月 / 1年" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>ABテスト</strong>機能は必要か？（タイトル/本文のバリエーションテスト）</span>
+          <span class="d-note"><input placeholder="必要 / 不要 / 将来" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>予約配信</strong>機能は必要か？（日時指定で配信）</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -533,11 +1000,9 @@ function saveAll() {
     decisions: [],
     timestamp: new Date().toISOString()
   };
-
   document.querySelectorAll('.section-memo').forEach(function(ta) {
     data.memos.push(ta.value);
   });
-
   document.querySelectorAll('.decision-item').forEach(function(item) {
     var sel = item.querySelector('select');
     var input = item.querySelector('.memo-input');
@@ -546,7 +1011,6 @@ function saveAll() {
       note: input ? input.value : ''
     });
   });
-
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
 }
@@ -556,24 +1020,21 @@ function loadAll() {
   if (!raw) return;
   try {
     var data = JSON.parse(raw);
-
     if (data.memos) {
       document.querySelectorAll('.section-memo').forEach(function(ta, i) {
         if (data.memos[i] !== undefined) ta.value = data.memos[i];
       });
     }
-
     if (data.decisions) {
       document.querySelectorAll('.decision-item').forEach(function(item, i) {
         if (data.decisions[i]) {
           var sel = item.querySelector('select');
           var input = item.querySelector('.memo-input');
           if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
-          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+          if (input && data.decisions[i].note !== undefined) input.value = data.decisions[i].note;
         }
       });
     }
-
     document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
   } catch(e) { console.error(e); }
 }
@@ -589,7 +1050,6 @@ function clearAll() {
 
 function exportAll() {
   var text = '# StudyGO 基盤系機能 要件定義 エクスポート\n\n';
-
   document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
     text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
     var decisions = panel.querySelectorAll('.decision-item');
@@ -612,7 +1072,6 @@ function exportAll() {
     }
     text += '\n---\n\n';
   });
-
   navigator.clipboard.writeText(text).then(function() {
     var btn = document.querySelector('.btn-export');
     btn.textContent = 'コピーしました!';

@@ -107,7 +107,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>StudyGO 店舗・検索機能 要件定義シート</h1>
-      <div class="sub">4機能の要件定義 &mdash; 店舗詳細UI / 営業中検索 / 検索条件 / 近い店舗</div>
+      <div class="sub">4機能の要件定義 &mdash; 店舗詳細UI / 営業中検索 / 検索条件 / 近い店舗（3/4会議決定事項反映済み）</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -129,6 +129,9 @@
 
 <div class="main">
 
+<!-- ============================================ -->
+<!-- パネル0: 店舗UI -->
+<!-- ============================================ -->
 <div class="panel active" id="panel-0">
 
   <div class="intro">
@@ -147,28 +150,77 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>写真枚数:</strong> 変更なし（現状維持）<br>
+      <strong>CTAボタン:</strong> 変更なし（現状維持）<br>
+      <strong>営業状況表示:</strong> カレンダー準拠で自動表示
+    </p>
+  </div>
+
+  <div class="rethink-box">
+    <h4>要検討: おすすめバッジ・レビュー機能</h4>
+    <p>おすすめバッジは「あると良い」とのコメント。レビュー機能は「不明（要調査）」。<br>どちらも初期リリースには不要だが、将来的に追加を検討。</p>
+  </div>
+
+  <!-- Card 1: 改善ポイント -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      改善ポイント <span class="toggle">&#9660;</span>
+      改善ポイント仕様 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
         <tr><th>情報優先度</th><td>1. 営業状況 → 2. 写真 → 3. 料金プラン比較 → 4. CTA → 5. 設備・アクセス</td></tr>
-        <tr><th>店舗写真</th><td>ヘッダーにカルーセル写真（最大5枚）。タップで拡大表示</td></tr>
+        <tr><th>店舗写真</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 変更なし（現状維持）</td></tr>
         <tr><th>料金表示</th><td>ドロップイン/期間パス/月額を<strong>比較カード形式</strong>で横並び表示</td></tr>
-        <tr><th>CTAボタン</th><td>「見学予約」「チェックイン」「期間パス購入」の3つを常時表示</td></tr>
-        <tr><th>営業状況</th><td><strong>営業中/準備中/休業</strong>バッジをリアルタイム表示</td></tr>
-        <tr><th>レビュー</th><td>★評価と口コミ件数をヘッダー下に表示（将来対応）</td></tr>
+        <tr><th>CTAボタン</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 変更なし（現状維持）</td></tr>
+        <tr><th>営業状況</th><td><span style="color:var(--green);font-weight:600;">決定:</span> カレンダー準拠で<strong>営業中/準備中/休業</strong>バッジ自動表示</td></tr>
+        <tr><th>レビュー</th><td><span style="color:var(--orange);font-weight:600;">不明:</span> 要調査（将来対応候補）</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: 営業状況表示ロジック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      改善後の画面イメージ <span class="toggle">&#9660;</span>
+      営業状況表示ロジック <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">カレンダーデータに基づいて営業状況バッジを自動判定します。</p>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>管理画面カレンダー参照</strong><br>ドロップインカレンダーのデータを取得</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>祝日自動判定</strong><br>祝日カレンダーと照合し、営業日かどうかを判定</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">3</div>
+          <div class="flow-box"><strong>現在時刻と照合</strong><br>営業中 / 準備中 / 休業中 を判定</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">4</div>
+          <div class="flow-box"><strong>バッジ表示</strong><br><span style="background:var(--green);color:white;padding:1px 6px;border-radius:4px;font-size:11px;">営業中</span> <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:11px;">準備中</span> <span style="background:#999;color:white;padding:1px 6px;border-radius:4px;font-size:11px;">休業中</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: 店舗詳細モック -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      店舗詳細 画面モック <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone-label">改善後イメージ</div>
         <div class="phone">
           <div class="phone-notch"></div>
           <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
@@ -202,16 +254,17 @@
               <div style="display:flex;gap:6px;">
                 <button style="flex:1;padding:10px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">見学予約</button>
                 <button style="flex:1;padding:10px;background:var(--green);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">チェックイン</button>
-                <button style="flex:1;padding:10px;background:var(--blue);color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;">パス購入</button>
               </div>
-            </div></div>
+            </div>
+          </div>
         </div>
       </div></div>
     </div>
   </div>
 
+  <!-- Card 4: 決定事項 -->
   <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
@@ -222,26 +275,40 @@
           <span class="d-note"><input placeholder="5枚 / 10枚" class="memo-input" value="変更なし"></span>
         </li>
         <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">CTAボタンの<strong>構成</strong>はどうするか？</span>
+          <span class="d-note"><input placeholder="見学 / チェックイン / パス" class="memo-input" value="変更なし"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">営業状況バッジの<strong>データソース</strong>は？</span>
+          <span class="d-note"><input placeholder="カレンダー / Google" class="memo-input" value="カレンダー準拠"></span>
+        </li>
+        <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">料金比較カードで<strong>「おすすめ」バッジ</strong>を表示するか？</span>
-          <span class="d-note"><input placeholder="表示する / しない" class="memo-input" value="あると良い"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">CTAボタンの<strong>優先順位</strong>（色の強さ）はどうするか？</span>
-          <span class="d-note"><input placeholder="見学 > パス > チェックイン" class="memo-input" value="変更なし"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">営業状況バッジの<strong>更新頻度</strong>は？（リアルタイム/5分/30分）</span>
-          <span class="d-note"><input placeholder="リアルタイム / 5分" class="memo-input" value="カレンダーに準ずる"></span>
+          <span class="d-label"><strong>おすすめバッジ</strong>を表示するか？</span>
+          <span class="d-note"><input placeholder="表示 / しない" class="memo-input" value="あると良い"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
           <span class="d-label"><strong>レビュー機能</strong>は初期リリースに含めるか？</span>
-          <span class="d-note"><input placeholder="含める / 将来対応" class="memo-input" value="不明"></span>
+          <span class="d-note"><input placeholder="含める / 将来" class="memo-input" value="不明"></span>
         </li>
       </ul>
+    </div>
+  </div>
+
+  <!-- Card 5: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>カレンダー連動</th><td>管理画面のドロップインカレンダーAPIから営業時間を取得。<br>臨時休業・祝日対応も同データソースで管理</td></tr>
+        <tr><th>バッジ更新</th><td>ページ表示時にAPIで最新状態を取得。キャッシュは5分</td></tr>
+        <tr><th>料金比較</th><td>各プランの最安価格をAPIから取得して比較カード表示</td></tr>
+      </table>
     </div>
   </div>
 
@@ -251,6 +318,9 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- パネル1: 営業中検索 -->
+<!-- ============================================ -->
 <div class="panel" id="panel-1">
 
   <div class="intro">
@@ -261,71 +331,196 @@
     </p>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>デフォルト状態:</strong> OFF（全店舗表示）<br>
+      <strong>データソース:</strong> 管理画面のドロップインカレンダー<br>
+      <strong>祝日対応:</strong> 自動判定<br>
+      <strong>休業中表示:</strong> 非表示でもグレーアウトでもない → 通常表示＋利用可否テキスト
+    </p>
+  </div>
+
+  <div class="important-box">
+    <h4>独自方針: 休業中店舗の表示</h4>
+    <p>休業中店舗は「非表示」でも「グレーアウト」でもなく、<strong>通常表示のまま＋利用可否の表示</strong>とする独自方針に決定。<br>ユーザーが休業中でも店舗情報を確認でき、営業再開時にすぐ利用できるようにする。</p>
+  </div>
+
+  <div class="rethink-box">
+    <h4>要検討: 「まもなく営業」表示</h4>
+    <p>「まもなく営業」の表示は営業開始何分前からか？ → 「15分？」で保留中。要決定。</p>
+  </div>
+
+  <!-- Card 1: 仕様 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      仕様 <span class="toggle">&#9660;</span>
+      フィルター仕様 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
         <tr><th>フィルター名</th><td>「営業中のみ表示」トグルスイッチ</td></tr>
-        <tr><th>判定ロジック</th><td>現在時刻が店舗の営業時間内かどうかで判定</td></tr>
-        <tr><th>営業カレンダー連動</th><td>店舗ごとの営業カレンダー（定休日・営業時間変更）と連動</td></tr>
-        <tr><th>臨時休業</th><td>管理画面で設定された臨時休業日は「休業中」として表示</td></tr>
-        <tr><th>バッジ表示</th><td>検索結果の各店舗に<strong>営業中（緑）/準備中（黄）/休業（グレー）</strong>バッジ</td></tr>
-        <tr><th>準備中の定義</th><td>営業開始30分前から「まもなく営業」として表示</td></tr>
+        <tr><th>デフォルト</th><td><span style="color:var(--green);font-weight:600;">決定:</span> OFF（全店舗表示）</td></tr>
+        <tr><th>判定ロジック</th><td>管理画面のドロップインカレンダーデータで判定</td></tr>
+        <tr><th>祝日対応</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 自動判定（祝日カレンダー連動）</td></tr>
+        <tr><th>休業中表示</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 通常表示＋利用可否テキスト</td></tr>
+        <tr><th>バッジ</th><td><span style="background:var(--green);color:white;padding:1px 6px;border-radius:4px;font-size:11px;">営業中</span> <span style="background:var(--orange);color:white;padding:1px 6px;border-radius:4px;font-size:11px;">まもなく営業</span> + 利用可否テキスト</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: 営業状態判定フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      アプリ画面 <span class="toggle">&#9660;</span>
+      営業状態判定フロー <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <div class="phones-row"><div class="phone-wrapper">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">店舗検索</div>
-          <div class="phone-body">
-            <div style="padding:8px;">
-              <div style="background:white;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <span style="color:#999;">&#128269;</span>
-                <span style="color:#999;font-size:13px;">エリア・駅名で検索</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
-                <span style="font-size:13px;font-weight:600;">営業中のみ表示</span>
-                <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
-              </div>
-              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
-                  <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
-                </div>
-                <div style="font-size:11px;color:#999;margin-top:2px;">9:00-22:00 | 徒歩5分</div>
-              </div>
-              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <div style="font-weight:600;font-size:13px;">新宿スタジオ</div>
-                  <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
-                </div>
-                <div style="font-size:11px;color:#999;margin-top:2px;">7:00-23:00 | 徒歩8分</div>
-              </div>
-              <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;opacity:0.5;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <div style="font-weight:600;font-size:13px;">池袋スタジオ</div>
-                  <span style="background:#999;color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">休業中</span>
-                </div>
-                <div style="font-size:11px;color:#999;margin-top:2px;">定休日 | 徒歩10分</div>
-              </div>
-            </div></div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>現在時刻を取得</strong></div>
         </div>
-      </div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>ドロップインカレンダー照合</strong><br>店舗の営業時間を管理画面データから取得</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>祝日判定</strong><br>祝日カレンダーと照合。祝日の営業時間がある場合はそちらを使用</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4</div>
+          <div class="flow-box"><strong>状態決定</strong><br>営業中 / まもなく営業（開始15分前?） / 休業中（利用不可テキスト付き）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">5</div>
+          <div class="flow-box"><strong>バッジ＋利用可否テキスト表示</strong><br>休業中でも店舗は通常表示。「本日は休業日です」等のテキストを追加</div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Card 3: アプリ画面モック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      アプリ画面モック <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">フィルターOFF（デフォルト）</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">店舗検索</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+                  <span style="font-size:13px;font-weight:600;">営業中のみ表示</span>
+                  <div style="width:40px;height:22px;background:#ccc;border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;left:2px;top:2px;"></div></div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:11px;color:#999;margin-top:2px;">9:00-22:00</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">池袋スタジオ</div>
+                  </div>
+                  <div style="font-size:11px;color:var(--orange);margin-top:2px;font-weight:600;">本日は休業日です</div>
+                  <div style="font-size:11px;color:#999;">明日 9:00 から営業</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">新宿スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:11px;color:#999;margin-top:2px;">7:00-23:00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-wrapper">
+          <div class="phone-label">フィルターON</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">店舗検索</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:8px;padding:8px 12px;margin-bottom:10px;">
+                  <span style="font-size:13px;font-weight:600;">営業中のみ表示</span>
+                  <div style="width:40px;height:22px;background:var(--green);border-radius:11px;position:relative;"><div style="width:18px;height:18px;background:white;border-radius:50%;position:absolute;right:2px;top:2px;"></div></div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:11px;color:#999;margin-top:2px;">9:00-22:00</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">新宿スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:11px;color:#999;margin-top:2px;">7:00-23:00</div>
+                </div>
+                <div style="text-align:center;padding:20px;color:var(--text-sub);font-size:12px;">営業中の店舗のみ表示中</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: 管理画面モック -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      管理画面: ドロップインカレンダー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="admin-mock">
+        <div class="admin-mock-header purple">ドロップインカレンダー設定<span class="role-badge">店舗管理</span></div>
+        <div class="admin-mock-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <span style="font-weight:600;">2026年3月</span>
+            <label style="font-size:12px;display:flex;align-items:center;gap:4px;"><input type="checkbox" checked> 祝日自動判定</label>
+          </div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px;text-align:center;">
+            <thead><tr style="background:#f8f9fa;">
+              <th style="padding:6px;">月</th><th style="padding:6px;">火</th><th style="padding:6px;">水</th>
+              <th style="padding:6px;">木</th><th style="padding:6px;">金</th><th style="padding:6px;color:var(--blue);">土</th><th style="padding:6px;color:var(--red);">日</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="padding:6px;"><div style="font-weight:600;">2</div><div style="font-size:9px;color:var(--green);">9-22</div></td>
+                <td style="padding:6px;"><div style="font-weight:600;">3</div><div style="font-size:9px;color:var(--green);">9-22</div></td>
+                <td style="padding:6px;"><div style="font-weight:600;">4</div><div style="font-size:9px;color:var(--green);">9-22</div></td>
+                <td style="padding:6px;"><div style="font-weight:600;">5</div><div style="font-size:9px;color:var(--green);">9-22</div></td>
+                <td style="padding:6px;"><div style="font-weight:600;">6</div><div style="font-size:9px;color:var(--green);">9-22</div></td>
+                <td style="padding:6px;"><div style="font-weight:600;">7</div><div style="font-size:9px;color:var(--blue);">10-20</div></td>
+                <td style="padding:6px;background:var(--red-light);"><div style="font-weight:600;">8</div><div style="font-size:9px;color:var(--red);">休業</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: 決定事項 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#009688,#00695C);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
@@ -336,24 +531,29 @@
           <span class="d-note"><input placeholder="ON / OFF" class="memo-input" value="OFF"></span>
         </li>
         <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">営業時間の<strong>データソース</strong>は？</span>
+          <span class="d-note"><input placeholder="管理画面 / Google" class="memo-input" value="管理画面ドロップイン"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">祝日の営業時間は<strong>自動判定</strong>するか？</span>
+          <span class="d-note"><input placeholder="自動 / 手動" class="memo-input" value="自動"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">休業中の店舗の<strong>表示方法</strong>は？</span>
+          <span class="d-note"><input placeholder="非表示 / グレー / 通常" class="memo-input" value="通常表示＋利用可否表示"></span>
+        </li>
+        <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">「<strong>まもなく営業</strong>」の表示は営業開始何分前からか？</span>
-          <span class="d-note"><input placeholder="30分前 / 60分前" class="memo-input" value="１５分までとか？保留"></span>
+          <span class="d-label">「<strong>まもなく営業</strong>」表示は営業開始何分前からか？</span>
+          <span class="d-note"><input placeholder="15分 / 30分" class="memo-input" value="15分？保留"></span>
         </li>
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">休業中の店舗は<strong>非表示</strong>にするか、<strong>グレーアウト</strong>で表示するか？</span>
-          <span class="d-note"><input placeholder="非表示 / グレーアウト" class="memo-input" value="どちらもしない＋利用可否の表示"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">営業時間の<strong>データソース</strong>は？（管理画面入力/Googleマップ連携）</span>
-          <span class="d-note"><input placeholder="管理画面 / Google" class="memo-input" value="管理画面：ドロップイン"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">祝日の営業時間は<strong>自動判定</strong>するか？（祝日カレンダー連動）</span>
-          <span class="d-note"><input placeholder="自動 / 手動設定" class="memo-input" value="自動"></span>
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">休業中の<strong>利用可否表示</strong>の具体的な文言は？</span>
+          <span class="d-note"><input placeholder="本日は休業日です / 等" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -365,108 +565,196 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- パネル2: 検索条件 -->
+<!-- ============================================ -->
 <div class="panel" id="panel-2">
 
   <div class="intro">
     <h2>検索条件の拡充</h2>
     <p>
       <span class="highlight">検索フィルターの拡充</span>により、ユーザーが自分に合った店舗をより見つけやすくします。<br>
-      現行の検索条件に加え、プラン種類・設備・料金帯などのフィルターを追加します。
+      月額料金帯フィルターとソート機能を追加します。
     </p>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>設備フィルター:</strong> 不要（却下）<br>
+      <strong>料金フィルター:</strong> 月額のみ3段階（5千円以下/1万円以下/2万円以下）<br>
+      <strong>UI形式:</strong> チップ（トグル式）<br>
+      <strong>複合条件:</strong> AND結合<br>
+      <strong>ソート機能:</strong> 追加する（距離/料金/評価）
+    </p>
+  </div>
+
+  <div class="important-box">
+    <h4>決定: 設備フィルターは不要</h4>
+    <p>設備フィルター（Wi-Fi/電源/個室/会議室/ドリンク/プリンター）は<strong>不要と判断</strong>。<br>勉強カフェの特性上、基本設備はどの店舗でも揃っているため、フィルタリングの意味が薄い。</p>
+  </div>
+
+  <!-- Card 1: フィルター仕様 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      現行vs追加フィルター <span class="toggle">&#9660;</span>
+      フィルター仕様 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
         <tr><th>現行: エリア検索</th><td>都道府県・市区町村・駅名で絞り込み</td></tr>
         <tr><th>現行: マップ検索</th><td>地図上で店舗を探す</td></tr>
-        <tr><th>追加: プラン種類</th><td>ドロップイン対応 / 期間パス対応 / 月額プラン対応</td></tr>
-        <tr><th>追加: 設備</th><td>Wi-Fi / 電源 / 個室 / 会議室 / ドリンク / プリンター</td></tr>
-        <tr><th>追加: 料金帯</th><td>ドロップイン: ~500円/h, 500-1000円/h, 1000円~/h</td></tr>
-        <tr><th>追加: 営業時間</th><td>早朝営業(7時前) / 深夜営業(22時以降) / 24時間</td></tr>
+        <tr><th style="color:var(--red);text-decoration:line-through;">設備フィルター</th><td><span style="color:var(--red);font-weight:600;">却下</span>（不要と判断）</td></tr>
+        <tr><th>追加: 月額料金帯</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 3段階チップ — 5千円以下 / 1万円以下 / 2万円以下</td></tr>
+        <tr><th>UI形式</th><td><span style="color:var(--green);font-weight:600;">決定:</span> チップ（トグル式）</td></tr>
+        <tr><th>複合条件</th><td><span style="color:var(--green);font-weight:600;">決定:</span> AND結合</td></tr>
+        <tr><th>追加: ソート</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 距離順 / 料金順 / 評価順</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: 検索フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      アプリ画面 <span class="toggle">&#9660;</span>
+      検索ロジックフロー <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <div class="phones-row"><div class="phone-wrapper">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">検索フィルター</div>
-          <div class="phone-body">
-            <div style="padding:8px;">
-              <div style="font-size:14px;font-weight:700;margin-bottom:10px;">絞り込み</div>
-              <div style="margin-bottom:10px;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">プラン種類</div>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--purple);color:white;font-weight:600;">期間パス</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">月額プラン</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">ドロップイン</span>
-                </div>
-              </div>
-              <div style="margin-bottom:10px;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">設備</div>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--blue);color:white;font-weight:600;">Wi-Fi</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--blue);color:white;font-weight:600;">電源</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">個室</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">会議室</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">ドリンク</span>
-                </div>
-              </div>
-              <div style="margin-bottom:10px;">
-                <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">料金帯（ドロップイン）</div>
-                <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">~500円/h</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--green);color:white;font-weight:600;">500-1000円</span>
-                  <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">1000円~/h</span>
-                </div>
-              </div>
-              <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;">この条件で検索</button>
-            </div></div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>条件入力</strong><br>エリア + 月額料金チップ + 営業中フィルター</div>
         </div>
-      </div></div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>AND結合</strong><br>全フィルター条件をANDで結合してクエリ生成</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>API検索</strong><br>条件に合致する店舗を取得</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4</div>
+          <div class="flow-box"><strong>ソート適用</strong><br>距離順 / 料金順 / 評価順で並び替え</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">5</div>
+          <div class="flow-box"><strong>結果表示</strong><br>店舗カードリスト（営業バッジ＋料金付き）</div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Card 3: アプリ画面モック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      アプリ画面モック <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">フィルター画面</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">検索フィルター</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:10px;">絞り込み</div>
+                <div style="margin-bottom:12px;">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">月額料金帯</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:var(--purple);color:white;font-weight:600;">5千円以下</span>
+                    <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">1万円以下</span>
+                    <span style="padding:6px 12px;border-radius:20px;font-size:11px;background:#f0f0f0;color:var(--text);">2万円以下</span>
+                  </div>
+                </div>
+                <div style="margin-bottom:12px;">
+                  <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">ソート順</div>
+                  <select style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    <option>距離が近い順</option>
+                    <option>料金が安い順</option>
+                    <option>評価が高い順</option>
+                  </select>
+                </div>
+                <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;margin-top:8px;">この条件で検索</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-wrapper">
+          <div class="phone-label">検索結果（料金順）</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">検索結果 3件</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+                  <span style="padding:4px 10px;border-radius:12px;font-size:10px;background:var(--purple);color:white;">5千円以下</span>
+                  <span style="padding:4px 10px;border-radius:12px;font-size:10px;background:#f0f0f0;color:var(--text);">料金順</span>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">大宮スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--purple);font-weight:600;margin-top:4px;">月額 &#165;4,800~</div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="font-weight:600;font-size:13px;">八王子スタジオ</div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                  </div>
+                  <div style="font-size:12px;color:var(--purple);font-weight:600;margin-top:4px;">月額 &#165;4,980~</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: 決定事項 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <ul class="decision-list">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">設備フィルターの<strong>項目</strong>は？（Wi-Fi/電源/個室/会議室/ドリンク/プリンター）</span>
-          <span class="d-note"><input placeholder="項目リスト" class="memo-input" value="いらない"></span>
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
+          <span class="d-label"><strong>設備フィルター</strong>は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input" value="不要"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
           <span class="d-label">料金帯の<strong>区切り</strong>はどうするか？</span>
-          <span class="d-note"><input placeholder="~500 / 500-1000 / 1000~" class="memo-input" value="月額のみ：5000円以下〜1万以下〜2万以下"></span>
+          <span class="d-note"><input placeholder="金額" class="memo-input" value="月額: 5千/1万/2万"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">フィルターの<strong>UI形式</strong>はチップ選択式でよいか？</span>
+          <span class="d-label">フィルターの<strong>UI形式</strong>は？</span>
           <span class="d-note"><input placeholder="チップ / ドロップダウン" class="memo-input" value="チップ"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">フィルター条件の<strong>AND/OR</strong>は？（設備は全て満たす？いずれか？）</span>
+          <span class="d-label">フィルター条件の<strong>AND/OR</strong>は？</span>
           <span class="d-note"><input placeholder="AND / OR" class="memo-input" value="AND"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">検索結果の<strong>ソート順</strong>に新しい基準を追加するか？（距離/料金/評価）</span>
-          <span class="d-note"><input placeholder="追加する項目" class="memo-input" value="する"></span>
+          <span class="d-label"><strong>ソート機能</strong>を追加するか？</span>
+          <span class="d-note"><input placeholder="する / しない" class="memo-input" value="する（距離/料金/評価）"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">ソートの<strong>デフォルト順</strong>は？</span>
+          <span class="d-note"><input placeholder="距離 / 料金 / 評価" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -478,102 +766,197 @@
   </div>
 </div>
 
+<!-- ============================================ -->
+<!-- パネル3: 近い店舗 -->
+<!-- ============================================ -->
 <div class="panel" id="panel-3">
 
   <div class="intro">
     <h2>近い店舗の自動表示</h2>
     <p>
-      <span class="highlight">検索結果が0件の時に、近くの店舗を自動表示</span>する機能です。<br>
-      いいオフィスなどの他サービスを参考に、ユーザーの離脱を防ぎ、代替店舗への誘導を行います。
+      <span class="highlight">インスタベース式の駅名検索で近くの店舗を表示</span>する機能です。<br>
+      GPS許可時は現在地から、非許可時は駅名指定で、20件＋「もっと見る」形式で表示します。
     </p>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>表示件数:</strong> 20件＋「もっと見る」<br>
+      <strong>距離上限:</strong> なし<br>
+      <strong>検索方式:</strong> インスタベース式（駅名候補から選択のみ）<br>
+      <strong>ソート順:</strong> 距離順<br>
+      <strong>GPS:</strong> 許可時のみ使用
+    </p>
+  </div>
+
+  <div class="important-box">
+    <h4>インスタベース式の定義</h4>
+    <p>「府中」と入力すると「府中駅」「府中本町駅」などの候補がドロップダウンで表示され、<strong>候補からの選択のみ可能</strong>（自由テキスト検索ではない）。<br>選択した駅の座標を基準に距離順で店舗を表示する。</p>
+  </div>
+
+  <!-- Card 1: 仕様 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      仕様 <span class="toggle">&#9660;</span>
+      検索仕様 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
-        <tr><th>発動条件</th><td>検索結果が<strong>0件</strong>の場合に自動発動</td></tr>
-        <tr><th>表示方法</th><td>「お近くの店舗」セクションとしてリスト表示</td></tr>
-        <tr><th>距離計算</th><td>ユーザーの現在地（GPS）からの直線距離で算出</td></tr>
-        <tr><th>表示上限</th><td><strong>最大5件</strong>（距離が近い順）</td></tr>
-        <tr><th>表示情報</th><td>店舗名 / 距離（km） / 営業中バッジ / 料金の最安値</td></tr>
-        <tr><th>位置情報未取得時</th><td>「位置情報を許可すると近くの店舗を表示できます」メッセージ</td></tr>
+        <tr><th>検索方式</th><td><span style="color:var(--green);font-weight:600;">決定:</span> インスタベース式（駅名オートコンプリート→選択）</td></tr>
+        <tr><th>表示件数</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 20件 +「もっと見る」ボタン</td></tr>
+        <tr><th>距離上限</th><td><span style="color:var(--green);font-weight:600;">決定:</span> なし（全国対象）</td></tr>
+        <tr><th>ソート順</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 距離順</td></tr>
+        <tr><th>距離計算</th><td>Haversine公式で直線距離を算出</td></tr>
+        <tr><th>表示情報</th><td>店舗名 / 距離（km） / 営業状況バッジ / 月額最安値</td></tr>
+        <tr><th>GPS未許可時</th><td>駅名検索（インスタベース式）にフォールバック</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: インスタベース式検索UIモック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      アプリ画面 <span class="toggle">&#9660;</span>
+      インスタベース式 検索UIモック <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <div class="phones-row"><div class="phone-wrapper">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">検索結果0件</div>
-          <div class="phone-body">
-            <div style="padding:8px;">
-              <div style="text-align:center;padding:20px 0;">
-                <div style="font-size:32px;margin-bottom:8px;">&#128270;</div>
-                <div style="font-size:14px;font-weight:600;color:var(--text);">検索結果がありません</div>
-                <div style="font-size:12px;color:#999;margin-top:4px;">条件を変更して再検索してください</div>
-              </div>
-              <div style="background:var(--purple-light);border-radius:10px;padding:12px;margin-bottom:8px;">
-                <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:8px;">&#128205; お近くの店舗</div>
-                <div style="background:white;border-radius:8px;padding:10px;margin-bottom:6px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                      <div style="font-weight:600;font-size:13px;">渋谷スタジオ</div>
-                      <div style="font-size:11px;color:#999;">0.8km</div>
-                    </div>
-                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">入力 + 候補表示</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">店舗検索</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="background:white;border-radius:8px;padding:10px 12px;margin-bottom:0;border:2px solid var(--purple);">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="color:var(--purple);">&#128269;</span>
+                    <span style="font-size:13px;font-weight:600;">府中</span>
+                    <span style="color:#999;font-size:13px;">|</span>
                   </div>
                 </div>
-                <div style="background:white;border-radius:8px;padding:10px;margin-bottom:6px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                      <div style="font-weight:600;font-size:13px;">恵比寿スタジオ</div>
-                      <div style="font-size:11px;color:#999;">1.2km</div>
-                    </div>
-                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">営業中</span>
+                <!-- Dropdown -->
+                <div style="background:white;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                  <div style="padding:10px 12px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
+                    <span style="color:var(--text-sub);">&#128652;</span>
+                    <div><div style="font-size:13px;font-weight:600;">府中駅</div><div style="font-size:10px;color:#999;">京王線 - 東京都府中市</div></div>
                   </div>
-                </div>
-                <div style="background:white;border-radius:8px;padding:10px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                      <div style="font-weight:600;font-size:13px;">代官山スタジオ</div>
-                      <div style="font-size:11px;color:#999;">1.5km</div>
-                    </div>
-                    <span style="background:#999;color:white;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;">休業中</span>
+                  <div style="padding:10px 12px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;">
+                    <span style="color:var(--text-sub);">&#128652;</span>
+                    <div><div style="font-size:13px;font-weight:600;">府中本町駅</div><div style="font-size:10px;color:#999;">南武線 - 東京都府中市</div></div>
+                  </div>
+                  <div style="padding:10px 12px;display:flex;align-items:center;gap:8px;">
+                    <span style="color:var(--text-sub);">&#128652;</span>
+                    <div><div style="font-size:13px;font-weight:600;">府中競馬正門前駅</div><div style="font-size:10px;color:#999;">京王競馬場線</div></div>
                   </div>
                 </div>
               </div>
-            </div></div>
+            </div>
+          </div>
         </div>
-      </div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
-      フロー <span class="toggle">&#9660;</span>
-    </div>
-    <div class="card-body">
-      <div class="flow-steps">
-        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>ユーザーが検索を実行</strong>（エリア・条件を指定）</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>検索結果が0件</strong> → 近い店舗表示を発動</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>位置情報を取得</strong>（未許可の場合は許可を求める）</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>近い店舗リストを表示</strong>（距離順、最大5件）</div></div>
+        <div class="phone-wrapper">
+          <div class="phone-label">選択後 → 20件表示</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">府中駅 周辺</div>
+            <div class="phone-body">
+              <div style="padding:8px;">
+                <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;">府中駅から近い順に表示</div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">府中スタジオ</div>
+                      <div style="font-size:11px;color:#999;">0.3km | 月額 &#165;7,800~</div>
+                    </div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;">営業中</span>
+                  </div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">国分寺スタジオ</div>
+                      <div style="font-size:11px;color:#999;">3.2km | 月額 &#165;8,500~</div>
+                    </div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;">営業中</span>
+                  </div>
+                </div>
+                <div style="background:white;border-radius:10px;padding:10px;margin-bottom:8px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                      <div style="font-weight:600;font-size:13px;">立川スタジオ</div>
+                      <div style="font-size:11px;color:#999;">5.1km | 月額 &#165;9,200~</div>
+                    </div>
+                    <span style="background:var(--green);color:white;padding:2px 8px;border-radius:8px;font-size:10px;">営業中</span>
+                  </div>
+                </div>
+                <div style="text-align:center;padding:8px;">
+                  <button style="padding:10px 24px;background:var(--purple-light);color:var(--purple);border:2px solid var(--purple);border-radius:8px;font-size:13px;font-weight:600;">もっと見る</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Card 3: 検索フロー -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      検索フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>テキスト入力開始</strong><br>ユーザーが駅名/地名を入力</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>オートコンプリート候補表示</strong><br>入力文字に合致する駅名候補をドロップダウン表示</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>候補から選択</strong><br>ユーザーが駅名を選択（自由テキスト不可）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4</div>
+          <div class="flow-box"><strong>距離計算＋20件取得</strong><br>選択した駅の座標からHaversine距離を計算し、近い順に20件取得</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">5</div>
+          <div class="flow-box"><strong>結果表示＋「もっと見る」</strong><br>20件表示。タップで追加20件をロード</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 4: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>距離計算</th><td>Haversine公式で直線距離を算出。<br><code>d = 2r * arcsin(sqrt(sin&#178;((lat2-lat1)/2) + cos(lat1)*cos(lat2)*sin&#178;((lon2-lon1)/2)))</code></td></tr>
+        <tr><th>オートコンプリート</th><td>駅名マスターデータ（約9,000駅）をDB保持。前方一致で候補を最大5件表示</td></tr>
+        <tr><th>ページネーション</th><td>初回20件 → 「もっと見る」で追加20件ずつ。offset/limitでAPI制御</td></tr>
+        <tr><th>GPS連携</th><td>GPS許可時は自動で現在地を基準に検索。非許可時は駅名選択を求める</td></tr>
+        <tr><th>API</th><td>
+          <code>GET /api/shops/nearby?lat=&amp;lon=&amp;offset=0&amp;limit=20</code><br>
+          <code>GET /api/stations/search?q=府中&amp;limit=5</code>（オートコンプリート）
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 5: 決定事項 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
@@ -582,28 +965,33 @@
       <ul class="decision-list">
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">近い店舗の<strong>表示上限</strong>は何件か？</span>
-          <span class="d-note"><input placeholder="3件 / 5件 / 10件" class="memo-input" value="20件くらい※検証必要、もっと見るで追加"></span>
+          <span class="d-label">近い店舗の<strong>表示件数</strong>は？</span>
+          <span class="d-note"><input placeholder="10件 / 20件" class="memo-input" value="20件＋もっと見る"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
-          <span class="d-label">距離の<strong>上限</strong>は設けるか？（例: 10km以内のみ）</span>
-          <span class="d-note"><input placeholder="10km / 制限なし" class="memo-input" value="なし"></span>
+          <span class="d-label">距離の<strong>上限</strong>は設けるか？</span>
+          <span class="d-note"><input placeholder="10km / なし" class="memo-input" value="なし"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">検索結果が<strong>少ない場合</strong>（1-2件）にも近い店舗を追加表示するか？</span>
-          <span class="d-note"><input placeholder="0件のみ / 少ない場合も" class="memo-input" value="表示上限に付随する"></span>
+          <span class="d-label"><strong>検索方式</strong>はどうするか？</span>
+          <span class="d-note"><input placeholder="インスタベース式 / 自由" class="memo-input" value="インスタベース式"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">位置情報が<strong>取得できない場合</strong>のフォールバックは？</span>
-          <span class="d-note"><input placeholder="都道府県ベース / 非表示" class="memo-input" value="指名検索かつ固定→インスタベース式"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">近い店舗の<strong>表示順</strong>は距離順のみか？営業中優先か？</span>
+          <span class="d-label">近い店舗の<strong>ソート順</strong>は？</span>
           <span class="d-note"><input placeholder="距離順 / 営業中優先" class="memo-input" value="距離順"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">オートコンプリート候補の<strong>最大表示数</strong>は？</span>
+          <span class="d-note"><input placeholder="5件 / 10件" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">GPS不許可時の<strong>フォールバック</strong>の詳細は？</span>
+          <span class="d-note"><input placeholder="駅名選択 / エリア選択" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -657,25 +1045,13 @@ function autoSave() {
 }
 
 function saveAll() {
-  var data = {
-    memos: [],
-    decisions: [],
-    timestamp: new Date().toISOString()
-  };
-
-  document.querySelectorAll('.section-memo').forEach(function(ta) {
-    data.memos.push(ta.value);
-  });
-
+  var data = { memos: [], decisions: [], timestamp: new Date().toISOString() };
+  document.querySelectorAll('.section-memo').forEach(function(ta) { data.memos.push(ta.value); });
   document.querySelectorAll('.decision-item').forEach(function(item) {
     var sel = item.querySelector('select');
     var input = item.querySelector('.memo-input');
-    data.decisions.push({
-      status: sel ? sel.value : '',
-      note: input ? input.value : ''
-    });
+    data.decisions.push({ status: sel ? sel.value : '', note: input ? input.value : '' });
   });
-
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
 }
@@ -685,24 +1061,19 @@ function loadAll() {
   if (!raw) return;
   try {
     var data = JSON.parse(raw);
-
     if (data.memos) {
-      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
-        if (data.memos[i] !== undefined) ta.value = data.memos[i];
-      });
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) { if (data.memos[i] !== undefined) ta.value = data.memos[i]; });
     }
-
     if (data.decisions) {
       document.querySelectorAll('.decision-item').forEach(function(item, i) {
         if (data.decisions[i]) {
           var sel = item.querySelector('select');
           var input = item.querySelector('.memo-input');
           if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
-          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+          if (input && data.decisions[i].note !== undefined) input.value = data.decisions[i].note;
         }
       });
     }
-
     document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
   } catch(e) { console.error(e); }
 }
@@ -718,7 +1089,6 @@ function clearAll() {
 
 function exportAll() {
   var text = '# StudyGO 店舗・検索機能 要件定義 エクスポート\n\n';
-
   document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
     text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
     var decisions = panel.querySelectorAll('.decision-item');
@@ -736,12 +1106,9 @@ function exportAll() {
       text += '\n';
     }
     var memo = panel.querySelector('.section-memo');
-    if (memo && memo.value.trim()) {
-      text += '### メモ\n' + memo.value.trim() + '\n';
-    }
+    if (memo && memo.value.trim()) { text += '### メモ\n' + memo.value.trim() + '\n'; }
     text += '\n---\n\n';
   });
-
   navigator.clipboard.writeText(text).then(function() {
     var btn = document.querySelector('.btn-export');
     btn.textContent = 'コピーしました!';
@@ -761,9 +1128,7 @@ function exportAll() {
 
 document.addEventListener('DOMContentLoaded', function() {
   loadAll();
-  document.querySelectorAll('.decision-item select').forEach(function(sel) {
-    sel.className = sel.value;
-  });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.className = sel.value; });
   updateProgress();
 });
 </script>

@@ -60,8 +60,12 @@
   .important-box{background:#FFF3E0;border:2px solid var(--orange);border-radius:10px;padding:16px;margin-bottom:20px;}
   .important-box h4{color:#E65100;font-size:15px;margin-bottom:8px;}
   .important-box p{font-size:13px;color:var(--text);line-height:1.7;}
+  .rethink-box{background:var(--purple-light);border:2px solid var(--purple);border-radius:10px;padding:16px;margin-bottom:20px;}
+  .rethink-box h4{color:var(--purple);font-size:15px;margin-bottom:8px;}
+  .rethink-box p{font-size:13px;color:var(--text);line-height:1.7;}
   .phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;padding:16px 0;}
   .phone-wrapper{text-align:center;}
+  .phone-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
   .phone{width:280px;background:#000;border-radius:32px;border:6px solid #1a1a1a;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.15);}
   .phone-notch{width:100px;height:24px;background:#000;border-radius:0 0 14px 14px;margin:0 auto;}
   .phone-status{display:flex;justify-content:space-between;padding:0 16px;font-size:10px;color:white;margin-top:-18px;position:relative;z-index:5;}
@@ -103,7 +107,7 @@
   <div class="top-header-inner">
     <div class="top-title">
       <h1>StudyGO ログイン・見学機能 要件定義シート</h1>
-      <div class="sub">3機能の要件定義 &mdash; ログイン簡略化 / 見学予約WEB / SNSログイン</div>
+      <div class="sub">3機能の要件定義 &mdash; ログイン簡略化 / 見学予約WEB / SNSログイン（3/4会議決定事項反映済み）</div>
     </div>
     <div class="top-actions">
       <span class="save-status" id="saveStatus"></span>
@@ -124,13 +128,16 @@
 
 <div class="main">
 
+<!-- ============================================ -->
+<!-- パネル0: ログイン簡略化 -->
+<!-- ============================================ -->
 <div class="panel active" id="panel-0">
 
   <div class="intro">
-    <h2>ログイン簡略化（見学予約の入力削減）</h2>
+    <h2>ログイン簡略化（段階的情報収集）</h2>
     <p>
-      <span class="highlight">見学予約時の入力項目を大幅に削減</span>し、コンバージョン率を向上させます。<br>
-      現行の必須7項目を2項目に減らし、追加情報は来店時・契約時に入力してもらう段階的な設計です。
+      <span class="highlight">登録時の入力項目を最小限にし、アクション時に段階的に追加情報を収集</span>する方式です。<br>
+      登録のハードルを下げて新規ユーザーの離脱を防ぎ、見学予約などの行動を促します。
     </p>
   </div>
 
@@ -142,377 +149,718 @@
     <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項（6項目）</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>必須項目:</strong> 4項目（氏名 + メール + 電話番号 + 生年月日）<br>
+      <strong>追加情報:</strong> 契約時に入力（住所・性別等）<br>
+      <strong>見学予約:</strong> 4項目のみで予約可能<br>
+      <strong>パスワード:</strong> 登録時に設定<br>
+      <strong>クレカ登録:</strong> ドロップイン利用時に必須<br>
+      <strong>プロフィール:</strong> 段階的に収集
+    </p>
+  </div>
+
+  <div class="important-box">
+    <h4>要望: 大阪店QR → 店舗見学予約ページ</h4>
+    <p>大阪店のQRコードから直接店舗の見学予約ページに遷移できるようにしたいとの要望あり。<br>見学WEBの店舗別URL（studygo.jp/visit/{shop-slug}）と連動させる。</p>
+  </div>
+
+  <!-- Card 1: 登録項目仕様 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      現行vs改善フロー <span class="toggle">&#9660;</span>
+      登録項目仕様 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
-        <tr><th>現行: 必須項目</th><td>氏名 / メールアドレス / 電話番号 / 生年月日 / 性別 / 職業 / 利用目的（計7項目）</td></tr>
-        <tr><th>改善後: 必須項目</th><td><strong>氏名 / メールアドレス</strong>（計2項目のみ）</td></tr>
-        <tr><th>追加入力タイミング</th><td>来店時または契約時に残りの情報を入力</td></tr>
-        <tr><th>メリット</th><td>登録離脱率の大幅削減（目標: 離脱率50%→20%）</td></tr>
-        <tr><th>リスク対策</th><td>電話番号なしでも連絡可能（メール通知で対応）</td></tr>
+        <tr><th>登録時（必須4項目）</th><td>
+          <strong>1. 氏名</strong>（姓名）<br>
+          <strong>2. メールアドレス</strong><br>
+          <strong>3. 電話番号</strong><br>
+          <strong>4. 生年月日</strong><br>
+          <strong>+ パスワード</strong>（登録時に設定）
+        </td></tr>
+        <tr><th>見学予約時</th><td>上記4項目のみで予約可能（追加入力なし）</td></tr>
+        <tr><th>ドロップイン時</th><td>クレジットカード登録が<strong>必須</strong></td></tr>
+        <tr><th>契約時（月額等）</th><td>住所・性別・職業など追加情報を入力</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: 登録フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      登録フロー <span class="toggle">&#9660;</span>
+      段階的登録フロー <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="flow-steps">
-        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>STEP1: 簡易登録</strong> — 氏名 + メールアドレスのみで登録完了</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>新規登録（4項目+パスワード）</strong><br>氏名・メール・電話・生年月日 + パスワード設定<br>→ basic状態（見学予約可能）</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>STEP2: 見学予約</strong> — 店舗・希望日時を選択して予約</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>見学予約</strong><br>追加入力なしで予約可能。4項目のみで完結</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>来店</strong> — 見学後、気に入ったら契約手続きへ</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">3</div>
+          <div class="flow-box"><strong>ドロップイン利用時</strong><br>「クレジットカード登録が必要です」ダイアログ表示<br>→ クレカ登録 → verified状態</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>STEP3: 契約時に追加情報入力</strong> — 電話番号・生年月日・性別・職業・利用目的・クレジットカード</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">4</div>
+          <div class="flow-box"><strong>月額プラン契約時</strong><br>住所・性別・職業など追加情報を入力<br>→ full状態（全機能利用可能）</div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Card 3: 登録フォームモック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
-      アプリ画面 <span class="toggle">&#9660;</span>
+      登録フォーム モック <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
-      <div class="phones-row"><div class="phone-wrapper">
-        <div class="phone">
-          <div class="phone-notch"></div>
-          <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">簡易登録</div>
-          <div class="phone-body">
-            <div style="padding:12px;">
-              <div style="text-align:center;margin-bottom:16px;">
-                <div style="font-size:16px;font-weight:700;">アカウント登録</div>
-                <div style="font-size:12px;color:#999;margin-top:4px;">まずは簡単2ステップで登録</div>
-              </div>
-              <div style="margin-bottom:12px;">
-                <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">お名前 <span style="color:var(--red);font-size:10px;">必須</span></label>
-                <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;" placeholder="山田 太郎">
-              </div>
-              <div style="margin-bottom:16px;">
-                <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">メールアドレス <span style="color:var(--red);font-size:10px;">必須</span></label>
-                <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;" placeholder="example@email.com">
-              </div>
-              <button style="width:100%;padding:14px;background:var(--purple);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;">登録する</button>
-              <div style="text-align:center;margin-top:12px;font-size:11px;color:#999;">
-                登録することで<span style="color:var(--purple);">利用規約</span>に同意します
-              </div>
-              <div style="text-align:center;margin-top:16px;">
-                <div style="font-size:12px;color:#999;margin-bottom:8px;">または</div>
-                <div style="display:flex;flex-direction:column;gap:8px;">
-                  <button style="width:100%;padding:10px;background:white;border:1px solid var(--border);border-radius:8px;font-size:12px;">Googleで登録</button>
-                  <button style="width:100%;padding:10px;background:#06C755;color:white;border:none;border-radius:8px;font-size:12px;">LINEで登録</button>
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">新規登録（4項目+PW）</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">新規登録</div>
+            <div class="phone-body">
+              <div style="padding:10px;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:12px;">アカウント作成</div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:2px;">氏名 <span style="color:var(--red);">*</span></label>
+                  <div style="display:flex;gap:4px;">
+                    <input style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="姓">
+                    <input style="flex:1;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="名">
+                  </div>
                 </div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:2px;">メールアドレス <span style="color:var(--red);">*</span></label>
+                  <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="email@example.com">
+                </div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:2px;">電話番号 <span style="color:var(--red);">*</span></label>
+                  <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="090-1234-5678">
+                </div>
+                <div style="margin-bottom:8px;">
+                  <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:2px;">生年月日 <span style="color:var(--red);">*</span></label>
+                  <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="1990/01/01" type="date">
+                </div>
+                <div style="margin-bottom:10px;">
+                  <label style="font-size:11px;color:var(--text-sub);display:block;margin-bottom:2px;">パスワード <span style="color:var(--red);">*</span></label>
+                  <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="8文字以上" type="password">
+                </div>
+                <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;">登録する</button>
               </div>
-            </div></div>
+            </div>
+          </div>
         </div>
-      </div></div>
+        <div class="phone-wrapper">
+          <div class="phone-label">ドロップイン時の入力促進</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">チェックイン</div>
+            <div class="phone-body">
+              <div style="padding:10px;">
+                <div style="text-align:center;padding:30px 0 20px;">
+                  <div style="font-size:40px;margin-bottom:8px;">&#128179;</div>
+                  <div style="font-size:15px;font-weight:700;">クレジットカード登録が必要です</div>
+                  <div style="font-size:12px;color:#999;margin-top:8px;line-height:1.6;">ドロップイン利用にはクレジットカードの<br>登録が必要です。</div>
+                </div>
+                <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;margin-bottom:8px;">カードを登録する</button>
+                <button style="width:100%;padding:12px;background:#f0f0f0;color:var(--text);border:none;border-radius:8px;font-size:14px;">あとで登録する</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Card 4: ユーザー状態遷移 -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      ユーザー状態遷移 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>basic</th><td>4項目+PW登録済み。<strong>見学予約のみ可能</strong>。店舗閲覧・検索は自由</td></tr>
+        <tr><th>verified</th><td>クレカ登録済み。<strong>ドロップイン・期間パス購入が可能</strong></td></tr>
+        <tr><th>full</th><td>追加情報入力済み。<strong>月額プラン契約を含む全機能が利用可能</strong></td></tr>
+      </table>
+      <div style="margin-top:16px;padding:12px;background:#f8f9fa;border-radius:8px;font-size:13px;">
+        <strong>状態遷移:</strong> basic → (クレカ登録) → verified → (追加情報入力) → full<br>
+        <strong>ポイント:</strong> 各アクション時に必要な情報が不足している場合、入力フォームを表示して促進
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: 決定事項 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#009688,#00695C);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <ul class="decision-list">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">簡易登録の必須項目は<strong>氏名+メール</strong>の2項目でよいか？</span>
-          <span class="d-note"><input placeholder="OK / 電話番号も追加" class="memo-input" value="電話・生年月日も追加（ソロタイムさん要望）"></span>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">登録時の<strong>必須項目</strong>はいくつか？</span>
+          <span class="d-note"><input placeholder="2項目 / 4項目" class="memo-input" value="4項目（氏名+メール+電話+生年月日）"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>追加情報</strong>の入力タイミングは？</span>
+          <span class="d-note"><input placeholder="契約時 / 任意" class="memo-input" value="契約時"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>見学予約</strong>に必要な情報は？</span>
+          <span class="d-note"><input placeholder="4項目のみ / 追加あり" class="memo-input" value="4項目のみ"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>パスワード</strong>の設定タイミングは？</span>
+          <span class="d-note"><input placeholder="登録時 / 初回ログイン時" class="memo-input" value="登録時"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>クレカ登録</strong>はいつ必須になるか？</span>
+          <span class="d-note"><input placeholder="ドロップイン時 / 登録時" class="memo-input" value="ドロップイン利用時"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">プロフィールは<strong>段階的収集</strong>方式でよいか？</span>
+          <span class="d-note"><input placeholder="段階的 / 一括" class="memo-input" value="段階的"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">電話番号なしで<strong>予約確認の連絡</strong>はメールのみで対応可能か？</span>
-          <span class="d-note"><input placeholder="メールのみ / SMS必要" class="memo-input" value="電話番号もあった方がいい"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">追加情報の入力は<strong>来店時</strong>か<strong>契約時</strong>か？</span>
-          <span class="d-note"><input placeholder="来店時 / 契約時" class="memo-input" value="契約時"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">既存ユーザーの情報が未入力の場合、<strong>後から入力を促す</strong>か？</span>
-          <span class="d-note"><input placeholder="促す / 任意" class="memo-input" value="アクション時に促す。予約ボタン押下時に必須入力"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">簡易登録ユーザーの<strong>機能制限</strong>はあるか？（見学予約のみ？ドロップインも？）</span>
-          <span class="d-note"><input placeholder="見学のみ / ドロップインも" class="memo-input" value="見学のみ※クレカがドロップインには必要"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">パスワード設定は<strong>いつ</strong>行うか？（登録時/初回ログイン時/契約時）</span>
-          <span class="d-note"><input placeholder="登録時 / 初回ログイン" class="memo-input" value="登録時"></span>
+          <span class="d-label">未入力時の<strong>ブロック文言</strong>は？</span>
+          <span class="d-note"><input placeholder="文言案" class="memo-input"></span>
         </li>
       </ul>
+    </div>
+  </div>
+
+  <!-- Card 6: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>ユーザー状態管理</th><td>usersテーブルに <code>profile_status</code> カラム追加（basic/verified/full）<br>アクション実行前にステータスチェック</td></tr>
+        <tr><th>入力促進ダイアログ</th><td>各アクション（チェックイン・購入・契約）の前に必須情報チェック。<br>不足時はモーダルで入力フォームを表示</td></tr>
+        <tr><th>API</th><td>
+          <code>POST /api/auth/register</code> — 4項目+PW登録<br>
+          <code>PUT /api/user/profile</code> — 追加情報入力<br>
+          <code>POST /api/user/payment-method</code> — クレカ登録<br>
+          <code>GET /api/user/status</code> — 現在のステータス取得
+        </td></tr>
+      </table>
     </div>
   </div>
 
   <div class="memo-area">
     <div class="memo-area-header">メモ（ログイン簡略化）</div>
-    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()">未確認
-→大阪店の要望では、QRコードを読み込むと、その店舗の見学が予約できるページにいくのが理想とのこと</textarea>
-  </div>
-</div>
-
-<div class="panel" id="panel-1">
-
-  <div class="intro">
-    <h2>見学予約WEB対応</h2>
-    <p>
-      <span class="highlight">ブラウザから見学予約ができるWEBフォーム</span>を提供します。<br>
-      アプリをインストールしなくても見学予約が可能になり、SEO効果による新規獲得も期待できます。
-    </p>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      仕様・メリット <span class="toggle">&#9660;</span>
-    </div>
-    <div class="card-body">
-      <table class="spec">
-        <tr><th>対象ユーザー</th><td>アプリ未インストールの<strong>新規見込み客</strong></td></tr>
-        <tr><th>導線</th><td>Google検索 → WEBサイト → 見学予約フォーム → 確認メール</td></tr>
-        <tr><th>入力項目</th><td>氏名 / メールアドレス / 希望店舗 / 希望日時（簡易登録と同じ最小項目）</td></tr>
-        <tr><th>アプリ連携</th><td>予約完了後に「アプリで管理するとさらに便利」とアプリDL案内</td></tr>
-        <tr><th>SEO効果</th><td>店舗ごとのランディングページでローカルSEO強化</td></tr>
-        <tr><th>レスポンシブ</th><td>スマホ・タブレット・PCすべて対応</td></tr>
-      </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      WEB予約フロー <span class="toggle">&#9660;</span>
-    </div>
-    <div class="card-body">
-      <div class="flow-steps">
-        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>WEBアクセス</strong> — Google検索やSNSからWEB予約ページへ</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>フォーム入力</strong> — 店舗選択・氏名・メール・希望日時を入力</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>確認メール送信</strong> — 予約確認メールを自動送信（管理者にも通知）</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>来店</strong> — 見学予約日に来店</div></div>
-        <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:#9333EA;">5</div><div class="flow-box"><strong>アプリ案内</strong> — 来店時にアプリDLを案内、アカウント連携</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
-      WEB予約ページイメージ <span class="toggle">&#9660;</span>
-    </div>
-    <div class="card-body">
-      <div class="admin-mock">
-        <div class="admin-mock-header purple">見学予約 - StudyGO<span class="role-badge">WEBページ</span></div>
-        <div class="admin-mock-body">
-          <p style="font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.7;">勉強カフェの見学予約フォームです。お気軽にお申し込みください。</p>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">ご希望の店舗 <span style="color:var(--red);font-size:10px;">必須</span></label>
-            <select style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
-              <option>店舗を選択してください</option><option>渋谷スタジオ</option><option>新宿スタジオ</option><option>新宿BPスタジオ</option>
-            </select>
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">お名前 <span style="color:var(--red);font-size:10px;">必須</span></label>
-            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="山田 太郎">
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">メールアドレス <span style="color:var(--red);font-size:10px;">必須</span></label>
-            <input style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="example@email.com">
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">ご希望の日時 <span style="color:var(--red);font-size:10px;">必須</span></label>
-            <input type="date" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
-          </div>
-          <div style="margin-bottom:16px;">
-            <label style="font-size:12px;font-weight:600;color:var(--text-sub);display:block;margin-bottom:4px;">備考（任意）</label>
-            <textarea style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;min-height:60px;" placeholder="ご質問やご要望があればご記入ください"></textarea>
-          </div>
-          <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:6px;font-size:14px;font-weight:600;">見学予約を送信</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
-      決定事項 <span class="toggle">&#9660;</span>
-    </div>
-    <div class="card-body">
-      <ul class="decision-list">
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">WEB予約の<strong>ドメイン</strong>は？（studygo.jp/visit 等）</span>
-          <span class="d-note"><input placeholder="ドメイン/パス" class="memo-input" value="studygo.jp"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">WEB予約ページは<strong>店舗ごと</strong>に個別URLを持つか？</span>
-          <span class="d-note"><input placeholder="個別URL / 共通1ページ" class="memo-input" value="予約システム→個別のページ"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">WEB予約完了時に<strong>アカウント自動作成</strong>するか？</span>
-          <span class="d-note"><input placeholder="自動作成 / 手動" class="memo-input" value="スタディGOアプリのアカウントを作成する"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">予約の<strong>空き状況</strong>をWEBページで表示するか？</span>
-          <span class="d-note"><input placeholder="表示する / しない" class="memo-input" value="する"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">WEB予約の<strong>キャンセル</strong>はメールリンクからできるか？</span>
-          <span class="d-note"><input placeholder="できる / 店舗連絡" class="memo-input" value="マイページからキャンセル→WEBかアプリで確認"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
-          <span class="d-label">WEB経由の予約に<strong>特典</strong>をつけるか？（初回クーポン等）</span>
-          <span class="d-note"><input placeholder="つける / つけない" class="memo-input" value="つけない→実施後はあり"></span>
-        </li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="memo-area">
-    <div class="memo-area-header">メモ（見学予約WEB）</div>
     <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
   </div>
 </div>
 
-<div class="panel" id="panel-2">
+<!-- ============================================ -->
+<!-- パネル1: 見学予約WEB -->
+<!-- ============================================ -->
+<div class="panel" id="panel-1">
 
   <div class="intro">
-    <h2>SNSログイン（Google / LINE / Apple）</h2>
+    <h2>見学予約WEBページ</h2>
     <p>
-      <span class="highlight">Google・LINE・Appleアカウントでのログイン</span>に対応します。<br>
-      パスワード管理の手間を省き、ログインのハードルを下げることで新規登録率の向上を目指します。
+      <span class="highlight">studygo.jpドメインで店舗別の見学予約WEBページ</span>を公開します。<br>
+      アプリ未インストールでもWEBから見学予約が可能になり、QRコードからの流入にも対応します。
     </p>
   </div>
 
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項（6項目）</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>ドメイン:</strong> studygo.jp<br>
+      <strong>URL構造:</strong> 店舗別URL（/visit/{shop-slug}）<br>
+      <strong>アカウント:</strong> 予約時に自動作成<br>
+      <strong>空き状況:</strong> 表示する<br>
+      <strong>キャンセル:</strong> マイページから可能<br>
+      <strong>特典:</strong> なし
+    </p>
+  </div>
+
+  <!-- Card 1: URL構造+SEO -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
-      各プラットフォーム仕様 <span class="toggle">&#9660;</span>
+      URL構造・SEO・QR <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <table class="spec">
-        <tr><th>Google</th><td>取得情報: メール・氏名・プロフィール画像<br>OAuth 2.0対応。Webでも利用可能</td></tr>
-        <tr><th>LINE</th><td>取得情報: LINE表示名・メール（許可時）・プロフィール画像<br><strong>注意: メールアドレスは任意設定のため取得できない場合あり</strong></td></tr>
-        <tr><th>Apple</th><td>取得情報: メール（リレーメール含む）・氏名（初回のみ）<br><strong>iOS要件: Sign in with Appleはアプリ提出時に必須</strong></td></tr>
-        <tr><th>共通仕様</th><td>既存メールアドレスと一致する場合はアカウント連携を提案</td></tr>
+        <tr><th>ドメイン</th><td><span style="color:var(--green);font-weight:600;">決定:</span> <strong>studygo.jp</strong></td></tr>
+        <tr><th>URL構造</th><td>
+          トップ: <code>studygo.jp/visit</code>（店舗一覧）<br>
+          店舗別: <code>studygo.jp/visit/shibuya</code>（渋谷スタジオ）<br>
+          店舗別: <code>studygo.jp/visit/shinjuku</code>（新宿スタジオ）
+        </td></tr>
+        <tr><th>QRコード</th><td>各店舗のURL（<code>studygo.jp/visit/{shop-slug}</code>）をQRコード化。<br>店頭POP・チラシに掲載</td></tr>
+        <tr><th>SEO</th><td>各店舗ページにOGP・構造化データ設定。「{エリア名} 勉強カフェ 見学」で検索上位を目指す</td></tr>
       </table>
     </div>
   </div>
 
+  <!-- Card 2: 予約フォームモック -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
-      ログイン画面 <span class="toggle">&#9660;</span>
+      WEB予約フォーム モック <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="phones-row"><div class="phone-wrapper">
+        <div class="phone-label">studygo.jp/visit/shibuya</div>
         <div class="phone">
           <div class="phone-notch"></div>
           <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
-          <div class="app-header">ログイン</div>
+          <div class="app-header" style="background:var(--blue);">見学予約 - 渋谷スタジオ</div>
           <div class="phone-body">
-            <div style="padding:16px;text-align:center;">
-              <div style="font-size:24px;font-weight:700;color:var(--purple);margin-bottom:4px;">StudyGO</div>
-              <div style="font-size:12px;color:#999;margin-bottom:24px;">勉強カフェの利用をもっと便利に</div>
-              <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-                <button style="width:100%;padding:12px;background:white;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;">
-                  <span style="color:#4285F4;font-weight:700;">G</span> Googleでログイン
-                </button>
-                <button style="width:100%;padding:12px;background:#06C755;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
-                  LINEでログイン
-                </button>
-                <button style="width:100%;padding:12px;background:#000;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
-                  &#63743; Appleでサインイン
-                </button>
+            <div style="padding:10px;">
+              <div style="font-weight:700;font-size:15px;margin-bottom:4px;">渋谷スタジオ</div>
+              <div style="font-size:11px;color:#999;margin-bottom:10px;">渋谷区道玄坂1-2-3</div>
+
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;">空き状況</div>
+              <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+                <span style="padding:6px 10px;border-radius:6px;font-size:11px;background:#f0f0f0;color:#999;">3/9(日)</span>
+                <span style="padding:6px 10px;border-radius:6px;font-size:11px;background:var(--green-light);color:var(--green);font-weight:600;border:1px solid var(--green);">3/10(月) &#9675;</span>
+                <span style="padding:6px 10px;border-radius:6px;font-size:11px;background:var(--green-light);color:var(--green);font-weight:600;border:1px solid var(--green);">3/11(火) &#9675;</span>
+                <span style="padding:6px 10px;border-radius:6px;font-size:11px;background:var(--orange-light);color:var(--orange);font-weight:600;">3/12(水) &#9651;</span>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-                <div style="flex:1;height:1px;background:var(--border);"></div>
-                <span style="font-size:11px;color:#999;">または</span>
-                <div style="flex:1;height:1px;background:var(--border);"></div>
+
+              <div style="font-size:12px;font-weight:600;margin-bottom:6px;">お客様情報</div>
+              <div style="margin-bottom:6px;">
+                <input style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="氏名">
               </div>
-              <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;">
-                メールアドレスでログイン
-              </button>
-              <div style="margin-top:16px;font-size:12px;">
-                <span style="color:#999;">アカウントをお持ちでない方は</span>
-                <span style="color:var(--purple);font-weight:600;">新規登録</span>
+              <div style="margin-bottom:6px;">
+                <input style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="メール">
               </div>
-            </div></div>
+              <div style="margin-bottom:6px;">
+                <input style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="電話番号">
+              </div>
+              <div style="margin-bottom:8px;">
+                <input style="width:100%;padding:7px;border:1px solid var(--border);border-radius:6px;font-size:12px;" placeholder="生年月日">
+              </div>
+              <button style="width:100%;padding:10px;background:var(--blue);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;">予約する</button>
+            </div>
+          </div>
         </div>
       </div></div>
     </div>
   </div>
 
+  <!-- Card 3: アカウント自動作成フロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
-      アカウント連携フロー <span class="toggle">&#9660;</span>
+      アカウント自動作成フロー <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <div class="flow-steps">
-        <div class="flow-step"><div class="flow-num" style="background:var(--purple);">1</div><div class="flow-box"><strong>SNSログインボタンをタップ</strong> — Google/LINE/Appleの認証画面を表示</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>WEB予約フォーム送信</strong><br>4項目（氏名・メール・電話・生年月日）を入力して予約</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--blue);">2</div><div class="flow-box"><strong>SNS認証・メールアドレス取得</strong> — SNSプロバイダからメール・名前を取得</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>アカウント自動作成</strong><br>入力情報でStudyGOアカウントを自動作成（basic状態）</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--orange);">3</div><div class="flow-box"><strong>既存アカウント検索</strong> — 取得したメールで既存ユーザーを検索</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">3</div>
+          <div class="flow-box"><strong>確認メール送信</strong><br>予約確認 + パスワード設定リンク付きメールを送信</div>
+        </div>
         <div class="flow-arrow">&#9660;</div>
-        <div class="flow-step"><div class="flow-num" style="background:var(--green);">4</div><div class="flow-box"><strong>連携 or 新規作成</strong> — 既存あり: SNSアカウント連携を提案 / 既存なし: 新規アカウント作成</div></div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4</div>
+          <div class="flow-box"><strong>パスワード設定（任意）</strong><br>メール内リンクからパスワードを設定 → マイページアクセス可能</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:#9C27B0;">5</div>
+          <div class="flow-box"><strong>マイページ</strong><br>予約確認・キャンセルが可能。アプリDLも案内</div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Card 4: キャンセルフロー -->
   <div class="card">
     <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      キャンセルフロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>マイページ → 予約一覧</strong><br>WEB or アプリのマイページから予約一覧を表示</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--red);">2</div>
+          <div class="flow-box"><strong>キャンセルボタン</strong><br>「この予約をキャンセルしますか？」確認ダイアログ</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">3</div>
+          <div class="flow-box"><strong>キャンセル完了</strong><br>完了画面表示 + キャンセル確認メール送信</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: 決定事項 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#009688,#00695C);" onclick="toggleCard(this)">
       決定事項 <span class="toggle">&#9660;</span>
     </div>
     <div class="card-body">
       <ul class="decision-list">
         <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">初期リリースで対応する<strong>SNSの種類</strong>は？（Google/LINE/Apple全部？段階的？）</span>
-          <span class="d-note"><input placeholder="全部 / 段階的" class="memo-input" value="Googleから段階的に"></span>
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">見学予約WEBの<strong>ドメイン</strong>は？</span>
+          <span class="d-note"><input placeholder="studygo.jp / 別ドメイン" class="memo-input" value="studygo.jp"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>URL構造</strong>は店舗別URLか？</span>
+          <span class="d-note"><input placeholder="店舗別 / 共通" class="memo-input" value="店舗別（/visit/{slug}）"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">予約時に<strong>アカウントを自動作成</strong>するか？</span>
+          <span class="d-note"><input placeholder="自動作成 / 作成しない" class="memo-input" value="自動作成"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>空き状況</strong>を表示するか？</span>
+          <span class="d-note"><input placeholder="表示 / 非表示" class="memo-input" value="表示する"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>キャンセル</strong>はどこから可能か？</span>
+          <span class="d-note"><input placeholder="マイページ / メール" class="memo-input" value="マイページ"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
-          <span class="d-label">LINEのメール未設定ユーザーへの<strong>対応方針</strong>は？</span>
-          <span class="d-note"><input placeholder="メール入力必須 / LINE IDで代替" class="memo-input"></span>
-        </li>
-        <li class="decision-item">
-          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
-          <span class="d-label">Appleの<strong>リレーメール</strong>（プライベートメール）への対応は？</span>
-          <span class="d-note"><input placeholder="そのまま利用 / 実メール要求" class="memo-input"></span>
+          <span class="d-label">見学予約の<strong>特典</strong>は付けるか？</span>
+          <span class="d-note"><input placeholder="あり / なし" class="memo-input" value="なし"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
-          <span class="d-label">既存アカウントとの<strong>自動連携</strong>はするか？（メール一致時に自動紐付け）</span>
-          <span class="d-note"><input placeholder="自動連携 / 確認ダイアログ" class="memo-input" value="させない方がいい？※仕様確認必要"></span>
+          <span class="d-label">キャンセルの<strong>期限</strong>は？（前日まで/当日まで/制限なし）</span>
+          <span class="d-note"><input placeholder="前日 / 当日" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>リマインドメール</strong>は送信するか？（前日等）</span>
+          <span class="d-note"><input placeholder="送信する / しない" class="memo-input"></span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Card 6: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>URL Routing</th><td>Next.jsの動的ルーティング: <code>/visit/[shopSlug]</code><br>SSR/SSGでSEO最適化</td></tr>
+        <tr><th>メール送信</th><td>予約確認メール + パスワード設定リンク<br>キャンセル確認メール + リマインドメール（要決定）</td></tr>
+        <tr><th>空き管理</th><td>既存のカレンダーデータと見学予約枠を連動。<br>1枠あたりの上限人数は店舗が管理画面で設定</td></tr>
+        <tr><th>API</th><td>
+          <code>GET /api/visit/{shopSlug}</code> — 店舗情報+空き取得<br>
+          <code>POST /api/visit/reserve</code> — 予約+アカウント作成<br>
+          <code>DELETE /api/visit/reserve/{id}</code> — キャンセル
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="memo-area">
+    <div class="memo-area-header">メモ（見学WEB）</div>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- パネル2: SNSログイン -->
+<!-- ============================================ -->
+<div class="panel" id="panel-2">
+
+  <div class="intro">
+    <h2>SNSログイン（Google連携）</h2>
+    <p>
+      <span class="highlight">Googleアカウントでのログイン機能</span>を追加します。<br>
+      段階的に対応し、まずはGoogleのみ。LINE・Appleは将来検討。
+    </p>
+  </div>
+
+  <!-- 決定済みサマリー -->
+  <div style="background:var(--green-light);border:2px solid var(--green);border-radius:10px;padding:16px;margin-bottom:20px;">
+    <h4 style="color:#2E7D32;margin-bottom:8px;">3/4会議 決定済み事項（7項目）</h4>
+    <p style="font-size:13px;color:var(--text);line-height:1.7;">
+      <strong>対応SNS:</strong> Googleのみ（段階的）<br>
+      <strong>LINE連携:</strong> 却下（将来検討）<br>
+      <strong>Apple連携:</strong> 却下（将来検討）<br>
+      <strong>自動連携:</strong> しない（確認ダイアログを表示）<br>
+      <strong>複数SNS:</strong> 不要（1つのみ）<br>
+      <strong>パスワード:</strong> SNSユーザーは不要<br>
+      <strong>解除:</strong> 不可
+    </p>
+  </div>
+
+  <div class="important-box">
+    <h4>注意: 見学予約はSNSログイン対象外</h4>
+    <p>WEB見学予約ページからはSNSログインを使わず、4項目入力での予約のみとする。<br>SNSログインはアプリ内のログイン・新規登録画面のみで利用可能。</p>
+  </div>
+
+  <div class="rethink-box">
+    <h4>要検討: 解除不可の影響 / 自動連携しない場合の確認フロー</h4>
+    <p>
+      <strong>解除不可:</strong> Google連携後に解除できない仕様。メールアドレス変更時の影響は？<br>
+      <strong>確認フロー:</strong> 既存メールアカウントとGoogleアカウントのメールが一致した場合、自動連携せずに確認ダイアログを表示する設計の詳細を詰める必要あり。
+    </p>
+  </div>
+
+  <!-- Card 1: 対応プラットフォーム仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--purple),#5B21B6);" onclick="toggleCard(this)">
+      対応プラットフォーム仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>Google</th><td><span style="color:var(--green);font-weight:600;">決定: 対応</span>（段階的導入。まずはこれのみ）</td></tr>
+        <tr><th>LINE</th><td><span style="color:var(--red);font-weight:600;">却下</span>（将来検討。MessagingAPIとの整合性確認が必要）</td></tr>
+        <tr><th>Apple</th><td><span style="color:var(--red);font-weight:600;">却下</span>（将来検討。iOSアプリではApple Signが将来必須の可能性）</td></tr>
+        <tr><th>複数連携</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 不要（1アカウント1SNSのみ）</td></tr>
+        <tr><th>自動連携</th><td><span style="color:var(--green);font-weight:600;">決定:</span> しない（既存アカウントとのメール一致時は確認ダイアログ）</td></tr>
+        <tr><th>パスワード</th><td><span style="color:var(--green);font-weight:600;">決定:</span> Googleログインユーザーはパスワード不要</td></tr>
+        <tr><th>連携解除</th><td><span style="color:var(--green);font-weight:600;">決定:</span> 不可</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 2: ログイン画面モック -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--blue),#1557b0);" onclick="toggleCard(this)">
+      ログイン画面モック <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="phones-row">
+        <div class="phone-wrapper">
+          <div class="phone-label">ログイン画面</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">ログイン</div>
+            <div class="phone-body">
+              <div style="padding:10px;">
+                <div style="text-align:center;padding:20px 0 16px;">
+                  <div style="font-size:24px;font-weight:700;color:var(--purple);">StudyGO</div>
+                  <div style="font-size:12px;color:#999;margin-top:4px;">勉強カフェ公式アプリ</div>
+                </div>
+                <!-- Google Button -->
+                <button style="width:100%;padding:12px;background:white;color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;cursor:pointer;">
+                  <span style="font-size:18px;">G</span> Googleでログイン
+                </button>
+                <div style="text-align:center;font-size:12px;color:#999;margin-bottom:12px;">または</div>
+                <div style="margin-bottom:8px;">
+                  <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="メールアドレス">
+                </div>
+                <div style="margin-bottom:10px;">
+                  <input style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;font-size:13px;" placeholder="パスワード" type="password">
+                </div>
+                <button style="width:100%;padding:12px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;">ログイン</button>
+                <div style="text-align:center;margin-top:10px;">
+                  <a style="font-size:12px;color:var(--purple);">新規登録はこちら</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="phone-wrapper">
+          <div class="phone-label">連携確認ダイアログ</div>
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-status"><span>9:41</span><span>5G &#x1F50B;</span></div>
+            <div class="app-header">ログイン</div>
+            <div class="phone-body">
+              <div style="padding:10px;">
+                <div style="background:white;border-radius:12px;padding:20px;margin-top:40px;box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+                  <div style="text-align:center;margin-bottom:12px;">
+                    <div style="font-size:32px;">&#128279;</div>
+                  </div>
+                  <div style="font-size:14px;font-weight:700;text-align:center;margin-bottom:8px;">アカウント連携の確認</div>
+                  <div style="font-size:12px;color:var(--text-sub);line-height:1.6;margin-bottom:16px;">
+                    <strong>user@gmail.com</strong> で登録済みのアカウントが見つかりました。<br><br>
+                    このGoogleアカウントと既存アカウントを連携しますか？<br>
+                    <span style="color:var(--orange);font-size:11px;">※ 連携後の解除はできません</span>
+                  </div>
+                  <button style="width:100%;padding:10px;background:var(--purple);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:6px;">連携する</button>
+                  <button style="width:100%;padding:10px;background:#f0f0f0;color:var(--text);border:none;border-radius:8px;font-size:13px;">キャンセル</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: アカウント状態一覧 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--green),#388E3C);" onclick="toggleCard(this)">
+      アカウント状態一覧 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr>
+          <th></th>
+          <td style="font-weight:600;">メールユーザー</td>
+          <td style="font-weight:600;">Googleユーザー</td>
+        </tr>
+        <tr><th>ログイン方法</th><td>メール + パスワード</td><td>Googleボタン（ワンタップ）</td></tr>
+        <tr><th>パスワード</th><td>必須（登録時に設定）</td><td>不要</td></tr>
+        <tr><th>メール変更</th><td>設定画面から変更可能</td><td>Googleアカウントに依存</td></tr>
+        <tr><th>連携解除</th><td>-</td><td>不可</td></tr>
+        <tr><th>パスワード忘れ</th><td>パスワードリセットメール</td><td>Googleで直接ログイン</td></tr>
+        <tr><th>見学WEB予約</th><td>4項目入力で予約</td><td>4項目入力で予約（SNS不使用）</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 4: 連携フロー -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,var(--orange),#E65100);" onclick="toggleCard(this)">
+      Google連携フロー <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple);">1</div>
+          <div class="flow-box"><strong>「Googleでログイン」タップ</strong><br>Google OAuth同意画面を表示</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">2</div>
+          <div class="flow-box"><strong>Googleアカウント選択</strong><br>ユーザーがGoogleアカウントを選択し認証</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--blue);">3</div>
+          <div class="flow-box"><strong>メール一致チェック</strong><br>Googleメールと既存アカウントのメールを照合</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4a</div>
+          <div class="flow-box"><strong>一致あり → 確認ダイアログ</strong><br>「既存アカウントと連携しますか？」（自動連携しない）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--orange);">4b</div>
+          <div class="flow-box"><strong>一致なし → 新規作成</strong><br>Googleの情報で新規アカウント作成（パスワード不要）</div>
+        </div>
+        <div class="flow-arrow">&#9660;</div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--green);">5</div>
+          <div class="flow-box"><strong>ログイン完了</strong><br>アプリホーム画面へ遷移</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 5: 実装仕様 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#607D8B,#455A64);" onclick="toggleCard(this)">
+      実装仕様 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <table class="spec">
+        <tr><th>Google OAuth</th><td>Google Sign-In SDK (Flutter)。<br>Web: <code>accounts.google.com</code> OAuth 2.0<br>取得情報: email, name, profile_image</td></tr>
+        <tr><th>トークン管理</th><td>Google ID Token → サーバーで検証 → JWT発行<br>Refresh Token はサーバー側で管理</td></tr>
+        <tr><th>Firebase Auth</th><td>Firebase Authenticationの利用を検討。<br>Google Sign-Inプロバイダを設定するだけで対応可能</td></tr>
+        <tr><th>DB設計</th><td>
+          <strong>user_social_accounts</strong>: user_id, provider (google), provider_user_id, email, created_at<br>
+          ※ 解除不可のためdeleted_atは不要
+        </td></tr>
+        <tr><th>API</th><td>
+          <code>POST /api/auth/google</code> — Googleトークンで認証/登録<br>
+          <code>GET /api/user/social-accounts</code> — 連携状態確認
+        </td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Card 6: 決定事項 -->
+  <div class="card">
+    <div class="card-header" style="background:linear-gradient(135deg,#009688,#00695C);" onclick="toggleCard(this)">
+      決定事項 <span class="toggle">&#9660;</span>
+    </div>
+    <div class="card-body">
+      <ul class="decision-list">
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label">対応する<strong>SNSプロバイダ</strong>は？</span>
+          <span class="d-note"><input placeholder="Google / LINE / Apple" class="memo-input" value="Googleのみ（段階的）"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
+          <span class="d-label"><strong>LINE連携</strong>は対応するか？</span>
+          <span class="d-note"><input placeholder="対応 / 将来" class="memo-input" value="将来検討"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="rejected">却下</option><option value="pending">保留</option><option value="decided">決定</option></select>
+          <span class="d-label"><strong>Apple連携</strong>は対応するか？</span>
+          <span class="d-note"><input placeholder="対応 / 将来" class="memo-input" value="将来検討"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">1つのアカウントに<strong>複数SNS</strong>を紐付け可能にするか？</span>
-          <span class="d-note"><input placeholder="可能 / 1つのみ" class="memo-input" value="不要"></span>
+          <span class="d-label">既存アカウントとの<strong>自動連携</strong>はするか？</span>
+          <span class="d-note"><input placeholder="自動 / 確認あり" class="memo-input" value="しない（確認ダイアログ）"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">SNSログインユーザーの<strong>パスワード</strong>は設定させるか？</span>
-          <span class="d-note"><input placeholder="任意 / 必須 / 不要" class="memo-input" value="不要"></span>
+          <span class="d-label">SNSユーザーに<strong>パスワード</strong>は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input" value="不要"></span>
         </li>
         <li class="decision-item">
           <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
-          <span class="d-label">SNS連携の<strong>解除</strong>は可能にするか？（パスワード設定済みの場合のみ）</span>
+          <span class="d-label">SNS連携の<strong>解除</strong>は可能か？</span>
           <span class="d-note"><input placeholder="可能 / 不可" class="memo-input" value="不可"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="decided">決定</option><option value="pending">保留</option><option value="rejected">却下</option></select>
+          <span class="d-label"><strong>複数SNS</strong>の同時連携は必要か？</span>
+          <span class="d-note"><input placeholder="必要 / 不要" class="memo-input" value="不要（1つのみ）"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">OAuth同意画面の<strong>文言</strong>は？</span>
+          <span class="d-note"><input placeholder="文言案" class="memo-input"></span>
+        </li>
+        <li class="decision-item">
+          <select onchange="updateStyle(this)"><option value="pending">保留</option><option value="decided">決定</option><option value="rejected">却下</option></select>
+          <span class="d-label">既存ユーザーの<strong>Google連携手順</strong>は？（設定画面から？）</span>
+          <span class="d-note"><input placeholder="設定画面 / ログイン画面" class="memo-input"></span>
         </li>
       </ul>
     </div>
@@ -520,7 +868,7 @@
 
   <div class="memo-area">
     <div class="memo-area-header">メモ（SNSログイン）</div>
-    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()">見学予約はいったんSNSログインは考えないことにする</textarea>
+    <textarea placeholder="このセクションに関するメモを入力..." class="section-memo" oninput="autoSave()"></textarea>
   </div>
 </div>
 
@@ -565,25 +913,13 @@ function autoSave() {
 }
 
 function saveAll() {
-  var data = {
-    memos: [],
-    decisions: [],
-    timestamp: new Date().toISOString()
-  };
-
-  document.querySelectorAll('.section-memo').forEach(function(ta) {
-    data.memos.push(ta.value);
-  });
-
+  var data = { memos: [], decisions: [], timestamp: new Date().toISOString() };
+  document.querySelectorAll('.section-memo').forEach(function(ta) { data.memos.push(ta.value); });
   document.querySelectorAll('.decision-item').forEach(function(item) {
     var sel = item.querySelector('select');
     var input = item.querySelector('.memo-input');
-    data.decisions.push({
-      status: sel ? sel.value : '',
-      note: input ? input.value : ''
-    });
+    data.decisions.push({ status: sel ? sel.value : '', note: input ? input.value : '' });
   });
-
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   document.getElementById('saveStatus').textContent = '\u4FDD\u5B58\u6E08\u307F ' + new Date().toLocaleTimeString('ja-JP');
 }
@@ -593,24 +929,19 @@ function loadAll() {
   if (!raw) return;
   try {
     var data = JSON.parse(raw);
-
     if (data.memos) {
-      document.querySelectorAll('.section-memo').forEach(function(ta, i) {
-        if (data.memos[i] !== undefined) ta.value = data.memos[i];
-      });
+      document.querySelectorAll('.section-memo').forEach(function(ta, i) { if (data.memos[i] !== undefined) ta.value = data.memos[i]; });
     }
-
     if (data.decisions) {
       document.querySelectorAll('.decision-item').forEach(function(item, i) {
         if (data.decisions[i]) {
           var sel = item.querySelector('select');
           var input = item.querySelector('.memo-input');
           if (sel && data.decisions[i].status) { sel.value = data.decisions[i].status; sel.className = data.decisions[i].status; }
-          if (input && data.decisions[i].note) input.value = data.decisions[i].note;
+          if (input && data.decisions[i].note !== undefined) input.value = data.decisions[i].note;
         }
       });
     }
-
     document.getElementById('saveStatus').textContent = '\u5FA9\u5143\u6E08\u307F';
   } catch(e) { console.error(e); }
 }
@@ -626,7 +957,6 @@ function clearAll() {
 
 function exportAll() {
   var text = '# StudyGO ログイン・見学機能 要件定義 エクスポート\n\n';
-
   document.querySelectorAll('.panel').forEach(function(panel, pIdx) {
     text += '## ' + (pIdx + 1) + '. ' + PANEL_NAMES[pIdx] + '\n\n';
     var decisions = panel.querySelectorAll('.decision-item');
@@ -644,12 +974,9 @@ function exportAll() {
       text += '\n';
     }
     var memo = panel.querySelector('.section-memo');
-    if (memo && memo.value.trim()) {
-      text += '### メモ\n' + memo.value.trim() + '\n';
-    }
+    if (memo && memo.value.trim()) { text += '### メモ\n' + memo.value.trim() + '\n'; }
     text += '\n---\n\n';
   });
-
   navigator.clipboard.writeText(text).then(function() {
     var btn = document.querySelector('.btn-export');
     btn.textContent = 'コピーしました!';
@@ -669,9 +996,7 @@ function exportAll() {
 
 document.addEventListener('DOMContentLoaded', function() {
   loadAll();
-  document.querySelectorAll('.decision-item select').forEach(function(sel) {
-    sel.className = sel.value;
-  });
+  document.querySelectorAll('.decision-item select').forEach(function(sel) { sel.className = sel.value; });
   updateProgress();
 });
 </script>
